@@ -1,1 +1,1 @@
-Repository for NSU OOP and ЭВМ courses.
+Repository for OOP and ЭВМ labs.
