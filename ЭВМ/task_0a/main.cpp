@@ -9,7 +9,6 @@ using namespace Module3;
 int main (int argc, char** argv){
 
     cout <<  "Hello world!" << "\n";
-
     cout << getMyName1() << "\n";
     cout << getMyName2() << "\n";
     cout << getMyName3() << "\n";

@@ -6,4 +6,5 @@ namespace Module2
 {
     std::string getMyName2();
 }
+
 #endif
