@@ -9,4 +9,12 @@
 
 using namespace std;
 
+namespace Sort_str{
+
+  list<string> sort_strings(list<string>);
+
+}
+
+using namespace Sort_str;
+
 #endif

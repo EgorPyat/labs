@@ -4,9 +4,10 @@ int main (int argc, char **argv){
   string line;
   list<string> lines;
   cout << argv[0] << endl;
-  if (argc > 1){
-    ifstream in(argv[1]);
-    ofstream out(argv[2]);
+
+  //if (argc > 1){
+    ifstream in("zin.txt");
+    ofstream out("zout.txt");
 
     if (!in) {
       cout << "No such file" << endl;
@@ -24,7 +25,8 @@ int main (int argc, char **argv){
     }
 
     lines.pop_back();
-    lines.sort();
+    //lines.sort();
+    lines = sort_strings(lines);
 
     while(lines.size()){
       out << lines.front() << "\n";
@@ -33,7 +35,8 @@ int main (int argc, char **argv){
 
     in.close();
     out.close();
-  } else cout << "No arguments" << endl;
-
+  /*}
+  else cout << "No arguments" << endl;
+  */
   return 0;
 }
