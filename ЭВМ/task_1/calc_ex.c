@@ -14,6 +14,12 @@ float calc_ex(int n, int x) {
   for(i = 0; i <= n; i++){
     power[i] = j;
     j *= x;
+    if (i > 0){
+      if(x != power[i]/power[i-1]) {
+        printf("Oops power overflow = %d\n", i);
+        exit(OVERFLOW);
+      }
+    }
   }
 
   /*Calculate n! array*/
@@ -22,7 +28,7 @@ float calc_ex(int n, int x) {
     f *= i;
     fact[i] = f;
     if(i != fact[i]/fact[i-1]) {
-      printf("Oops overflow = %d\n", i);
+      printf("Oops fact overflow = %d\n", i);
       exit(OVERFLOW);
     }
   }
