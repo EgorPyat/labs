@@ -16,7 +16,7 @@ int main() {
   scanf("%d", &x);
 
   ex = calc_ex(n, x);
-  printf("e^x = %f", ex);
+  printf("e^x = %f\n", ex);
 
   return 0;
 
