@@ -12,13 +12,10 @@ int main() {
   }
   while (n < 0);
 
-  //printf("N fact = %d\n", fact(n));
-  //fact(n);
-
   printf("Enter X: ");
   scanf("%d", &x);
 
-  power(x, n);
+  ex = calc_ex(n, x);
   printf("e^x = %f", ex);
 
   return 0;
