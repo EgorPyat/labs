@@ -19,7 +19,7 @@ int main() {
     scanf("%d", &n);
     if (n <= 0) printf("N should be >= 0\n");
   }
-  while (n < 0);
+  while (n <= 0);
 
   printf("Enter X: ");
   scanf("%d", &x);
@@ -31,8 +31,14 @@ int main() {
 
   asm("rdtsc\n":"=a"(end.t32.th),"=d"(end.t32.tl));
 
-  printf("e^x = %f\n", ex);
   printf("Time taken: %lf sec.\n",(end.t64-start.t64)/cpu_Hz);
+
+  if(ex == -1) {
+    printf("Overflow error!");
+    return OVERFLOW;
+  }
+
+  printf("e^x = %f\n", ex);
 
   return 0;
 
