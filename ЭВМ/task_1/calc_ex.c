@@ -42,7 +42,6 @@ float calc_ex(int n, int x) {
 
   } else return ex;
 
-  printf("%lld\n", fact[n]);
   free(fact);
   free(power);
 
