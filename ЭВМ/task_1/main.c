@@ -1,10 +1,9 @@
 #include "header.h"
 
 int main() {
-  float ex;
+  double ex;
   int n;
   int x;
-
   union ticks{
     unsigned long long t64;
     struct s32 {
@@ -25,18 +24,13 @@ int main() {
   scanf("%d", &x);
 
   asm("rdtsc\n":"=a"(start.t32.th),"=d"(start.t32.tl));
+
   // some work
-
   ex = calc_ex(n, x);
-
+  
   asm("rdtsc\n":"=a"(end.t32.th),"=d"(end.t32.tl));
 
   printf("Time taken: %lf sec.\n",(end.t64-start.t64)/cpu_Hz);
-
-  if(ex == -1) {
-    printf("Overflow error!");
-    return OVERFLOW;
-  }
 
   printf("e^x = %f\n", ex);
 

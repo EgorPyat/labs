@@ -4,6 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-float calc_ex(int, int);
+double calc_ex(int, int);
 
 #endif
