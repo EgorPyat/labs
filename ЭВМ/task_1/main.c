@@ -1,38 +1,33 @@
 #include "header.h"
 
-int main() {
+int main(int argc, char *argv[]) {
   double ex;
-  int n;
-  int x;
-  union ticks{
-    unsigned long long t64;
-    struct s32 {
-      long th, tl;
-    } t32;
-  } start, end;
+  double n;
+  double x;
+  struct timespec start, end;
 
-  double cpu_Hz = 2500000000ULL; // for 2.5 GHz CPU
+  if (argc == 3 ) {
 
-  do{
-    printf("Enter N: ");
-    scanf("%d", &n);
-    if (n <= 0) printf("N should be >= 0\n");
-  }
-  while (n <= 0);
+    n = atof(argv[1]);
+    x = atof(argv[2]);
 
-  printf("Enter X: ");
-  scanf("%d", &x);
+    if(n <= 0){
+      printf("Enter N > 0");
+      return NO_ARGS;
+    }
 
-  asm("rdtsc\n":"=a"(start.t32.th),"=d"(start.t32.tl));
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+    // some work
 
-  // some work
-  ex = calc_ex(n, x);
-  
-  asm("rdtsc\n":"=a"(end.t32.th),"=d"(end.t32.tl));
+    ex = calc_ex(n, x);
 
-  printf("Time taken: %lf sec.\n",(end.t64-start.t64)/cpu_Hz);
+    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
-  printf("e^x = %f\n", ex);
+    printf("Time taken: %.10lf sec.\n",end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
+
+    printf("e^x = %.10f\n", ex);
+
+  } else printf("No arguments or too many!");
 
   return 0;
 

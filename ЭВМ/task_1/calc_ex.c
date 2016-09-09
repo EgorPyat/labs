@@ -1,16 +1,14 @@
 #include "header.h"
+double calc_ex(double n, double x) {
 
-// e^x = sum ( x^n/n! )
-
-double calc_ex(int n, int x) {
   double ex = 1;
-  int i;
+  double i;
   double j = 1;
 
   /*Calculate ex*/
   if (x != 0) {
-    for (i = 1; i <= n; i++){
-      j*=((float)x/(float)i);
+    for (i = 1; i < n; i++){
+      j*=(x/i);
       ex+=j;
     }
   } else return ex;
