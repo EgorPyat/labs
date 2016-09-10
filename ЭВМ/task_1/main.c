@@ -13,11 +13,10 @@ int main(int argc, char *argv[]) {
 
     if(n <= 0){
       printf("Enter N > 0");
-      return NO_ARGS;
+      return BAD_ARGS;
     }
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-    // some work
 
     ex = calc_ex(n, x);
 
@@ -27,7 +26,7 @@ int main(int argc, char *argv[]) {
 
     printf("e^x = %.10f\n", ex);
 
-  } else printf("No arguments or too many!");
+  } else printf("Bad arguments");
 
   return 0;
 
