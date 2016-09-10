@@ -1,9 +1,7 @@
 #include "header.h"
 
-list<string> Sort_str::sort_strings(list<string> list){
+void Sort_str::sort_strings(list<string> &l){
 
-  list.sort();
-
-  return list;
+  l.sort();
 
 }

@@ -6,12 +6,13 @@
 #include <string>
 #include <cstdlib>
 #include <list>
+#include <iterator>
 
 using namespace std;
 
 namespace Sort_str{
 
-  list<string> sort_strings(list<string>);
+  void sort_strings(list<string> &);
 
 }
 
