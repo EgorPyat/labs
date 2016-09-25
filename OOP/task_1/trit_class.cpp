@@ -17,6 +17,7 @@ TritSet::TritSet(unsigned int user_capa){
     this->real_capa = real_capa;
 
     this->cont = new unsigned int[size];
+    this->trit_value = 0;
 
 }
 
@@ -30,12 +31,34 @@ TritSet::~TritSet(){
 
 int TritSet::capacity(){
 
-  return this->real_capa;
+  return real_capa;
 
 }
 
-unsigned int TritSet::operator[](int n){
+unsigned int& TritSet::operator[](int n){
 
-  
+  unsigned int capa_index;
+  unsigned int big_byte;
+  unsigned int big_byte_index;
+
+  if(this->trit_value > 0){
+
+    capa_index = 2*(this->trit_index)/8/sizeof(unsigned int);
+    big_byte = this->cont[capa_index];
+    big_byte_index = (this->trit_index) - (capa_index*8*sizeof(unsigned int)/2);
+
+    this->cont[capa_index] |= (this->trit_value << ((sizeof(unsigned int)*8 - (big_byte_index + 1)*2)));
+
+  }
+
+  capa_index = 2*n/8/sizeof(unsigned int);
+  big_byte = this->cont[capa_index];
+  big_byte_index = n - (capa_index*8*sizeof(unsigned int)/2);
+
+  this->trit_value = (this->cont[capa_index] >> (sizeof(unsigned int)*8 - (big_byte_index + 1)*2)) & 0x3;
+
+  this->trit_index = n;
+
+  return this->trit_value;
 
 }
