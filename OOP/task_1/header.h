@@ -6,22 +6,32 @@
 
 using namespace std;
 
+enum Trit{Unknown, False, True};
+
+class Reference{
+  unsigned int *mpt;
+  size_t pos;
+public:
+  Reference(unsigned int&, size_t);
+
+  void operator=(unsigned int);
+};
 class TritSet {
+  unsigned int real_capa;
+  unsigned int user_capa;
+  unsigned int *capa;
 
-  int user_capa;
-  int real_capa;
-  unsigned int *cont;
-  unsigned int trit_index;
-  unsigned int trit_value;
+public:
 
-  public:
-    unsigned int& operator[](int);
-    int capacity();
-    TritSet(unsigned int);
-    ~TritSet();
+  TritSet(unsigned int);
 
-  //shrink();
+  ~TritSet();
 
+  Reference operator[](int);
+
+  unsigned int operator[](double);
+
+  unsigned int capacity();
 };
 
 #endif

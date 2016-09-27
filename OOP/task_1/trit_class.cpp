@@ -1,64 +1,65 @@
 #include "header.h"
+TritSet::TritSet(unsigned int V){
+  int size;
+  int real_capa;
 
-TritSet::TritSet(unsigned int user_capa){
+  size = 2*V/8/sizeof(unsigned int);
+  real_capa = size*sizeof(unsigned int)*8/2;
 
-    int size;
-    int real_capa;
+  this->user_capa = V;
 
-    size = 2*user_capa/8/sizeof(unsigned int);
+  if(real_capa < V){
+    size++;
     real_capa = size*sizeof(unsigned int)*8/2;
+  }
+  this->real_capa = real_capa;
 
-    this->user_capa = user_capa;
-
-    if(real_capa < user_capa){
-      size++;
-      real_capa = size*sizeof(unsigned int)*8/2;
-    }
-    this->real_capa = real_capa;
-
-    this->cont = new unsigned int[size];
-    this->trit_value = 0;
-
+  this->capa = new unsigned int[V];
 }
 
 TritSet::~TritSet(){
 
-  delete[] cont;
-  cont = NULL;
-  cout << "Bye" << endl;
+  delete[] capa;
+  capa = NULL;
 
 }
 
-int TritSet::capacity(){
+unsigned int TritSet::capacity(){
 
-  return real_capa;
+  return this->user_capa;
 
 }
 
-unsigned int& TritSet::operator[](int n){
+Reference TritSet::operator[](int n){
 
-  unsigned int capa_index;
-  unsigned int big_byte;
-  unsigned int big_byte_index;
+  size_t ind = 2*n/8/sizeof(unsigned int);
+  size_t b_ind = n - ind*8*sizeof(unsigned int)/2;
 
-  if(this->trit_value > 0){
+  return Reference(this->capa[ind], b_ind);
+}
 
-    capa_index = 2*(this->trit_index)/8/sizeof(unsigned int);
-    big_byte = this->cont[capa_index];
-    big_byte_index = (this->trit_index) - (capa_index*8*sizeof(unsigned int)/2);
+unsigned int TritSet::operator[](double n){
 
-    this->cont[capa_index] |= (this->trit_value << ((sizeof(unsigned int)*8 - (big_byte_index + 1)*2)));
+  size_t ind = 2*n/8/sizeof(unsigned int);
+  size_t b_ind = n - ind*8*sizeof(unsigned int)/2;
+  unsigned int k = ((sizeof(unsigned int)*8 - (b_ind + 1)*2));
 
+  return (this->capa[ind] >> ((sizeof(unsigned int)*8 - (b_ind + 1)*2))) & 0x3;
+}
+
+Reference::Reference(unsigned int& a, size_t p){
+  this->mpt = &a;
+  this->pos = p;
+}
+
+void Reference::operator=(unsigned int x){
+  if (x > 2) {
+    cout << "Can't write! " << endl;
+    return;
   }
-
-  capa_index = 2*n/8/sizeof(unsigned int);
-  big_byte = this->cont[capa_index];
-  big_byte_index = n - (capa_index*8*sizeof(unsigned int)/2);
-
-  this->trit_value = (this->cont[capa_index] >> (sizeof(unsigned int)*8 - (big_byte_index + 1)*2)) & 0x3;
-
-  this->trit_index = n;
-
-  return this->trit_value;
-
+  //cout << "=" << *this->mpt<< endl;
+  unsigned int l = (8*sizeof(unsigned int) - (((this->pos)+1)*2));
+  //cout << "l " << l << endl;
+  *this->mpt |= x << l;
+  //cout << "=" << *this->mpt<< endl;
 }
