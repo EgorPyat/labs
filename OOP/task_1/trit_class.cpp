@@ -13,8 +13,8 @@ TritSet::TritSet(unsigned int V){
     real_capa = size*sizeof(unsigned int)*8/2;
   }
   this->real_capa = real_capa;
-
-  this->capa = new unsigned int[V];
+  cout << size << endl;
+  this->capa = new unsigned int[size];
 }
 
 TritSet::~TritSet(){
@@ -31,6 +31,10 @@ unsigned int TritSet::capacity(){
 }
 
 TritSet::Reference TritSet::operator[](int n){
+  if(n > this->user_capa){
+    cout << "Out of limits!" << endl;
+    exit(MEM_ERR);
+  }
 
   size_t ind = 2*n/8/sizeof(unsigned int);
   size_t b_ind = n - ind*8*sizeof(unsigned int)/2;
@@ -38,19 +42,9 @@ TritSet::Reference TritSet::operator[](int n){
   return Reference(this->capa[ind], b_ind);
 }
 
-// unsigned int TritSet::operator[](double n){
-//
-//   size_t ind = 2*n/8/sizeof(unsigned int);
-//   size_t b_ind = n - ind*8*sizeof(unsigned int)/2;
-//   unsigned int k = ((sizeof(unsigned int)*8 - (b_ind + 1)*2));
-//
-//   return (this->capa[ind] >> ((sizeof(unsigned int)*8 - (b_ind + 1)*2))) & 0x3;
-// }
-
 TritSet::Reference::Reference(unsigned int& a, size_t p){
   this->mpt = &a;
   this->pos = p;
-  // cout << "pos " << this->pos << endl;
 }
 
 void TritSet::Reference::operator=(unsigned int x){
@@ -63,10 +57,38 @@ void TritSet::Reference::operator=(unsigned int x){
 }
 
 TritSet::Reference::operator int() const{
+
   return (*this->mpt >> (sizeof(unsigned int)*8 - ((this->pos) + 1)*2));
+
 }
-// void *TritSet::Reference::operator bool() const{
-//   cout << (*this->mpt >> (sizeof(unsigned int)*8 - ((this->pos) + 1)*2)) << endl;
-//   cout << this->pos << endl;
-//   cout << *this->mpt << endl;
-// }
+
+ostream& operator <<(ostream &os, TritSet& c){
+
+  unsigned int size;
+  unsigned int i;
+  unsigned int j;
+  unsigned int diff;
+
+  size = 2*(c.real_capa)/sizeof(unsigned int)/8;
+  if(c.real_capa > c.user_capa){
+    size--;
+  }
+  cout << "size " << size << endl;
+  for (i = 0; i < size; i++){
+    for (j = 0; j < (sizeof(unsigned int) * 8)/2; j++){
+      os << ((c.capa[i] >> ((sizeof(unsigned int)*8 - ((j) + 1)*2))) & 0x3);
+    }
+  }
+
+  diff = c.real_capa - c.user_capa;
+
+  if(diff > 0) {
+    size++;
+    for (i = 0; i < diff; i++){
+      os << ((c.capa[size] >> ((sizeof(unsigned int)*8 - ((i) + 1)*2))) & 0x3);
+    }
+  }
+
+  return os;
+
+}
