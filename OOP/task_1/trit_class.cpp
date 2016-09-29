@@ -30,7 +30,7 @@ unsigned int TritSet::capacity(){
 
 }
 
-Reference TritSet::operator[](int n){
+TritSet::Reference TritSet::operator[](int n){
 
   size_t ind = 2*n/8/sizeof(unsigned int);
   size_t b_ind = n - ind*8*sizeof(unsigned int)/2;
@@ -38,28 +38,35 @@ Reference TritSet::operator[](int n){
   return Reference(this->capa[ind], b_ind);
 }
 
-unsigned int TritSet::operator[](double n){
+// unsigned int TritSet::operator[](double n){
+//
+//   size_t ind = 2*n/8/sizeof(unsigned int);
+//   size_t b_ind = n - ind*8*sizeof(unsigned int)/2;
+//   unsigned int k = ((sizeof(unsigned int)*8 - (b_ind + 1)*2));
+//
+//   return (this->capa[ind] >> ((sizeof(unsigned int)*8 - (b_ind + 1)*2))) & 0x3;
+// }
 
-  size_t ind = 2*n/8/sizeof(unsigned int);
-  size_t b_ind = n - ind*8*sizeof(unsigned int)/2;
-  unsigned int k = ((sizeof(unsigned int)*8 - (b_ind + 1)*2));
-
-  return (this->capa[ind] >> ((sizeof(unsigned int)*8 - (b_ind + 1)*2))) & 0x3;
-}
-
-Reference::Reference(unsigned int& a, size_t p){
+TritSet::Reference::Reference(unsigned int& a, size_t p){
   this->mpt = &a;
   this->pos = p;
+  // cout << "pos " << this->pos << endl;
 }
 
-void Reference::operator=(unsigned int x){
+void TritSet::Reference::operator=(unsigned int x){
   if (x > 2) {
     cout << "Can't write! " << endl;
     return;
   }
-  //cout << "=" << *this->mpt<< endl;
   unsigned int l = (8*sizeof(unsigned int) - (((this->pos)+1)*2));
-  //cout << "l " << l << endl;
   *this->mpt |= x << l;
-  //cout << "=" << *this->mpt<< endl;
 }
+
+TritSet::Reference::operator int() const{
+  return (*this->mpt >> (sizeof(unsigned int)*8 - ((this->pos) + 1)*2));
+}
+// void *TritSet::Reference::operator bool() const{
+//   cout << (*this->mpt >> (sizeof(unsigned int)*8 - ((this->pos) + 1)*2)) << endl;
+//   cout << this->pos << endl;
+//   cout << *this->mpt << endl;
+// }
