@@ -13,7 +13,7 @@ TritSet::TritSet(unsigned int V){
     real_capa = size*sizeof(unsigned int)*8/2;
   }
   this->real_capa = real_capa;
-  cout << size << endl;
+  // cout << size << endl;
   this->capa = new unsigned int[size];
 }
 
@@ -31,7 +31,7 @@ unsigned int TritSet::capacity(){
 }
 
 TritSet::Reference TritSet::operator[](int n){
-  if(n > this->user_capa){
+  if(n >= this->user_capa){
     cout << "Out of limits!" << endl;
     exit(MEM_ERR);
   }
@@ -58,7 +58,7 @@ void TritSet::Reference::operator=(unsigned int x){
 
 TritSet::Reference::operator int() const{
 
-  return (*this->mpt >> (sizeof(unsigned int)*8 - ((this->pos) + 1)*2));
+  return (*this->mpt >> (sizeof(unsigned int)*8 - ((this->pos) + 1)*2)) & 0x3;
 
 }
 
@@ -73,17 +73,15 @@ ostream& operator <<(ostream &os, TritSet& c){
   if(c.real_capa > c.user_capa){
     size--;
   }
-  cout << "size " << size << endl;
+  // cout << "size " << size << endl;
   for (i = 0; i < size; i++){
     for (j = 0; j < (sizeof(unsigned int) * 8)/2; j++){
       os << ((c.capa[i] >> ((sizeof(unsigned int)*8 - ((j) + 1)*2))) & 0x3);
     }
   }
 
-  diff = c.real_capa - c.user_capa;
-
+  diff = c.user_capa - size*sizeof(unsigned int)*8/2;
   if(diff > 0) {
-    size++;
     for (i = 0; i < diff; i++){
       os << ((c.capa[size] >> ((sizeof(unsigned int)*8 - ((i) + 1)*2))) & 0x3);
     }
