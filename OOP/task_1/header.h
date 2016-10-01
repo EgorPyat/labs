@@ -16,6 +16,7 @@ public:
 	Reference(unsigned int&, size_t);
 	~Reference();
 	void operator=(unsigned int);
+	void operator=(Reference&);
 	bool operator==(int);
 	operator int() const;
 };
@@ -33,7 +34,7 @@ public:
 	void operator=(TritSet&);
 	TritSet& flip();
 	TritSet operator~();
-	void operator&(TritSet&);
+	TritSet operator&(TritSet&);
 	void operator|(TritSet&);
 	Reference operator[](int);
 	unsigned int capacity();
