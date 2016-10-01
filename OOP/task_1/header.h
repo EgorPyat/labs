@@ -7,42 +7,42 @@
 
 using namespace std;
 
-enum Trit{Unknown, False, True};
+enum Trit { Unknown, False, True };
 
-class Reference{
-  unsigned int *mpt;
-  size_t pos;
+class Reference {
+	unsigned int *mpt;
+	size_t pos;
 public:
-  Reference(unsigned int&, size_t);
-  ~Reference();
-  void operator=(unsigned int);
-  bool operator==(int);
-  operator int() const;
+	Reference(unsigned int&, size_t);
+	~Reference();
+	void operator=(unsigned int);
+	bool operator==(int);
+	operator int() const;
 };
 
 class TritSet {
-  unsigned int real_capa;
-  unsigned int user_capa;
-  unsigned int *capa;
+	unsigned int real_capa;
+	unsigned int user_capa;
+	unsigned int *capa;
 
 public:
 
-  TritSet(unsigned int);
+	TritSet(unsigned int);
 
-  TritSet(TritSet&);
+	TritSet(TritSet&);
 
-  ~TritSet();
-  TritSet& flip();
-  TritSet& operator~();
+	~TritSet();
+	TritSet& flip();
+	TritSet operator~();
+	void operator=(TritSet&);
+	void operator&(TritSet&);
+	void operator|(TritSet&);
 
-  void operator&(TritSet&);
-  void operator|(TritSet&);
+	Reference operator[](int);
 
-  Reference operator[](int);
+	unsigned int capacity();
 
-  unsigned int capacity();
-
-  friend ostream& operator <<(ostream &, TritSet&);
+	friend ostream& operator <<(ostream &, TritSet&);
 
 };
 
