@@ -27,13 +27,17 @@ int main() {
   cout << a[999] << endl;
   cout << a << endl;
   // a = !a;
-  TritSet b = a;
-  b[100] = True;
-  TritSet ca = !a;
-  !a;
-  cout << ca << endl;
-  cout << a << endl;
-  cout << b << endl;
+  TritSet b(1000);
+  b = ~a;
+
+  // a.flip();
+  // cout << b << endl;
+  // b[100] = True;
+  // TritSet ca = !a;
+  // !a;
+  // cout << ca << endl;
+  // cout << a << endl;
+  // cout << b << endl;
   // a & b;
   // a | b;
   // TritSet ca = !a;

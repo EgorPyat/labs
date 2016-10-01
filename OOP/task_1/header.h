@@ -32,8 +32,8 @@ public:
   TritSet(TritSet&);
 
   ~TritSet();
-
-  TritSet& operator!();
+  TritSet& flip();
+  TritSet& operator~();
 
   void operator&(TritSet&);
   void operator|(TritSet&);
