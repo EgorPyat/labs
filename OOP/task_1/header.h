@@ -9,6 +9,16 @@ using namespace std;
 
 enum Trit{Unknown, False, True};
 
+class Reference{
+  unsigned int *mpt;
+  size_t pos;
+public:
+  Reference(unsigned int&, size_t);
+  ~Reference();
+  void operator=(unsigned int);
+  bool operator==(int);
+  operator int() const;
+};
 
 class TritSet {
   unsigned int real_capa;
@@ -16,18 +26,17 @@ class TritSet {
   unsigned int *capa;
 
 public:
-  class Reference{
-    unsigned int *mpt;
-    size_t pos;
-  public:
-    Reference(unsigned int&, size_t);
-    void operator=(unsigned int);
-    operator int() const;
-  };
 
   TritSet(unsigned int);
 
+  TritSet(TritSet&);
+
   ~TritSet();
+
+  TritSet& operator!();
+
+  void operator&(TritSet&);
+  void operator|(TritSet&);
 
   Reference operator[](int);
 

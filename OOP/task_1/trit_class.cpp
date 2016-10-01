@@ -13,8 +13,24 @@ TritSet::TritSet(unsigned int V){
     real_capa = size*sizeof(unsigned int)*8/2;
   }
   this->real_capa = real_capa;
-  // cout << size << endl;
   this->capa = new unsigned int[size];
+}
+
+TritSet::TritSet(TritSet& th){
+  int i;
+  int size;
+
+  real_capa = th.real_capa;
+  user_capa = th.user_capa;
+
+  size = 2*real_capa/8/sizeof(unsigned int);
+  cout << "Copy" << endl;
+
+  capa = new unsigned int[size];
+
+  for(i = 0; i< size; i++){
+    capa[i] = th.capa[i];
+  }
 }
 
 TritSet::~TritSet(){
@@ -30,7 +46,7 @@ unsigned int TritSet::capacity(){
 
 }
 
-TritSet::Reference TritSet::operator[](int n){
+Reference TritSet::operator[](int n){
   if(n >= this->user_capa){
     cout << "Out of limits!" << endl;
     exit(MEM_ERR);
@@ -42,21 +58,107 @@ TritSet::Reference TritSet::operator[](int n){
   return Reference(this->capa[ind], b_ind);
 }
 
-TritSet::Reference::Reference(unsigned int& a, size_t p){
+bool Reference::operator==(int n){
+  int x = (*this->mpt >> (sizeof(unsigned int)*8 - ((this->pos) + 1)*2)) & 0x3;
+
+  if (x == n){
+    return 1;
+  }else{
+    return 0;
+  }
+}
+
+void TritSet::operator&(TritSet& a){
+  cout << "ds" << endl;
+}
+
+void TritSet::operator|(TritSet& b){
+  cout << "dsd" << endl;
+}
+
+TritSet& TritSet::operator!(){
+  unsigned int size;
+  unsigned int i;
+  unsigned int j;
+  unsigned int diff;
+  unsigned int num;
+  unsigned int s;
+  unsigned int re;
+  size = 2*(real_capa)/sizeof(unsigned int)/8;
+
+  if(real_capa > user_capa){
+    size--;
+  }
+  for (i = 0; i < size; i++){
+    for (j = 0; j < (sizeof(unsigned int) * 8)/2; j++){
+      num = ((capa[i] >> ((sizeof(unsigned int)*8 - ((j) + 1)*2))) & 0x3);
+      s = i*8*sizeof(unsigned int)/2 + j;
+
+      // cout << s << endl;
+
+      if(num == 2){
+        // re = this->operator[](s);
+        // re = 1;
+        operator[](s) = 1;
+        // re = this->operator[](s);
+      }else if(num == 1){
+        operator[](s) = 2;
+      }
+    }
+  }
+
+  diff = user_capa - size*sizeof(unsigned int)*8/2;
+  if(diff > 0) {
+    for (i = 0; i < diff; i++){
+      num = ((capa[size] >> ((sizeof(unsigned int)*8 - ((i) + 1)*2))) & 0x3);
+
+      s = size*sizeof(unsigned int)*8/2 + i;
+      // cout << s << endl;
+      if(num == 2){
+        operator[](s) = 1;
+      }else if(num == 1){
+        operator[](s) = 2;
+      }
+    }
+  }
+  return *this;
+  // cout << "qeq" << endl;
+}
+
+
+Reference::Reference(unsigned int& a, size_t p){
   this->mpt = &a;
   this->pos = p;
 }
+Reference::~Reference(){};
+// TritSet::Reference::Reference(Reference& th){
+//
+//   mpt = th.mpt;
+//   pos = th.pos;
+//
+// }
 
-void TritSet::Reference::operator=(unsigned int x){
+void Reference::operator=(unsigned int x){
+  unsigned int s = 0;
+  unsigned int t = 0;
+  s = ~s;
+// cout << "s " << s << endl;
   if (x > 2) {
     cout << "Can't write! " << endl;
     return;
   }
   unsigned int l = (8*sizeof(unsigned int) - (((this->pos)+1)*2));
+  s <<= l;
+  s <<= 2;
+  t = ~s;
+  t >>= 2;
+  s |= t;
+  // cout << "s " << s << endl;
+  *this->mpt &= s;
   *this->mpt |= x << l;
 }
 
-TritSet::Reference::operator int() const{
+Reference::operator int() const{
 
   return (*this->mpt >> (sizeof(unsigned int)*8 - ((this->pos) + 1)*2)) & 0x3;
 
