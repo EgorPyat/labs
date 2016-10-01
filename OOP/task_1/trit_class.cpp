@@ -20,8 +20,7 @@ TritSet::TritSet(unsigned int V) {
 TritSet::TritSet(TritSet& th) {
 	int i;
 	int size;
-	//cout << "Copy" << endl;
-	//cout << "th " << th.real_capa << endl;
+
 	real_capa = th.real_capa;
 	user_capa = th.user_capa;
 
@@ -38,13 +37,11 @@ TritSet::~TritSet() {
 
 	delete[] capa;
 	capa = NULL;
-
 }
 
 unsigned int TritSet::capacity() {
 
 	return this->user_capa;
-
 }
 
 Reference TritSet::operator[](int n) {
@@ -61,8 +58,6 @@ Reference TritSet::operator[](int n) {
 void TritSet::operator=(TritSet& th) {
 	int i;
 	int size;
-	//cout << "M" << endl;
-	//cout << "th " << th.real_capa << endl;
 	this->real_capa = th.real_capa;
 	this->user_capa = th.user_capa;
 
@@ -73,7 +68,6 @@ void TritSet::operator=(TritSet& th) {
 	for (i = 0; i< size; i++) {
 		capa[i] = th.capa[i];
 	}
-	//cout << "hello" << endl;
 }
 
 bool Reference::operator==(int n) {
@@ -103,13 +97,8 @@ TritSet& TritSet::flip() {
 			num = ((this->capa[i] >> ((sizeof(unsigned int) * 8 - ((j)+1) * 2))) & 0x3);
 			s = i * 8 * sizeof(unsigned int) / 2 + j;
 
-			// cout << s << endl;
-
 			if (num == 2) {
-				// re = this->operator[](s);
-				// re = 1;
 				this->operator[](s) = 1;
-				// re = this->operator[](s);
 			}
 			else if (num == 1) {
 				this->operator[](s) = 2;
@@ -123,7 +112,6 @@ TritSet& TritSet::flip() {
 			num = ((this->capa[size] >> ((sizeof(unsigned int) * 8 - ((i)+1) * 2))) & 0x3);
 
 			s = size*sizeof(unsigned int) * 8 / 2 + i;
-			// cout << s << endl;
 			if (num == 2) {
 				this->operator[](s) = 1;
 			}
@@ -136,11 +124,9 @@ TritSet& TritSet::flip() {
 }
 
 TritSet TritSet::operator~() {
-	// TritSet u(*this);
-	// u.flip();
-	//cout << *this << endl;
-	// cout << TritSet(*this).flip() << endl;
+
 	return TritSet(*this).flip();
+
 }
 
 void TritSet::operator&(TritSet& a) {
@@ -155,19 +141,13 @@ Reference::Reference(unsigned int& a, size_t p) {
 	this->mpt = &a;
 	this->pos = p;
 }
+
 Reference::~Reference() {};
-// TritSet::Reference::Reference(Reference& th){
-//
-//   mpt = th.mpt;
-//   pos = th.pos;
-//
-// }
 
 void Reference::operator=(unsigned int x) {
 	unsigned int s = 0;
 	unsigned int t = 0;
 	s = ~s;
-	// cout << "s " << s << endl;
 	if (x > 2) {
 		cout << "Can't write! " << endl;
 		return;
@@ -178,7 +158,6 @@ void Reference::operator=(unsigned int x) {
 	t = ~s;
 	t >>= 2;
 	s |= t;
-	// cout << "s " << s << endl;
 	*this->mpt &= s;
 	*this->mpt |= x << l;
 }
@@ -186,11 +165,9 @@ void Reference::operator=(unsigned int x) {
 Reference::operator int() const {
 
 	return (*this->mpt >> (sizeof(unsigned int) * 8 - ((this->pos) + 1) * 2)) & 0x3;
-
 }
 
 ostream& operator <<(ostream &os, TritSet& c) {
-
 	unsigned int size;
 	unsigned int i;
 	unsigned int j;
@@ -200,7 +177,6 @@ ostream& operator <<(ostream &os, TritSet& c) {
 	if (c.real_capa > c.user_capa) {
 		size--;
 	}
-	// cout << "size " << size << endl;
 	for (i = 0; i < size; i++) {
 		for (j = 0; j < (sizeof(unsigned int) * 8) / 2; j++) {
 			os << ((c.capa[i] >> ((sizeof(unsigned int) * 8 - ((j)+1) * 2))) & 0x3);
@@ -215,5 +191,4 @@ ostream& operator <<(ostream &os, TritSet& c) {
 	}
 
 	return os;
-
 }

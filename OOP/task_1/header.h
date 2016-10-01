@@ -28,22 +28,17 @@ class TritSet {
 public:
 
 	TritSet(unsigned int);
-
 	TritSet(TritSet&);
-
 	~TritSet();
+	void operator=(TritSet&);
 	TritSet& flip();
 	TritSet operator~();
-	void operator=(TritSet&);
 	void operator&(TritSet&);
 	void operator|(TritSet&);
-
 	Reference operator[](int);
-
 	unsigned int capacity();
-
+	
 	friend ostream& operator <<(ostream &, TritSet&);
-
 };
 
 #endif
