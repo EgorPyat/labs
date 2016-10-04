@@ -1,7 +1,7 @@
 #include "header.h"
 int main() {
 	TritSet a(1000);
-	a[23] = 23;
+	// a[23] = 23;
 	a[0] = False;
 	a[1] = True;
 	a[2] = a[1];
@@ -14,9 +14,9 @@ int main() {
 
 	a[998] = False;
 	a[999] = False;
-	 //a[1000] = Unknown;
-	 //a[1000] = True;
-
+	a[1000] = True;
+	// a[2000] = True;
+	//  cout << "sd " << a[2000] << endl;
 	cout << a[0] << endl;
 	cout << a[1] << endl;
 	cout << a[21] << endl;
@@ -60,7 +60,7 @@ int main() {
 	// cout << (a[1] == 2) << endl;
 	// cout << c << endl;
 	//cout << (a[0]==b[102]);
-	TritSet d = a|b;
+	TritSet d = a&b;
 	cout << d << endl;
 
 	getchar();

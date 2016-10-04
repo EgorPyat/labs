@@ -11,23 +11,26 @@ using namespace std;
 
 enum Trit { Unknown, False, True };
 
-class Reference {
-	unsigned int *mpt;
-	size_t pos;
-public:
-	Reference(unsigned int&, size_t);
-	~Reference();
-	void operator=(unsigned int);
-	void operator=(Reference&);
-	bool operator==(int);
-	operator int() const;
-};
-
 class TritSet {
 	unsigned int real_capa;
 	unsigned int user_capa;
 	unsigned int *capa;
+	unsigned int last_val;
+	unsigned int last_ind;
 public:
+	class Reference {
+		unsigned int *mpt;
+		size_t pos;
+		TritSet* tr;
+	public:
+		Reference(TritSet&, unsigned int&, size_t);
+		~Reference();
+		void operator=(unsigned int);
+		void operator=(Reference&);
+		bool operator==(int);
+		operator int() const;
+	};
+
 	TritSet(unsigned int);
 	TritSet(const TritSet&);
 	~TritSet();

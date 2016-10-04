@@ -14,7 +14,8 @@ TritSet::TritSet(unsigned int V) {
 		real_capa = size*sizeof(unsigned int) * 8 / 2;
 	}
 	this->real_capa = real_capa;
-	this->capa = new unsigned int[size];
+	// this->capa = new unsigned int[size];
+	this->capa = (unsigned int*)malloc(size*sizeof(unsigned int));
 	memset(this->capa, 0, 2 * real_capa / 8);
 }
 
@@ -36,7 +37,8 @@ TritSet::TritSet(const TritSet& th) {
 
 TritSet::~TritSet() {
 
-	delete[] capa;
+	//delete[] capa;
+	free(capa);
 	capa = NULL;
 }
 
@@ -45,16 +47,21 @@ unsigned int TritSet::capacity() {
 	return this->user_capa;
 }
 
-Reference TritSet::operator[](int n) {
+TritSet::Reference TritSet::operator[](int n) {
 	if (n >= this->user_capa) {
-		cout << "Out of limits!" << endl;
-		exit(MEM_ERR);
+		this->real_capa = n;
+		// cout << "Out of limits!" << endl;
+		// exit(MEM_ERR);
+		size_t ind = 2 * n / 8 / sizeof(unsigned int);
+		size_t b_ind = n - ind * 8 * sizeof(unsigned int) / 2;
+		cout << "something" << endl;
+
+	return Reference(*this, this->capa[0], b_ind);
 	}
 
 	size_t ind = 2 * n / 8 / sizeof(unsigned int);
 	size_t b_ind = n - ind * 8 * sizeof(unsigned int) / 2;
-
-	return Reference(this->capa[ind], b_ind);
+	return Reference(*this, this->capa[ind], b_ind);
 }
 
 void TritSet::operator=(const TritSet& th) {
@@ -65,21 +72,10 @@ void TritSet::operator=(const TritSet& th) {
 
 	size = 2 * real_capa / 8 / sizeof(unsigned int);
 
-	this->capa = new unsigned int[size];
-
+	//this->capa = new unsigned int[size];
+	this->capa = (unsigned int*)malloc(size*sizeof(unsigned int));
 	for (i = 0; i< size; i++) {
 		capa[i] = th.capa[i];
-	}
-}
-
-bool Reference::operator==(int n) {
-	int x = (*this->mpt >> (sizeof(unsigned int) * 8 - ((this->pos) + 1) * 2)) & 0x3;
-
-	if (x == n) {
-		return 1;
-	}
-	else {
-		return 0;
 	}
 }
 
@@ -179,42 +175,6 @@ TritSet TritSet::operator|(TritSet& a) {
 	}
 
 	return b;
-}
-
-Reference::Reference(unsigned int& a, size_t p) {
-	this->mpt = &a;
-	this->pos = p;
-}
-
-Reference::~Reference() {};
-
-void Reference::operator=(unsigned int x) {
-	unsigned int s = 0;
-	unsigned int t = 0;
-	s = ~s;
-	if (x > 2) {
-		cout << "Can't write! " << endl;
-		return;
-	}
-	unsigned int l = (8 * sizeof(unsigned int) - (((this->pos) + 1) * 2));
-	s <<= l;
-	s <<= 2;
-	t = ~s;
-	t >>= 2;
-	s |= t;
-	*this->mpt &= s;
-	*this->mpt |= x << l;
-}
-
-void Reference::operator=(Reference& rf) {
-	unsigned int t;
-	t = rf;
-	*this = t;
-}
-
-Reference::operator int() const {
-
-	return (*this->mpt >> (sizeof(unsigned int) * 8 - ((this->pos) + 1) * 2)) & 0x3;
 }
 
 ostream& operator <<(ostream &os, TritSet& c) {
