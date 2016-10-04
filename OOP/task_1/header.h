@@ -2,8 +2,10 @@
 #define TRIT
 #define MEM_ERR 1
 #include <iostream>
-#include <cstdlib>
-#include <ostream>
+#include <cstdlib> //for errors
+#include <ostream> //for output overload
+#include <cstring> //for memset()
+#include <cstdio> //for getchar()
 
 using namespace std;
 
@@ -25,20 +27,18 @@ class TritSet {
 	unsigned int real_capa;
 	unsigned int user_capa;
 	unsigned int *capa;
-
 public:
-
 	TritSet(unsigned int);
-	TritSet(TritSet&);
+	TritSet(const TritSet&);
 	~TritSet();
-	void operator=(TritSet&);
+	void operator=(const TritSet&);
 	TritSet& flip();
 	TritSet operator~();
 	TritSet operator&(TritSet&);
 	void operator|(TritSet&);
 	Reference operator[](int);
 	unsigned int capacity();
-	
+
 	friend ostream& operator <<(ostream &, TritSet&);
 };
 

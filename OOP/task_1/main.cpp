@@ -16,7 +16,7 @@ int main() {
 	a[999] = False;
 	 //a[1000] = Unknown;
 	 //a[1000] = True;
-	
+
 	cout << a[0] << endl;
 	cout << a[1] << endl;
 	cout << a[21] << endl;
@@ -42,7 +42,7 @@ int main() {
 	cout << "y:" << y << endl;
 	cout << "b:" << b << endl;
 	//b = ~a;
-	
+
 	// a.flip();
 	// cout << b << endl;
 	// b[100] = True;
@@ -63,6 +63,7 @@ int main() {
 	TritSet d(1000);
 	d = a&b;
 	cout << d << endl;
+
 	getchar();
 	return 0;
 }

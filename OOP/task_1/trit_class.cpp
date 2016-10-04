@@ -1,4 +1,5 @@
 #include "header.h"
+
 TritSet::TritSet(unsigned int V) {
 	int size;
 	int real_capa;
@@ -17,7 +18,7 @@ TritSet::TritSet(unsigned int V) {
 	memset(this->capa, 0, 2 * real_capa / 8);
 }
 
-TritSet::TritSet(TritSet& th) {
+TritSet::TritSet(const TritSet& th) {
 	int i;
 	int size;
 
@@ -55,7 +56,8 @@ Reference TritSet::operator[](int n) {
 
 	return Reference(this->capa[ind], b_ind);
 }
-void TritSet::operator=(TritSet& th) {
+
+void TritSet::operator=(const TritSet& th) {
 	int i;
 	int size;
 	this->real_capa = th.real_capa;
@@ -120,20 +122,20 @@ TritSet& TritSet::flip() {
 			}
 		}
 	}
+
 	return *this;
 }
 
 TritSet TritSet::operator~() {
 
 	return TritSet(*this).flip();
-
 }
 
 TritSet TritSet::operator&(TritSet& a) {
 	unsigned int i;
 	TritSet b = *this;
 	for (i = 0; i < this->user_capa; i++) {
-		
+
 		if ((b[i] == False) || (a[i] == False)) {
 			b[i] = False;
 		}
