@@ -156,8 +156,29 @@ TritSet TritSet::operator&(TritSet& a) {
 	return b;
 }
 
-void TritSet::operator|(TritSet& b) {
-	cout << "dsd" << endl;
+TritSet TritSet::operator|(TritSet& a) {
+	unsigned int i;
+	TritSet b = *this;
+	for (i = 0; i < this->user_capa; i++) {
+
+		if ((b[i] == False) && (a[i] == False)) {
+			continue;
+		}
+		else if ((b[i] == True) || (a[i] == True)) {
+			b[i] = True;
+		}
+		else if ((b[i] == Unknown) && (a[i] == Unknown)) {
+			continue;
+		}
+		else if ((b[i] == Unknown) && (a[i] == False)) {
+			continue;
+		}
+		else if ((b[i] == False) && (a[i] == Unknown)) {
+			b[i] = Unknown;
+		}
+	}
+
+	return b;
 }
 
 Reference::Reference(unsigned int& a, size_t p) {

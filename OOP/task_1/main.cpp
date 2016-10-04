@@ -60,8 +60,7 @@ int main() {
 	// cout << (a[1] == 2) << endl;
 	// cout << c << endl;
 	//cout << (a[0]==b[102]);
-	TritSet d(1000);
-	d = a&b;
+	TritSet d = a|b;
 	cout << d << endl;
 
 	getchar();

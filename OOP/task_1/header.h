@@ -2,10 +2,10 @@
 #define TRIT
 #define MEM_ERR 1
 #include <iostream>
-#include <cstdlib> //for errors
-#include <ostream> //for output overload
-#include <cstring> //for memset()
-#include <cstdio> //for getchar()
+#include <cstdlib> //errors
+#include <ostream> //output overload
+#include <cstring> //memset()
+#include <cstdio> //getchar()
 
 using namespace std;
 
@@ -35,10 +35,25 @@ public:
 	TritSet& flip();
 	TritSet operator~();
 	TritSet operator&(TritSet&);
-	void operator|(TritSet&);
+	TritSet operator|(TritSet&);
 	Reference operator[](int);
 	unsigned int capacity();
 
+	//освобождение памяти до начального значения или
+	//до значения необходимого для хранения последнего установленного трита
+	void shrink();
+
+	// забыть содержимое от lastIndex и дальше
+	void trim(size_t);
+	// logical length - индекс последнего не Unknown трита +1
+	size_t length();
+
+	//число установленных в данное значение тритов
+	//для трита Unknown - число значение Unknown до последнего установленного трита
+	size_t cardinality(Trit);
+
+	//аналогично но сразу для всех типов тритов
+	// unordered_map< Trit, int, std::hash<int> > cardinality();
 	friend ostream& operator <<(ostream &, TritSet&);
 };
 
