@@ -48,15 +48,19 @@ unsigned int TritSet::capacity() {
 }
 
 TritSet::Reference TritSet::operator[](int n) {
-	if (n >= this->user_capa) {
+	if ((n >= this->user_capa) && (n < this->real_capa)) {
+		cout << "n: " << n << endl;
 		this->real_capa = n;
-		// cout << "Out of limits!" << endl;
-		// exit(MEM_ERR);
-		size_t ind = 2 * n / 8 / sizeof(unsigned int);
-		size_t b_ind = n - ind * 8 * sizeof(unsigned int) / 2;
+		cout << "r: " << this->real_capa << endl;
+	}
+	else if (n >= this->real_capa) {
 		cout << "something" << endl;
-
-	return Reference(*this, this->capa[0], b_ind);
+		cout << "n: " << n << endl;
+		this->real_capa = n;
+		size_t ind = 2 * n / 8 / sizeof(unsigned int); 
+		
+		size_t b_ind = n - ind * 8 * sizeof(unsigned int) / 2;
+		return Reference(*this, this->capa[ind], b_ind);
 	}
 
 	size_t ind = 2 * n / 8 / sizeof(unsigned int);

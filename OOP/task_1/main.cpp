@@ -14,10 +14,13 @@ int main() {
 
 	a[998] = False;
 	a[999] = False;
-	a[1000] = True;
-	// a[2000] = True;
+	//a[1000] = True;
+	a[1005] = True;
+	//cout << a[1007] << endl;
+	a[1008] = True;
+	a[2000] = Unknown;
 	//  cout << "sd " << a[2000] << endl;
-	cout << a[0] << endl;
+	cout << "s" << a[0] << endl;
 	cout << a[1] << endl;
 	cout << a[21] << endl;
 	cout << a[33] << endl;

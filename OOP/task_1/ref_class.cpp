@@ -10,31 +10,59 @@ TritSet::Reference::~Reference() {};
 
 /*Work here*/
 void TritSet::Reference::operator=(unsigned int x) {
-	int size;
-	int real_capa;
-
-	size = 2 * this->tr->user_capa / 8 / sizeof(unsigned int);
+	unsigned int size;
+	unsigned int real_capa;
+	unsigned int user_capa;
+	cout << this->tr->real_capa << endl;
+	user_capa = this->tr->user_capa;
+	
+	size = 2 * user_capa / 8 / sizeof(unsigned int);
 	real_capa = size*sizeof(unsigned int) * 8 / 2;
 
-	if (real_capa < this->tr->user_capa) {
+	if (real_capa < user_capa) {
 		size++;
-		real_capa = size*sizeof(unsigned int) * 8 / 2;
+		real_capa = size*sizeof(unsigned int) * 8 / 2;// ïî user_capa âîññòàíàâëèâàåòñÿ ïðîøëàÿ real_capa
 	}
-	if ((this->tr->real_capa >= this->tr->user_capa) && (this->tr->real_capa != real_capa)){
-		cout << this->tr->real_capa << endl;
-		if (this->tr->real_capa > real_capa){
-			cout << "hi" << endl;
+	cout << "u: " << user_capa << endl;
+	if ((this->tr->real_capa >= user_capa) && (this->tr->real_capa < real_capa)) {
+		cout << "x: " << x << endl;
+		if (x == Unknown) {
 			this->tr->real_capa = real_capa;
 			return;
-		}else {
-			// if (this->tr->user_capa < (this->tr->real_capa + 1)){
-			//
-			// 	this->tr->user_capa = this->tr->real_capa + 1;
-			// }
-			this->tr->real_capa = real_capa;
+		}
+		else {
+			this->tr->user_capa = this->tr->real_capa + 1;
+			cout << this->tr->user_capa << endl;
 		}
 	}
-	//ÐžÑ€Ð³Ð°Ð½Ð¸Ð·Ð¾Ð²Ð°Ñ‚ÑŒ Ð²Ñ‹Ð´ÐµÐ»ÐµÐ½Ð¸Ðµ Ð¿Ð°Ð¼ÑÑ‚Ð¸
+	else if (((this->tr->real_capa + 1) > real_capa) && ((this->mpt) >= &this->tr->capa[size])) {
+		if (x == Unknown) {
+			cout << "no" << endl;
+			cout << real_capa << endl;
+			cout << this->tr->real_capa << endl;
+			this->tr->real_capa = real_capa;
+			return;
+		}
+		else if(x != Unknown){
+			cout << "yes" << endl;
+			this->tr->real_capa = real_capa;
+			return;
+		}
+	}
+
+	this->tr->real_capa = real_capa;
+	/*if((this->tr->real_capa) < (user_capa)){
+		cout << "m" << endl;
+		(this->tr->real_capa) = real_capa;
+	}*/
+	//else if (this->tr->real_capa > real_capa) {
+	//	cout << (this->tr->real_capa) << "dds" << endl;
+	//	if ((this->tr->real_capa) > real_capa) {
+	//		cout << "hi" << endl;
+	//		(this->tr->real_capa) = real_capa;
+	//		return;
+	//	}
+	//}
 
 	unsigned int s = 0;
 	unsigned int t = 0;
