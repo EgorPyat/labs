@@ -252,6 +252,21 @@ size_t TritSet::cardinality(Trit V){
 	return count;
 }
 
+unordered_map<Trit, int, hash<int> > TritSet::cardinality(){
+
+	unordered_map<Trit, int, hash<int> > map = {
+		{Unknown, 0},
+		{False, 0},
+		{True, 0}
+	};
+	
+	map[Unknown] = this->cardinality(Unknown);
+	map[False] = this->cardinality(False);
+	map[True] = this->cardinality(True);
+
+	return map;
+}
+
 ostream& operator <<(ostream &os, TritSet& c) {
 	unsigned int size;
 	unsigned int i;

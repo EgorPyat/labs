@@ -6,6 +6,7 @@
 #include <ostream> //output overload
 #include <cstring> //memset()
 #include <cstdio> //getchar()
+#include <unordered_map>
 
 using namespace std;
 
@@ -45,9 +46,8 @@ public:
 	void trim(size_t);
 	size_t length();
 	size_t cardinality(Trit);
+	unordered_map<Trit, int, hash<int>> cardinality();
 
-	//àíàëîãè÷íî íî ñðàçó äëÿ âñåõ òèïîâ òðèòîâ
-	// unordered_map< Trit, int, std::hash<int> > cardinality();
 	friend ostream& operator <<(ostream &, TritSet&);
 };
 
