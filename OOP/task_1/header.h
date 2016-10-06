@@ -42,14 +42,8 @@ public:
 	Reference operator[](int);
 	unsigned int capacity();
 	void shrink();
-
-	// çàáûòü ñîäåðæèìîå îò lastIndex è äàëüøå
 	void trim(size_t);
-	// logical length - èíäåêñ ïîñëåäíåãî íå Unknown òðèòà +1
 	size_t length();
-
-	//÷èñëî óñòàíîâëåííûõ â äàííîå çíà÷åíèå òðèòîâ
-	//äëÿ òðèòà Unknown - ÷èñëî çíà÷åíèå Unknown äî ïîñëåäíåãî óñòàíîâëåííîãî òðèòà
 	size_t cardinality(Trit);
 
 	//àíàëîãè÷íî íî ñðàçó äëÿ âñåõ òèïîâ òðèòîâ

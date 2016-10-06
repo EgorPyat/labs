@@ -198,6 +198,7 @@ void TritSet::shrink(){
 	unsigned int size;
 	unsigned int* cp;
 	unsigned int r_c;
+	unsigned int s;
 
 	size = (this->last_ind + 1)*2/8/sizeof(unsigned int);
 	r_c = size*8*sizeof(unsigned int)/2;
@@ -212,6 +213,43 @@ void TritSet::shrink(){
 	this->capa = cp;
 	this->real_capa = r_c;
 	this->user_capa = this->last_ind + 1;
+	s = 0;
+	s = ~s;
+	s >>= (this->last_ind + 1)*2;
+	s = ~s;
+	this->capa[--size] &= s;
+}
+
+void TritSet::trim(size_t last){
+	this->last_ind = last;
+	this->shrink();
+}
+
+size_t TritSet::length(){
+	unsigned int i;
+	unsigned int j;
+
+	for(i = 0; i < this->user_capa; i++){
+		if((this->operator[](i)).operator==(0)){
+			continue;
+		}
+		else{
+			j = i;
+		}
+	}
+	return (j + 1);
+}
+
+size_t TritSet::cardinality(Trit V){
+	unsigned int i;
+	unsigned int count = 0;
+
+	for(i = 0; i < this->user_capa; i++){
+		if((this->operator[](i)).operator==(V)){
+			count++;
+		}
+	}
+	return count;
 }
 
 ostream& operator <<(ostream &os, TritSet& c) {

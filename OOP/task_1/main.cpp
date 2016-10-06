@@ -79,6 +79,16 @@ int main() {
 	a = ~b;
 	cout << a << " " << a.capacity() << endl;
 	a[5] = 100;
+	a.trim(2);
+	cout << a << " " << a.capacity() << endl;
+	cout << "c: " << a.cardinality(False) << endl;
+	// a[0] = 0;
+	// a[1] = 0;
+	// a[2] = 0;
+	a[1000] = 2;
+	// a[1000] = 0;
+	cout << a << " " << a.capacity() << endl;
 	getchar();
+	cout << "l: " << a.length() << endl;
 	return 0;
 }
