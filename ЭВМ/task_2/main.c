@@ -2,9 +2,6 @@
 
 int main(int argc, char *argv[]) {
   struct timespec start, end;
-
-  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-
   double ex;
   double n;
   double x;
@@ -19,15 +16,17 @@ int main(int argc, char *argv[]) {
       return BAD_ARGS;
     }
 
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+
     ex = calc_ex(n, x);
+
+    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+
+    printf("Time taken: %.10lf sec.\n",end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
 
     printf("e^x = %.10f\n", ex);
 
   } else printf("Bad arguments");
-
-  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-
-  printf("Time taken: %.10lf sec.\n",end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
 
   return 0;
 }
