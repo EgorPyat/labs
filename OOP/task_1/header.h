@@ -7,6 +7,7 @@
 #include <cstring> //memset()
 #include <cstdio> //getchar()
 #include <unordered_map>
+#include <gtest/gtest.h>
 
 using namespace std;
 
