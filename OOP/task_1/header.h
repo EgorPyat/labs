@@ -17,7 +17,6 @@ class TritSet {
 	unsigned int real_capa;
 	unsigned int user_capa;
 	unsigned int *capa;
-	unsigned int last_val;
 	unsigned int last_ind;
 public:
 	class Reference {

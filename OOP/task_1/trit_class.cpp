@@ -70,6 +70,7 @@ void TritSet::operator=(const TritSet& th) {
 	int size;
 	this->real_capa = th.real_capa;
 	this->user_capa = th.user_capa;
+	this->last_ind = th.user_capa - 1;
 	size = 2 * real_capa / 8 / sizeof(unsigned int);
 	this->capa = new unsigned int[size];
 	for (i = 0; i< size; i++) {
@@ -259,7 +260,7 @@ unordered_map<Trit, int, hash<int> > TritSet::cardinality(){
 		{False, 0},
 		{True, 0}
 	};
-	
+
 	map[Unknown] = this->cardinality(Unknown);
 	map[False] = this->cardinality(False);
 	map[True] = this->cardinality(True);
