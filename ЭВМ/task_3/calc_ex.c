@@ -1,4 +1,5 @@
 #include "header.h"
+
 double calc_ex(double n, double x) {
 
   double ex = 1;
