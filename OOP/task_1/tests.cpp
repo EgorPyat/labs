@@ -35,3 +35,28 @@ TEST(TritTest, LengthTest){
   d[56] = False;
   EXPECT_EQ(57, d.length());
 }
+
+TEST(TritSet, EqualTest){
+  TritSet f(18);
+  f[0] = True;
+  f[4] = True;
+  f[5] = False;
+  f[11] = False;
+  EXPECT_EQ(1, f[5] == f[11]);
+  EXPECT_EQ(1, f[5] == False);
+  EXPECT_EQ(1, f[0] == f[4]);
+  EXPECT_EQ(1, f[17] == Unknown);
+  EXPECT_EQ(0, f[0] == f[11]);
+  EXPECT_EQ(0, f[2] == f[5]);
+  EXPECT_EQ(0, f[10] == f[4]);
+  EXPECT_EQ(0, f[7] == True);
+}
+
+TEST(TritTest, OpIntTest){
+  TritSet u(23);
+  u[7] = True;
+  u[17] = False;
+  EXPECT_EQ(True, u[7]);
+  EXPECT_EQ(False, u[17]);
+  EXPECT_EQ(Unknown, u[22]);
+}
