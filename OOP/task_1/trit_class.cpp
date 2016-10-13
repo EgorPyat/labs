@@ -30,7 +30,7 @@ TritSet::TritSet(const TritSet& th) {
 
 	capa = new unsigned int[size];
 
-	for (i = 0; i< size; i++) {
+	for (i = 0; i < size; i++) {
 		capa[i] = th.capa[i];
 	}
 }
@@ -73,7 +73,7 @@ void TritSet::operator=(const TritSet& th) {
 	this->last_ind = th.user_capa - 1;
 	size = 2 * real_capa / 8 / sizeof(unsigned int);
 	this->capa = new unsigned int[size];
-	for (i = 0; i< size; i++) {
+	for (i = 0; i < size; i++) {
 		capa[i] = th.capa[i];
 	}
 }
@@ -228,7 +228,7 @@ void TritSet::trim(size_t last){
 
 size_t TritSet::length(){
 	unsigned int i;
-	unsigned int j;
+	unsigned int j = -1;
 
 	for(i = 0; i < this->user_capa; i++){
 		if((this->operator[](i)).operator==(0)){
