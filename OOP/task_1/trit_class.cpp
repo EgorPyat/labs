@@ -161,6 +161,14 @@ TritSet TritSet::operator&(TritSet& a) {
 	return b;
 }
 
+void TritSet::operator&=(TritSet& a){
+	*this = *this & a;
+}
+
+void TritSet::operator|=(TritSet&a){
+	*this = *this | a;
+}
+
 TritSet TritSet::operator|(TritSet& a) {
 	unsigned int i;
 	unsigned int u_c;

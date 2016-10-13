@@ -40,6 +40,8 @@ public:
 	TritSet operator~();
 	TritSet operator&(TritSet&);
 	TritSet operator|(TritSet&);
+	void operator&=(TritSet&);
+	void operator|=(TritSet&);
 	Reference operator[](int);
 	unsigned int capacity();
 	void shrink();
