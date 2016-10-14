@@ -16,20 +16,20 @@ main:
 	.cfi_def_cfa_offset 16
 	.cfi_offset 6, -16
 	movq	%rsp, %rbp
-	.cfi_def_cfa_register 6
+	.cfi_def_cfa_register 6 //modifes a rule for computing CFA. From now on register will be used instead of the old one. Offset remains the same.
 	subq	$64, %rsp
-	movl	%edi, -36(%rbp)
-	movq	%rsi, -48(%rbp)
-	cmpl	$3, -36(%rbp)
+	movl	%edi, -36(%rbp) # argc, argc
+	movq	%rsi, -48(%rbp) # argv, argv
+	cmpl	$3, -36(%rbp) //сравнение #, argc
 	jne	.L2
-	movq	-48(%rbp), %rax
+	movq	-48(%rbp), %rax # argv, tmp93
 	addq	$8, %rax
 	movq	(%rax), %rax
 	movq	%rax, %rdi
 	call	atof
 	movq	%xmm0, %rax
 	movq	%rax, -24(%rbp)
-	movq	-48(%rbp), %rax
+	movq	-48(%rbp), %rax # argv, tmp95
 	addq	$16, %rax
 	movq	(%rax), %rax
 	movq	%rax, %rdi
@@ -37,7 +37,7 @@ main:
 	movq	%xmm0, %rax
 	movq	%rax, -16(%rbp)
 	pxor	%xmm0, %xmm0
-	ucomisd	-24(%rbp), %xmm0
+	ucomisd	-24(%rbp), %xmm0 # n, tmp97
 	jb	.L8
 	movl	$.LC1, %edi
 	movl	$0, %eax
@@ -45,15 +45,15 @@ main:
 	movl	$1, %eax
 	jmp	.L5
 .L8:
-	movsd	-16(%rbp), %xmm0
-	movq	-24(%rbp), %rax
+	movsd	-16(%rbp), %xmm0 # x, tmp98
+	movq	-24(%rbp), %rax # n, tmp99
 	movapd	%xmm0, %xmm1
 	movq	%rax, -56(%rbp)
 	movsd	-56(%rbp), %xmm0
-	call	calc_ex
+	call	calc_ex 					//вызов calc
 	movq	%xmm0, %rax
 	movq	%rax, -8(%rbp)
-	movq	-8(%rbp), %rax
+	movq	-8(%rbp), %rax # ex, tmp101
 	movq	%rax, -56(%rbp)
 	movsd	-56(%rbp), %xmm0
 	movl	$.LC2, %edi
@@ -67,8 +67,8 @@ main:
 .L6:
 	movl	$0, %eax
 .L5:
-	leave
-	.cfi_def_cfa 7, 8
+	leave // destroys a stack frame
+	.cfi_def_cfa 7, 8 // defines a rule for computing CFA as: take address from register and add offset to it.
 	ret
 	.cfi_endproc
 .LFE2:
