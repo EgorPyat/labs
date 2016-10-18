@@ -41,9 +41,19 @@ TritSet::~TritSet() {
 	capa = NULL;
 }
 
-unsigned int TritSet::capacity() {
+unsigned int TritSet::capacity() const {
 
 	return this->user_capa;
+}
+
+unsigned int TritSet::operator[](int n) const{
+	if(this->user_capa <= n) {
+		// cout << "Out of range" << endl;
+		return 3;
+	}
+	size_t ind = 2 * n / 8 / sizeof(unsigned int);
+	size_t b_ind = n - ind * 8 * sizeof(unsigned int) / 2;
+	return (this->capa[ind] >> (sizeof(unsigned int) * 8 - ((b_ind) + 1) * 2)) & 0x3;;
 }
 
 TritSet::Reference TritSet::operator[](int n) {
@@ -122,12 +132,12 @@ TritSet& TritSet::flip() {
 	return *this;
 }
 
-TritSet TritSet::operator~() {
+TritSet TritSet::operator~() const{
 
 	return TritSet(*this).flip();
 }
 
-TritSet TritSet::operator&(TritSet& a) {
+TritSet TritSet::operator&(const TritSet& a) const{
 	unsigned int i;
 	unsigned int u_c;
 
@@ -161,15 +171,15 @@ TritSet TritSet::operator&(TritSet& a) {
 	return b;
 }
 
-void TritSet::operator&=(TritSet& a){
+void TritSet::operator&=(const TritSet& a){
 	*this = *this & a;
 }
 
-void TritSet::operator|=(TritSet&a){
+void TritSet::operator|=(const TritSet&a){
 	*this = *this | a;
 }
 
-TritSet TritSet::operator|(TritSet& a) {
+TritSet TritSet::operator|(const TritSet& a) const{
 	unsigned int i;
 	unsigned int u_c;
 
@@ -234,12 +244,12 @@ void TritSet::trim(size_t last){
 	this->shrink();
 }
 
-size_t TritSet::length(){
+size_t TritSet::length() const{
 	unsigned int i;
 	unsigned int j = -1;
 
 	for(i = 0; i < this->user_capa; i++){
-		if((this->operator[](i)).operator==(0)){
+		if((this->operator[](i)) == 0){
 			continue;
 		}
 		else{
@@ -249,19 +259,19 @@ size_t TritSet::length(){
 	return (j + 1);
 }
 
-size_t TritSet::cardinality(Trit V){
+size_t TritSet::cardinality(Trit V) const{
 	unsigned int i;
 	unsigned int count = 0;
 
 	for(i = 0; i < this->user_capa; i++){
-		if((this->operator[](i)).operator==(V)){
+		if((this->operator[](i)) == V){
 			count++;
 		}
 	}
 	return count;
 }
 
-unordered_map<Trit, int, hash<int> > TritSet::cardinality(){
+unordered_map<Trit, int, hash<int> > TritSet::cardinality() const{
 
 	unordered_map<Trit, int, hash<int> > map = {
 		{Unknown, 0},
@@ -276,7 +286,23 @@ unordered_map<Trit, int, hash<int> > TritSet::cardinality(){
 	return map;
 }
 
-ostream& operator <<(ostream &os, TritSet& c) {
+TritSet::Triterator TritSet::begin(){
+	return Triterator(*this, 0);
+}
+
+TritSet::Triterator TritSet::end(){
+	return Triterator(*this, (this->user_capa));
+}
+
+TritSet::const_Triterator TritSet::begin() const{
+	return const_Triterator(*this, 0);
+}
+
+TritSet::const_Triterator TritSet::end() const{
+	return const_Triterator(*this, (this->user_capa));
+}
+
+ostream& operator <<(ostream &os, const TritSet& c){
 	unsigned int size;
 	unsigned int i;
 	unsigned int j;
