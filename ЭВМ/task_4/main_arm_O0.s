@@ -34,7 +34,7 @@ main:
 	str	r0, [fp, #-32]
 	str	r1, [fp, #-36]
 	ldr	r3, [fp, #-32]
-	cmp	r3, #3
+	cmp	r3, #3 // n == 3
 	bne	.L2
 	ldr	r3, [fp, #-36]
 	add	r3, r3, #4

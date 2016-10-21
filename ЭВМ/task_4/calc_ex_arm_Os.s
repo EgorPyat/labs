@@ -30,7 +30,7 @@ calc_ex:
 	mov	r1, r3
 	mov	r2, #0
 	mov	r3, #0
-	bl	__aeabi_dcmpeq
+	bl	__aeabi_dcmpeq // x != 0
 	cmp	r0, #0
 	bne	.L8
 	ldr	r5, .L9
@@ -40,7 +40,7 @@ calc_ex:
 	mov	r6, r4
 	mov	r7, r5
 	b	.L4
-.L5:
+.L5: //цикл
 	mov	r2, r8
 	mov	r3, r9
 	mov	r0, sl
@@ -67,7 +67,7 @@ calc_ex:
 	bl	__aeabi_dadd
 	mov	r8, r0
 	mov	r9, r1
-.L4:
+.L4: //проверка условий для перехода в цикл
 	mov	r0, r8
 	mov	r1, r9
 	ldmia	sp, {r2-r3}

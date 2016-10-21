@@ -107,7 +107,7 @@ calc_ex:
 	mov	r0, r3
 	mov	r1, r4
 	sub	sp, fp, #8
-	ldmfd	sp!, {r4, fp, pc} //Pop work registers and pc / выход из функции / результат в fp
+	ldmfd	sp!, {r4, fp, pc} //Pop work registers and pc / выход из функции
 .L12:
 	.align	2
 .L11:

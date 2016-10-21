@@ -2,7 +2,7 @@
 
 int main(int argc, char *argv[]) {
   double ex;
-  double n; 
+  double n;
   double x;
 
   if (argc == 3 ) {
