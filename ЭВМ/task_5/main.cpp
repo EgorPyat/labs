@@ -3,7 +3,6 @@
 #include <cmath>
 #include <time.h>
 
-using namespace cv;
 using namespace std;
 
 int main(int argc, char** argv )
