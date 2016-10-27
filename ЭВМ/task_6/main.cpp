@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sensors/sensors.h>
 using namespace std;
+
 int main() {
   int l = 0;
   int k = 0;
