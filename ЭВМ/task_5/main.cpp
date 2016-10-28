@@ -8,12 +8,10 @@ using namespace std;
 int main(int argc, char** argv )
 {
   struct timespec start, end;
-
   double t = 1;
+
   CvCapture *capture = cvCreateCameraCapture(0);
-
   if(!capture) return 0;
-
 
   while(1){
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
@@ -76,10 +74,10 @@ int main(int argc, char** argv )
 
     char c = cvWaitKey(33);
 
+    if(c == 27) break;
+
     double fi = clock();
     clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-
-    if(c == 27) break;
 
     cout \
     << "All time: " << (end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec)) << "\n" \
@@ -87,11 +85,10 @@ int main(int argc, char** argv )
     << "FPS: ~" << t/(end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec)) << "\n" \
     << "Part: "<< ((end.tv_sec-start.tv_sec + 0.000000001*(end.tv_nsec-start.tv_nsec)) - ((fi - st) / CLOCKS_PER_SEC))/(end.tv_sec-start.tv_sec + 0.000000001*(end.tv_nsec-start.tv_nsec)) \
     * 100 << "%"<< endl << endl;
-
   }
-
   cvReleaseCapture(&capture);
-  cvDestroyWindow("test");
+  cvDestroyWindow("test1");
+  cvDestroyWindow("test2");
 
   return 0;
 }
