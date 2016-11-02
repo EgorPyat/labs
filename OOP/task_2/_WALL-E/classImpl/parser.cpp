@@ -1,4 +1,4 @@
-#include "../headers/parser.h"
+#include "../headers/node.h"
 
 AnyOption::AnyOption()
 {
@@ -1111,21 +1111,23 @@ AnyOption::addUsageError( const char *line )
 	exit(0);
 }
 
-void parse(int argc, char** argv){
+void parse(int argc, char** argv, ifstream& in, ifstream& rm, ofstream& out){
   AnyOption *opt = new AnyOption();
+	cout << string( 100, '\n' );
   /* 2. SET PREFERENCES  */
   //opt->noPOSIX(); /* do not check for POSIX style character options */
   //opt->setVerbose(); /* print warnings about unknown options */
   //opt->autoUsagePrint(true); /* print usage for bad options */
   /* 3. SET THE USAGE/HELP   */
-  opt->addUsage( " Use these options: " );
+  opt->addUsage( " Use these options (* are nessesary) : " );
 	opt->addUsage( " ______________________________________________________________________" );
 	opt->addUsage( "" );
-	opt->addUsage( " -h --help  		Prints this help " );
-  opt->addUsage( " -s --space 	        File with space definition " );
+	opt->addUsage( " -h --help  		Prints this help *" );
+  opt->addUsage( " -s --space 	        File with space definition *" );
+	opt->addUsage( " -r --robmap 		File with robot map configuration *");
   opt->addUsage( " -o --out  		Output file with route " );
-  opt->addUsage( " -l --limit   		Maximum route length " );
-  opt->addUsage( " -t --topology		Type of space (tor / cylinder / planar:default) " );
+  opt->addUsage( " -l --limit   		Maximum route length *" );
+  opt->addUsage( " -t --topology		Type of space (tor / cylinder / planar:default)" );
 	opt->addUsage( " ______________________________________________________________________" );
 	opt->addUsage( "" );
   /* 4. SET THE OPTION STRINGS/CHARACTERS */
@@ -1133,6 +1135,7 @@ void parse(int argc, char** argv){
   opt->setFlag( "help", 'h' );   /* a flag (takes no argument), supporting long and short form */
   opt->setOption( "space", 's' ); /* an option (takes an argument), supporting long and short form */
   opt->setOption( "out", 'o' ); /* an option (takes an argument), supporting only long form */
+	opt->setOption ("robmap", 'r');
 	opt->setOption( "limit", 'l');
 	opt->setOption( "topology", 't');
 	/* for options that will be checked only on the command and line not in option/resource file */
@@ -1151,16 +1154,35 @@ void parse(int argc, char** argv){
 		return;
 	}
   /* 6. GET THE VALUES */
-  if( opt->getFlag( 'h' ) || opt->getFlag( "help" ) )
+  if( opt->getFlag('h') || opt->getFlag("help") )
 		opt->printUsage();
 
-	if( opt->getValue( 's' ) != NULL  || opt->getValue( "space" ) != NULL  )
-  	cout << "space = " << opt->getValue( 's' ) << endl;
+	if(opt->getValue('s') != NULL  || opt->getValue("space") != NULL  ){
+  	try{
+			in.open(opt->getValue('s'));
+			if(!in) throw &in;
+		}
+		catch(ifstream*){
+			cout << "No such file: " << opt->getValue('s') << "!" << endl;
+			exit(1);
+		}
+	}
+
+	if(opt->getValue('r') != NULL  || opt->getValue("robmap") != NULL  ){
+  	try{
+			rm.open(opt->getValue('r'));
+			if(!rm) throw &rm;
+		}
+		catch(ifstream*){
+			cout << "No such file: " << opt->getValue('r') << "!" << endl;
+			exit(1);
+		}
+	}
 
 	if( opt->getValue( 'l' ) != NULL || opt->getValue( "limit") != NULL)
  	 	cout << "limit = " << opt->getValue( 'l' ) << endl;
 
-	if( opt->getValue( 't' ) != NULL || opt->getValue( "topology" ) != NULL)
+	if(opt->getValue( 't' ) != NULL || opt->getValue( "topology" ) != NULL)
 		cout << "topology = " << opt->getValue( 't' ) << endl;
 
 	if( opt->getValue( 'o' ) != NULL || opt->getValue( "out" ) != NULL)
@@ -1171,3 +1193,17 @@ void parse(int argc, char** argv){
 	// }
   delete opt;
 }
+// int size = 0;
+// vector<vector<unsigned char>> map;
+// string line;
+// for (int i = 0; getline(in, line); i++) {
+// 	map.push_back(vector<unsigned char> ());
+// 	size += line.size();
+// 	for (int j = 0; j <= line.size(); j++) {
+//   	map[i].push_back(line[j]);
+// 		cout << map[i][j];
+// 		if(j == line.size()) {
+// 			cout << '\n';
+// 	  }
+// 	}
+// }

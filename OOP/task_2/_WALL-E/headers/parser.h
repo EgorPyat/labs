@@ -30,7 +30,7 @@
 
 using namespace std;
 
-void parse(int, char**);
+void parse(int, char**, ifstream&, ifstream&, ofstream&);
 
 class AnyOption{
 

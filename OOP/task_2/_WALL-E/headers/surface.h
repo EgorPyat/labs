@@ -8,12 +8,12 @@ struct Point{
   uint y;
 };
 
-class  Surface{
+class Surface{
 public:
   /* Продвижение в новую соседнюю точку и возвращает расстояние до цели в новой точке */
-  virtual uint move(Point point) throw (BadMove) = 0;
+  virtual uint move(Point) throw (BadMove) = 0;
   /* Расстояние до цели для соседних  точек  в которые возможно перемещение */
-  virtual std::vector<tuple<Point, uint>> analyze() = 0;
+  // virtual void lookup() = 0;
 };
 
 #endif
