@@ -48,7 +48,16 @@ void Robot::step(){
           this->map[i][j] = -1;
           cout << map[i][j];
         }
-        else cout << (char)this->map[i][j] << ' ';
+        else {
+          int q = p.x;
+          int u = get<0>(this->F);
+          int l = p.y + 1;
+          int h = get<1>(this->F);
+          // cout << q - u << endl;
+          map[i][j] = abs(q - u) + abs(l - h);
+          cout << map[i][j];
+          //cout << (char)this->map[i][j] << ' ';
+        }
       }
       else if(i == (get<0>(this->S)) && j == (get<1>(this->S) - 1)){
         if (m[3] == '#'){

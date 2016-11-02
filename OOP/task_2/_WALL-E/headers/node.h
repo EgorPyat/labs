@@ -7,6 +7,7 @@
 #include <vector>
 #include <tuple>
 #include <unordered_map>
+#include <cmath>
 #include "../headers/parser.h"
 #include "../headers/surface.h"
 #include "../headers/map.h"
