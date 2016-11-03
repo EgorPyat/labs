@@ -27,11 +27,10 @@ TritSet::TritSet(const TritSet& th) {
 	last_ind = th.user_capa - 1;
 
 	size = 2 * real_capa / 8 / sizeof(unsigned int);
-
-	capa = new unsigned int[size];
+	this->capa = new unsigned int[size];
 
 	for (i = 0; i < size; i++) {
-		capa[i] = th.capa[i];
+		this->capa[i] = th.capa[i];
 	}
 }
 
@@ -82,6 +81,7 @@ void TritSet::operator=(const TritSet& th) {
 	this->user_capa = th.user_capa;
 	this->last_ind = th.user_capa - 1;
 	size = 2 * real_capa / 8 / sizeof(unsigned int);
+	delete[] this->capa;
 	this->capa = new unsigned int[size];
 	for (i = 0; i < size; i++) {
 		capa[i] = th.capa[i];
@@ -136,34 +136,34 @@ TritSet TritSet::operator~() const{
 
 	return TritSet(*this).flip();
 }
-//bug 
+
 TritSet TritSet::operator&(const TritSet& a) const{
 	unsigned int i;
 	unsigned int u_c;
 
-	TritSet b = *this;
-	u_c = a.capacity();
-
+	TritSet b(this->capacity());
+	u_c = this->capacity();
 	if(this->capacity() < a.capacity()){
-		TritSet b = a;
-		u_c = this->capacity();
+		TritSet f(a.capacity());
+		b = f;
+		u_c = a.capacity();
 	}
 
 	for (i = 0; i < u_c; i++) {
 
-		if ((b[i] == False) || (a[i] == False)) {
+		if ((this->operator[](i) == False) || (a[i] == False)) {
 			b[i] = False;
 		}
-		else if ((b[i] == True) && (a[i] == True)) {
+		else if ((this->operator[](i) == True) && (a[i] == True)) {
 			continue;
 		}
-		else if ((b[i] == Unknown) && (a[i] == Unknown)) {
+		else if ((this->operator[](i) == Unknown) && (a[i] == Unknown)) {
 			continue;
 		}
-		else if ((b[i] == Unknown) && (a[i] == True)) {
+		else if ((this->operator[](i) == Unknown) && (a[i] == True)) {
 			continue;
 		}
-		else if ((b[i] == True) && (a[i] == Unknown)) {
+		else if ((this->operator[](i) == True) && (a[i] == Unknown)) {
 			b[i] = Unknown;
 		}
 	}
@@ -178,34 +178,34 @@ void TritSet::operator&=(const TritSet& a){
 void TritSet::operator|=(const TritSet&a){
 	*this = *this | a;
 }
-//bug
+
 TritSet TritSet::operator|(const TritSet& a) const{
 	unsigned int i;
 	unsigned int u_c;
 
-	TritSet b = *this;
-	u_c = a.capacity();
-
+	TritSet b(this->capacity());
+	u_c = this->capacity();
 	if(this->capacity() < a.capacity()){
-		TritSet b = a;
-		u_c = this->capacity();
+		TritSet f(a.capacity());
+		b = f;
+		u_c = a.capacity();
 	}
 
 	for (i = 0; i < u_c; i++) {
 
-		if ((b[i] == False) && (a[i] == False)) {
+		if ((this->operator[](i) == False) && (a[i] == False)) {
 			continue;
 		}
-		else if ((b[i] == True) || (a[i] == True)) {
+		else if ((this->operator[](i) == True) || (a[i] == True)) {
 			b[i] = True;
 		}
-		else if ((b[i] == Unknown) && (a[i] == Unknown)) {
+		else if ((this->operator[](i) == Unknown) && (a[i] == Unknown)) {
 			continue;
 		}
-		else if ((b[i] == Unknown) && (a[i] == False)) {
+		else if ((this->operator[](i) == Unknown) && (a[i] == False)) {
 			continue;
 		}
-		else if ((b[i] == False) && (a[i] == Unknown)) {
+		else if ((this->operator[](i) == False) && (a[i] == Unknown)) {
 			b[i] = Unknown;
 		}
 	}
