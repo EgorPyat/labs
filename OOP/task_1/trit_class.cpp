@@ -136,7 +136,7 @@ TritSet TritSet::operator~() const{
 
 	return TritSet(*this).flip();
 }
-//bug
+//bug 
 TritSet TritSet::operator&(const TritSet& a) const{
 	unsigned int i;
 	unsigned int u_c;
