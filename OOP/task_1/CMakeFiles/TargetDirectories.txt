@@ -1,3 +1,0 @@
-/home/egor/Documents/programming/labs/OOP/task_1/CMakeFiles/edit_cache.dir
-/home/egor/Documents/programming/labs/OOP/task_1/CMakeFiles/rebuild_cache.dir
-/home/egor/Documents/programming/labs/OOP/task_1/CMakeFiles/runTests.dir

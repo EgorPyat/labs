@@ -1,1 +1,0 @@
-/usr/bin/c++    -std=c++11   CMakeFiles/runTests.dir/main.cpp.o CMakeFiles/runTests.dir/trit_class.cpp.o CMakeFiles/runTests.dir/ref_class.cpp.o CMakeFiles/runTests.dir/tests.cpp.o CMakeFiles/runTests.dir/iter_class.cpp.o  -o runTests -rdynamic -Wl,-Bstatic -lgtest -Wl,-Bdynamic -lpthread 
