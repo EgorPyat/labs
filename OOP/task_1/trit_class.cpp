@@ -155,7 +155,7 @@ TritSet TritSet::operator&(const TritSet& a) const{
 			b[i] = False;
 		}
 		else if ((this->operator[](i) == True) && (a[i] == True)) {
-			continue;
+			b[i] = True;
 		}
 		else if ((this->operator[](i) == Unknown) && (a[i] == Unknown)) {
 			continue;
@@ -194,7 +194,7 @@ TritSet TritSet::operator|(const TritSet& a) const{
 	for (i = 0; i < u_c; i++) {
 
 		if ((this->operator[](i) == False) && (a[i] == False)) {
-			continue;
+			b[i] = False;
 		}
 		else if ((this->operator[](i) == True) || (a[i] == True)) {
 			b[i] = True;
