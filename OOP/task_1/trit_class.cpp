@@ -136,17 +136,17 @@ TritSet TritSet::operator~() const{
 
 	return TritSet(*this).flip();
 }
-
+//bug
 TritSet TritSet::operator&(const TritSet& a) const{
 	unsigned int i;
 	unsigned int u_c;
 
 	TritSet b = *this;
-	u_c = this->capacity();
+	u_c = a.capacity();
 
 	if(this->capacity() < a.capacity()){
 		TritSet b = a;
-		u_c = a.capacity();
+		u_c = this->capacity();
 	}
 
 	for (i = 0; i < u_c; i++) {
@@ -178,17 +178,17 @@ void TritSet::operator&=(const TritSet& a){
 void TritSet::operator|=(const TritSet&a){
 	*this = *this | a;
 }
-
+//bug
 TritSet TritSet::operator|(const TritSet& a) const{
 	unsigned int i;
 	unsigned int u_c;
 
 	TritSet b = *this;
-	u_c = this->capacity();
+	u_c = a.capacity();
 
 	if(this->capacity() < a.capacity()){
 		TritSet b = a;
-		u_c = a.capacity();
+		u_c = this->capacity();
 	}
 
 	for (i = 0; i < u_c; i++) {

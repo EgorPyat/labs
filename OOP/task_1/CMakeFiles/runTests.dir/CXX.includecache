@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/egor/Documents/programming/labs/OOP/task_1/header.h
+iostream
+-
+cstdlib
+-
+cstring
+-
+cstdio
+-
+unordered_map
+-
+gtest/gtest.h
+-
+
+/home/egor/Documents/programming/labs/OOP/task_1/iter_class.cpp
+header.h
+/home/egor/Documents/programming/labs/OOP/task_1/header.h
+
+/home/egor/Documents/programming/labs/OOP/task_1/main.cpp
+header.h
+/home/egor/Documents/programming/labs/OOP/task_1/header.h
+
+/home/egor/Documents/programming/labs/OOP/task_1/ref_class.cpp
+header.h
+/home/egor/Documents/programming/labs/OOP/task_1/header.h
+
+/home/egor/Documents/programming/labs/OOP/task_1/tests.cpp
+header.h
+/home/egor/Documents/programming/labs/OOP/task_1/header.h
+
+/home/egor/Documents/programming/labs/OOP/task_1/trit_class.cpp
+header.h
+/home/egor/Documents/programming/labs/OOP/task_1/header.h
+
