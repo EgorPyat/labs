@@ -10,6 +10,7 @@
 #include <cmath>
 #include "../headers/parser.h"
 #include "../headers/surface.h"
+#include "../headers/mapper.h"
 #include "../headers/map.h"
 #include "../headers/robot.h"
 

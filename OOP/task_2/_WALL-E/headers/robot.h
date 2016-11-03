@@ -1,17 +1,14 @@
 #ifndef _ROBOT
 #define _ROBOT
 
-class Robot : public Surface {
-  vector<vector<int>> map;
-  int height;
-  int width;
+class Robot : public Mapper {
   tuple<int, int> F;
   tuple<int, int> S;
   Map* hidmap;
 public:
-  Robot(Map&, ifstream&);
+  Robot(ifstream&, Map&);
   ~Robot(){};
-  virtual uint move(Point) throw(BadMove);
+  // virtual uint move(Point) throw(BadMove);
   // virtual void lookup();
   void step();
 };

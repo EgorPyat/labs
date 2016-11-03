@@ -7,7 +7,7 @@ int main( int argc, char* argv[] ){
   parse(argc, argv, in, rm, out);
 
   Map m(in);
-  Robot r(m, rm);
+  Robot r(rm, m);
   r.step();
   in.close();
   out.close();

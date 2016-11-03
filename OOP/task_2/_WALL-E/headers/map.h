@@ -1,18 +1,11 @@
 #ifndef _MAP
 #define _MAP
 
-class Map /*: public Surface*/{
-  vector<vector<unsigned char>> map;
-  // tuple<int, int> S;
-  int height;
-  int width;
+class Map : public Mapper, public Surface{
 public:
-  Map(){};
-  Map(ifstream&);
+  Map(ifstream& in) : Mapper(in){};
   ~Map(){};
   unordered_map<int, int, hash<int>> respond(Point);
-  // virtual uint move(Point) throw(BadMove);
-  // virtual vector<tuple<Point, uint>> lookup();
 };
 
 #endif
