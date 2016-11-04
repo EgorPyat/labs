@@ -5,13 +5,13 @@ Mapper::Mapper(ifstream& in){
   int i;
   int j;
   string line;
-  
+
   for (i = 0; getline(in, line); i++) {
     this->map.push_back(vector<int>());
     size += line.size();
     for (j = 0; j <= line.size(); j++) {
       this->map[i].push_back(line[j]);
-      cout << (char)this->map[i][j] << ' ';
+      cout << (char)this->map[i][j] << ' ' << ' ';
       if(j == line.size()) {
         cout << '\n' << '\n';
       }
