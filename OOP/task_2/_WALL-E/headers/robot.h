@@ -7,10 +7,11 @@ class Robot : public Mapper {
   tuple<int, int> F;
   tuple<int, int> S;
   Map* hidmap;
+  bool step();
 public:
   Robot(ifstream&, Map&);
   ~Robot(){};
-  void step();
+  void explore();
 };
 
 #endif

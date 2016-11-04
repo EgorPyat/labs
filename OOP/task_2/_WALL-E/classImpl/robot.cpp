@@ -9,7 +9,7 @@ Robot::Robot(ifstream& in, Map& m) : Mapper(in){
       if(this->map[i][j] == 'F'){
         this->F = make_tuple(i, j);
       }
-      else if(map[i][j] == 'S'){
+      else if(map[i][j] == 'R'){
         this->S = make_tuple(i, j);
       }
     }
@@ -18,7 +18,7 @@ Robot::Robot(ifstream& in, Map& m) : Mapper(in){
   cout << "Landing success!" << endl << endl;
 };
 
-void Robot::step(){
+bool Robot::step(){
   cout << endl << "Analyzing..." << endl << endl;
   Point p;
   p.x = get<0>(this->S);
@@ -42,7 +42,7 @@ void Robot::step(){
           int u = get<0>(this->F);
           int l = p.y + 1;
           int h = get<1>(this->F);
-          map[i][j] = abs(q - u) + abs(l - h);
+          if(this->map[i][j] != -2 && this->map[i][j] != -4) this->map[i][j] = abs(q - u) + abs(l - h);
           cout << this->map[i][j] << ' ';
         }
       }
@@ -56,7 +56,7 @@ void Robot::step(){
           int u = get<0>(this->F);
           int l = p.y - 1;
           int h = get<1>(this->F);
-          map[i][j] = abs(q - u) + abs(l - h);
+          if(this->map[i][j] != -2 && this->map[i][j] != -4) this->map[i][j] = abs(q - u) + abs(l - h);
           cout << this->map[i][j] << ' ';
         }
       }
@@ -70,7 +70,7 @@ void Robot::step(){
           int u = get<0>(this->F);
           int l = p.y;
           int h = get<1>(this->F);
-          map[i][j] = abs(q - u) + abs(l - h);
+          if(this->map[i][j] != -2 && this->map[i][j] != -4) this->map[i][j] = abs(q - u) + abs(l - h);
           cout << this->map[i][j] << ' ';
         }
       }
@@ -84,19 +84,120 @@ void Robot::step(){
           int u = get<0>(this->F);
           int l = p.y;
           int h = get<1>(this->F);
-          map[i][j] = abs(q - u) + abs(l - h);
+          if(this->map[i][j] != -2 && this->map[i][j] != -4) this->map[i][j] = abs(q - u) + abs(l - h);
           cout << this->map[i][j] << ' ';
         }
       }
       else{
-        cout << (char)this->map[i][j] << ' ';
+        if(this->map[i][j] == '.' || this->map[i][j] == 'R' || this->map[i][j] == 'F'){
+          cout << (char)this->map[i][j] << ' ';
+        }
+        else cout << this->map[i][j] << ' ';
       }
       if(j == this->width - 1){
         cout << '\n' << '\n';
       }
     }
   }
-  cout << "Moving..." << endl;
-  cout << endl;
+
+  cout << "sd" << endl;
+  cout << "dsdsd" << endl;
   usleep(1000000);
+  int move_flag = 4;
+  int up;
+  int right;
+  int left;
+  int down;
+  int min = this->height + this->width;
+  int x_min = this->height;
+  int y_min = this->width;
+  int x = get<0>(this->S);
+  int y = get<1>(this->S);
+  cout << x << ' ' << y << endl;
+  cout << "Moving... ";
+
+  if((x != 0) && ((this->map[x - 1][y] != -1) && (this->map[x - 1][y] != -2) && (this->map[x - 1][y] != -4))) up = this->map[x - 1][y];
+  else {
+    up = min;
+    --move_flag;
+  }
+  if((y != this->width - 1) && ((this->map[x][y + 1] != -1) && (this->map[x][y + 1] != -2) && (this->map[x][y + 1] != -4))) right = this->map[x][y + 1];
+  else {
+    right = min;
+    --move_flag;
+  }
+  if((y != 0) && ((this->map[x][y - 1] != -1) && (this->map[x][y - 1] != -2) && (this->map[x][y - 1] != -4))) left = this->map[x][y - 1];
+  else {
+    left = min;
+    --move_flag;
+  }
+  if((x != (this->height - 1)) && ((this->map[x + 1][y] != -1) && (this->map[x + 1][y] != -2) && (this->map[x + 1][y] != -4))) down = this->map[x + 1][y];
+  else {
+    down = min;
+    --move_flag;
+  }
+  if(up < min) {
+    min = up;
+    x_min = x - 1;
+    y_min = y;
+  }
+  if(right < min) {
+    min = right;
+    x_min = x;
+    y_min = y + 1;
+  }
+  if(left < min) {
+    min = left;
+    x_min = x;
+    y_min = y - 1;
+  }
+  if(down < min) {
+    min = down;
+    x_min = x + 1;
+    y_min = y;
+  }
+  if(this->map[get<0>(this->F)][get<1>(this->F)] == -1){
+    usleep(1000000);
+    cout << "Aim is unattainable! Expedition failed!" << endl;
+    return 1;
+  }
+
+  if(move_flag == 0){
+   this->map[x][y] = -4;
+   if(this->map[x - 1][y] == -2){
+     this->S = make_tuple(x - 1, y);
+     this->map[x - 1][y] = 'R';
+   }
+   else if(this->map[x][y + 1] == -2){
+     this->S = make_tuple(x, y + 1);
+     this->map[x][y + 1] = 'R';
+   }
+   else if(this->map[x][y - 1] == -2){
+     this->S = make_tuple(x, y - 1);
+     this->map[x][y - 1] = 'R';
+   }
+   else if(this->map[x + 1][y] == -2){
+     this->S = make_tuple(x + 1, y);
+     this->map[x + 1][y] = 'R';
+   }
+  }
+  else{
+    this->map[x][y] = -2;
+    this->S = make_tuple(x_min, y_min);
+    this->map[x_min][y_min] = 'R';
+  }
+  cout << endl;
+  cout << "           OK!" << endl;
+  if(min == 0){
+    usleep(1000000);
+    cout << "Expedition success!" << endl;
+    return 1;
+  }
+  usleep(1000000);
+  return 0;
+}
+
+void Robot::explore(){
+  bool k;
+  while(!(k = this->step())){}
 }

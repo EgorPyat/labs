@@ -8,9 +8,8 @@ int main( int argc, char* argv[] ){
 
   Map m(in);
   Robot r(rm, m);
-  r.step();
+  r.explore();
   in.close();
   out.close();
-
   return 0;
 }
