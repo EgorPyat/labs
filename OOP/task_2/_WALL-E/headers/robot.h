@@ -1,5 +1,7 @@
 #ifndef _ROBOT
 #define _ROBOT
+#define _BLOCK -1
+#define _IMPMOVE 1
 
 class Robot : public Mapper {
   tuple<int, int> F;
@@ -8,8 +10,6 @@ class Robot : public Mapper {
 public:
   Robot(ifstream&, Map&);
   ~Robot(){};
-  // virtual uint move(Point) throw(BadMove);
-  // virtual void lookup();
   void step();
 };
 

@@ -5,6 +5,7 @@ Mapper::Mapper(ifstream& in){
   int i;
   int j;
   string line;
+  
   for (i = 0; getline(in, line); i++) {
     this->map.push_back(vector<int>());
     size += line.size();

@@ -8,6 +8,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <cmath>
+#include <unistd.h>
 #include "../headers/parser.h"
 #include "../headers/surface.h"
 #include "../headers/mapper.h"
