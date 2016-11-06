@@ -189,40 +189,6 @@ bool Robot::step(){
     return 1;
   }
 
-  // if(move_flag > 1){
-  //   this->map[x][y] = -3;
-  //   this->S = make_tuple(x_min, y_min);
-  //   this->map[x_min][y_min] = 'R';
-  // }
-  // else if(move_flag == 0){
-  //   this->map[x][y] = -4;
-  //   if(x!=0 && (this->map[x - 1][y] == -3 || this->map[x - 1][y] == -2)){
-  //     this->S = make_tuple(x - 1, y);
-  //     this->map[x - 1][y] = 'R';
-  //   }
-  //   else if(y != this->width - 1 && (this->map[x][y + 1] == -3 || this->map[x][y + 1] == -2)){
-  //     this->S = make_tuple(x, y + 1);
-  //     this->map[x][y + 1] = 'R';
-  //   }
-  //   else if(y != 0 && (this->map[x][y - 1] == -3 || this->map[x][y - 1] == -2)){
-  //    this->S = make_tuple(x, y - 1);
-  //    this->map[x][y - 1] = 'R';
-  //   }
-  //   else if(x != this->height -1 && (this->map[x + 1][y] == -3 || this->map[x + 1][y] == -2)){
-  //    this->S = make_tuple(x + 1, y);
-  //    this->map[x + 1][y] = 'R';
-  //   }
-  //   else{
-  //     cout << "No way out! Aim is unattainable! Expedition failed!" << endl;
-  //     return 1;
-  //   }
-  // }
-  // else{
-  //   this->map[x][y] = -2;
-  //   this->S = make_tuple(x_min, y_min);
-  //   this->map[x_min][y_min] = 'R';
-  // }
-
   int route;
   int dead_end = 0;
   int stick;
@@ -361,7 +327,7 @@ bool Robot::step(){
       if(move_flag > 0){
         this->prev = this->S;
         this->tunnel = 2;
-        this->map[x][y] = -4;
+        this->map[x][y] = -2;
         this->S = make_tuple(x_min, y_min);
         this->map[x_min][y_min] = 'R';
       }
