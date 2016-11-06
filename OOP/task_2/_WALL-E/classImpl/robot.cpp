@@ -163,25 +163,25 @@ bool Robot::step(){
     min = up;
     x_min = x - 1;
     y_min = y;
-    // pr_fl = 1;
+    pr_fl = 1;
   }
   if(right <= min && pr == r_pr && pr_fl == 0) {
     min = right;
     x_min = x;
     y_min = y + 1;
-    // pr_fl = 1;
+    pr_fl = 1;
   }
   if(left <= min && pr == l_pr && pr_fl == 0) {
     min = left;
     x_min = x;
     y_min = y - 1;
-    // pr_fl = 1;
+    pr_fl = 1;
   }
   if(down <= min && pr == d_pr && pr_fl == 0) {
     min = down;
     x_min = x + 1;
     y_min = y;
-    // pr_fl = 1;
+    pr_fl = 1;
   }
 
   if(this->map[get<0>(this->F)][get<1>(this->F)] == -1){
