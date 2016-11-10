@@ -1,7 +1,7 @@
 #ifndef _MAP
 #define _MAP
 
-class Map : public Mapper, public Surface{
+class Map : public Mapper{
 public:
   Map(ifstream& in) : Mapper(in){};
   ~Map(){};

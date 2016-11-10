@@ -6,11 +6,12 @@
 class Robot : public Mapper {
   tuple<int, int> F;
   tuple<int, int> S;
-  tuple<int, int> prev;
+  tuple<int, int> R;
+  tuple<int, int> min_aval;
   Map* hidmap;
-  char tunnel; // 2 - робот пришел не из туннеля, 1 - робот пришел из тунеля, 0 - робот пришел из тупика
-  int nook;
   bool step();
+  int length;
+  // void analize(Point);
 public:
   Robot(ifstream&, Map&);
   ~Robot(){};

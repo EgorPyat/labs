@@ -10,12 +10,19 @@
 #include <cmath>
 #include <algorithm>
 #include <unistd.h>
+using namespace std;
+
+class BadMove : public std::exception{};
+
+struct Point{
+  uint x;
+  uint y;
+};
+
 #include "../headers/parser.h"
-#include "../headers/surface.h"
 #include "../headers/mapper.h"
 #include "../headers/map.h"
 #include "../headers/robot.h"
-
-using namespace std;
+#include "../headers/surface.h"
 
 #endif

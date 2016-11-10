@@ -1,17 +1,13 @@
 #ifndef _SURFACE
 #define _SURFACE
 
-class BadMove : public std::exception{};
-
-struct Point{
-  uint x;
-  uint y;
-};
-
-class Surface{
+class Explore{
+  Robot* r;
+  Map* m;
 public:
-  /*Возвращает окружение точки, где находится робот*/
-  virtual unordered_map<int, int, hash<int>> respond(Point) = 0;
+  Explore(ifstream&, ifstream&);
+  void start();
+  virtual ~Explore(){};
 };
 
 #endif

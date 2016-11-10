@@ -6,9 +6,9 @@ int main( int argc, char* argv[] ){
   ofstream out;
   parse(argc, argv, in, rm, out);
 
-  Map m(in);
-  Robot r(rm, m);
-  r.explore();
+  Explore ex(in, rm);
+  ex.start();
+
   in.close();
   out.close();
   return 0;
