@@ -13,9 +13,15 @@ void swap(size_t *a, size_t *b){
 int main(int argc, char* argv[]){
   int N;
   size_t *a = NULL;
-  struct timespec start, end;
+  union ticks {
+    unsigned long long t64;
+    struct s32 {
+      long th, tl;
+    } t32;
+  } start, end;
   srand(time(0));
-  int K = 64;
+  int K = 10;
+  unsigned long long T, t;
 
   for(N = 128; N <= 8192*128; ){
     a = (size_t*)malloc(N*sizeof(size_t));
@@ -29,12 +35,19 @@ int main(int argc, char* argv[]){
       a[o] = o + 1;
     }
     a[N - 1] = 0;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-    for (size_t k = 0, i = 0; i < N*K; i++){
-      k = a[k];
+    T = -1;
+    for(int q = 0; q < 5; ++q) {
+      asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
+      for (int k=0, i=0; i<N*K; i++){
+        k = a[k];
+      }
+      asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
+      t = (end.t64 - start.t64) / (N * K);
+      if(t < T) {
+        T = t;
+      }
     }
-	  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-    // printf("%d Кб: Time taken: %.10lf sec.\n",N/128, end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
+    // printf("%d Кб: Ticks taken: %llu\n", N/128, T);
 
     /*________________________________________________________*/
     // back
@@ -42,12 +55,19 @@ int main(int argc, char* argv[]){
       a[o] = o - 1;
     }
     a[0] = N - 1;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-    for (int k=0, i=0; i<N*K; i++){
-      k = a[k];
+    T = -1;
+    for(int q = 0; q < 5; ++q) {
+      asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
+      for (int k=0, i=0; i<N*K; i++){
+        k = a[k];
+      }
+      asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
+      t = (end.t64 - start.t64) / (N * K);
+      if(t < T) {
+        T = t;
+      }
     }
-	  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-    // printf("%d Кб: Time taken: %.10lf sec.\n",N/128, end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
+    // printf("%d Кб: Ticks taken: %llu\n", N/128, T);
 
     /*________________________________________________________*/
     // random
@@ -59,13 +79,19 @@ int main(int argc, char* argv[]){
       int u = rand() % N;
       swap(&a[u], &a[o]);
     }
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-    for (int k=0, i=0; i<N*K; i++){
-      k = a[k];
+    T = -1;
+    for(int q = 0; q < 5; ++q) {
+      asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
+      for (int k=0, i=0; i<N*K; i++){
+        k = a[k];
+      }
+      asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
+      t = (end.t64 - start.t64) / (N * K);
+      if(t < T) {
+        T = t;
+      }
     }
-	  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-	  // printf("%d Кб: Time taken: %.10lf sec.\n",N/128, end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
-
+    printf("%d Кб: Ticks taken: %llu\n", N/128, T);
     /*________________________________________________________*/
     free(a);
     if(N < 512*128) N*=2;
@@ -73,10 +99,3 @@ int main(int argc, char* argv[]){
   }
   return 0;
 }
-
-
-
-// for(int o = 0; o < N; o++){
-//   printf("%d", a[o]);
-// }
-// printf("\n");
