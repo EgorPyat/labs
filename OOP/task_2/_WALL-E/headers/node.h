@@ -5,19 +5,23 @@
 #include <string>
 #include <cstdlib>
 #include <vector>
+#include <list>
 #include <tuple>
 #include <unordered_map>
 #include <cmath>
 #include <algorithm>
 #include <unistd.h>
+
 using namespace std;
 
 class BadMove : public std::exception{};
 
-struct Point{
+typedef struct point{
   uint x;
   uint y;
-};
+}Point;
+
+unsigned int edit_distance(const string&, const string&);
 
 #include "../headers/parser.h"
 #include "../headers/mapper.h"
