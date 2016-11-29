@@ -39,14 +39,27 @@ template<typename M> bool Robot<string, M>::step(){
   M min = 100;
   M t;
   string mins;
-  list<string>::iterator r;
-  list<string>::iterator l;
+  list<string>::iterator r = this->map.end();
+  list<string>::iterator l = this->map.begin();
+  string s;
+  M flag = 0;
+  --r;
   unordered_map<M,string, hash<M>> m = this->hidmap->respond(this->start);
+  // cout << m[m.size()-1] << endl;
   cout << "start = " << this->start << endl;
   cout << endl;
-
   for(M i = 0; i < m.size(); i++){
     if((t = edit_distance(this->finish, m[i])) <= min){
+      for(l, r; l != r; l++){
+        if(m[i] == *l || (s = m[i] + "#")== *l){
+          flag = 1;
+          break;
+        }
+      }
+      if(flag == 1){
+        flag = 0;
+        continue;
+      }
       mins = m[i];
       min = t;
     }
@@ -59,6 +72,8 @@ template<typename M> bool Robot<string, M>::step(){
     }
     return 1;
   }
+
+  *(this->map.begin()) += "#";
   this->map.push_front(mins);
   this->start = mins;
 
