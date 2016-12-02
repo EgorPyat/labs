@@ -1111,7 +1111,7 @@ AnyOption::addUsageError( const char *line )
 	exit(0);
 }
 
-void parse(int argc, char** argv, ifstream& in, ifstream& rm, ofstream& out){
+void parse(int argc, char** argv, ifstream& in, ifstream& rm, ofstream& out, int* limit, int* topology){
   AnyOption *opt = new AnyOption();
 	cout << string( 100, '\n' );
   /* 2. SET PREFERENCES  */
@@ -1179,11 +1179,13 @@ void parse(int argc, char** argv, ifstream& in, ifstream& rm, ofstream& out){
 		}
 	}
 
-	if( opt->getValue( 'l' ) != NULL || opt->getValue( "limit") != NULL)
- 	 	cout << "limit = " << opt->getValue( 'l' ) << endl;
+	if( opt->getValue( 'l' ) != NULL || opt->getValue( "limit") != NULL){
+		*limit = atoi(opt->getValue('l'));
+	}
 
-	if(opt->getValue( 't' ) != NULL || opt->getValue( "topology" ) != NULL)
-		cout << "topology = " << opt->getValue( 't' ) << endl;
+	if(opt->getValue( 't' ) != NULL || opt->getValue( "topology" ) != NULL){
+		*topology = atoi(opt->getValue('t'));
+	}
 
 	if( opt->getValue( 'o' ) != NULL || opt->getValue( "out" ) != NULL)
 		cout << "out = " << opt->getValue( 'o' ) << endl;

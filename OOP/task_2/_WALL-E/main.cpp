@@ -21,11 +21,11 @@ int main( int argc, char* argv[] ){
   ifstream in;
   ifstream rm;
   ofstream out;
-  parse(argc, argv, in, rm, out);
-
-  Explore<string, int> ex(in, rm);
+	int limit = -1;
+	int topology = 0;
+  parse(argc, argv, in, rm, out, &limit, &topology);
+  Explore<string, int> ex(in, rm, limit, topology);
   ex.start();
-
   in.close();
   out.close();
   return 0;

@@ -9,49 +9,82 @@ template<typename P, typename M> class Robot : public Mapper<P,M> {
   tuple<M,M> R;
   tuple<M,M> min_aval;
   Map<P,M>* hidmap;
-  bool step();
   M length;
-  // void analize(Point);
+  int limit;
+  bool step();
 public:
-  Robot(ifstream&, Map<P,M>&);
+  Robot(ifstream&, Map<P,M>&, int);
   ~Robot(){};
   void explore();
 };
 
 template<typename M> class Robot<string,M> : public Mapper<string, M>{
+  ifstream dict;
+  list<string> dictionary;
   Map<string,M>* hidmap;
+  M length;
+  int limit;
   bool step();
 public:
-  Robot(ifstream&, Map<string,M>&);
+  Robot(ifstream&, Map<string,M>&, int);
   ~Robot(){};
   void explore();
 };
 
-template<typename M> Robot<string,M>::Robot(ifstream& in, Map<string,M>& m) : Mapper<string,M>(in){
+template<typename M> Robot<string,M>::Robot(ifstream& in, Map<string,M>& m, int limit) : Mapper<string,M>(in){
+  this->limit = limit;
   this->hidmap = &m;
+  this->length = 0;
+  try{
+    this->dict.open("dictionary.map");
+    if(!this->dict) throw &this->dict;
+  }
+  catch(ifstream*){
+    cout << "No such dictionary!" << endl;
+    exit(1);
+  }
+  M i;
+  string line;
+  for(i = 0; getline(this->dict, line); i++){
+    this->dictionary.push_back(line);
+  }
   cout << "Landing success!" << endl << endl;
   cout << "Press any button to start exploring." << endl;
   getchar();
-  cout << string( 100, '\n' );
+  cout << string(100, '\n');
 }
 
 template<typename M> bool Robot<string, M>::step(){
   M min = 100;
   M t;
-  string mins;
+  string mins = "";
+  list<string>::iterator l;
   list<string>::iterator r = this->map.end();
-  list<string>::iterator l = this->map.begin();
-  string s;
+  list<string>::iterator ds;
+  list<string>::iterator df = this->dictionary.end();
+  string s = "";
   M flag = 0;
   --r;
   unordered_map<M,string, hash<M>> m = this->hidmap->respond(this->start);
-  // cout << m[m.size()-1] << endl;
-  cout << "start = " << this->start << endl;
+  unordered_map<M,string, hash<M>> u = m;
+  if(m.empty()){
+    cout << "No strings to godd! Expedition failed!" << endl;
+    return 1;
+  }
   cout << endl;
+  int count ;
+  cout << "start = " << this->start << endl;
+  // cout << m.size() << endl;
   for(M i = 0; i < m.size(); i++){
-    if((t = edit_distance(this->finish, m[i])) <= min){
-      for(l, r; l != r; l++){
-        if(m[i] == *l || (s = m[i] + "#")== *l){
+    count = 0;
+    for(ds = this->dictionary.begin(), df; ds != df; ds++){
+      if(m[i] == *ds){
+        count++;
+      }
+    }
+    if(count == 0){
+      for(l = this->map.begin(), r; l != r; l++){
+        if(m[i] == *l || (s = m[i] + "#") == *l){
           flag = 1;
           break;
         }
@@ -60,13 +93,105 @@ template<typename M> bool Robot<string, M>::step(){
         flag = 0;
         continue;
       }
+      m[i] += "#";
+      string l = this->map.back();
+      this->map.back() = m[i];
+      m[i] = l;
+      this->map.push_back(m[i]);
+      // flag = 1;
+      continue;
+    }
+    m = u;
+    flag = 0;
+    if((t = edit_distance(this->finish, m[i])) <= min){
+      // cout << "min " << m[i] << endl;
+      for(l = this->map.begin(), r; l != r; l++){
+        if(m[i] == *l || (s = m[i] + "#") == *l){
+          flag = 1;
+          break;
+        }
+      }
+      if(flag == 1){
+        flag = 0;
+        continue;
+      }
+      if(mins != ""){
+        string l = this->map.back();
+        this->map.back() = mins;
+        mins = l;
+        this->map.push_back(mins);
+      }
       mins = m[i];
       min = t;
+      // cout << "ins: " << m[i] << endl;
+    }
+    else {
+      for(l = this->map.begin(), r; l != r; l++){
+        if(m[i] == *l || (s = m[i] + "#") == *l){
+          flag = 1;
+          break;
+        }
+      }
+      if(flag == 1){
+        flag = 0;
+        continue;
+      }
+      string l = this->map.back();
+      this->map.back() = m[i];
+      m[i] = l;
+      this->map.push_back(m[i]);
     }
   }
 
+  if(mins == ""){
+    *(this->map.begin()) += "#";
+    min = 100;
+    for(l = this->map.begin(), r; l != r; l++){
+      if(((*l)[(*l).length() - 1 ] != '#') && (t = edit_distance(this->finish, *l)) <= min){
+        mins = *l;
+        min = t;
+      }
+    }
+
+    if(mins == ""){
+      for(l = this->map.begin(), r = this->map.end(); l != r; l++){
+        cout << *l << endl;
+      }
+      cout << endl << "No stings to go! Expedition failed!" << endl;
+      return 1;
+    }
+    else{
+      this->start = mins;
+      for(l = this->map.begin(), r = this->map.end(); l != r; l++){
+        if(*l == mins){
+          string k = this->map.front();
+          this->map.front() = mins;
+          *l = k;
+        }
+      }
+
+      for(l = this->map.begin(), r = this->map.end(); l != r; l++){
+          cout << *l << endl;
+      }
+      cout << endl;
+      getchar();
+      this->length++;
+      if(this->limit != -1){
+        if (this->length >= this->limit){
+          cout << "This robot is too simple or you want too much! Limit is exceeded!" << endl;
+          return 1;
+        }
+      }
+      return 0;
+    }
+  }
+  // cout << string( 100, '\n' );
+
   if(mins == this->finish){
     cout << "Expedition success!" << endl;
+    this->length++;
+    cout << "L: " << this->length << endl;
+    *(this->map.begin()) += "#";
     for(l = this->map.begin(), r = this->map.end(); l != r; l++){
       cout << *l << endl;
     }
@@ -81,6 +206,14 @@ template<typename M> bool Robot<string, M>::step(){
     cout << *l << endl;
   }
   cout << endl;
+  getchar();
+  this->length++;
+  if(this->limit != -1){
+    if (this->length >= this->limit){
+      cout << "This robot is too simple or you want too much! Limit is exceeded!" << endl;
+      return 1;
+    }
+  }
   return 0;
 }
 
@@ -89,10 +222,11 @@ template<typename M> void Robot<string,M>::explore(){
   while(!(k = this->step())){}
 }
 
-template<typename P, typename M> Robot<P,M>::Robot(ifstream& in, Map<P,M>& m) : Mapper<P,M>(in){
+template<typename P, typename M> Robot<P,M>::Robot(ifstream& in, Map<P,M>& m, int limit) : Mapper<P,M>(in){
   M i;
   M j;
   this->length = 0;
+  this->limit = limit;
   for(i = 0; i < this->height; i++){
     for(j = 0; j < this->width; j++){
       if(this->map[i][j] == 'F'){
@@ -104,6 +238,7 @@ template<typename P, typename M> Robot<P,M>::Robot(ifstream& in, Map<P,M>& m) : 
       }
     }
   }
+
   this->hidmap = &m;
   cout << "Landing success!" << endl << endl;
   cout << "Press any button to start exploring." << endl;
@@ -175,10 +310,26 @@ template<typename P, typename M> bool Robot<P, M>::step(){
          M u = get<0>(this->F);
          M l = p.y;
          M h = get<1>(this->F);
+         if(this->map[i][j] != -2) this->map[i][j] = abs(q - u) + abs(l - h);
+         cout << this->map[i][j] << ' ' << ' ';
+        }
+      }
+      /*_____________________________UP_____________________________*/
+      else if(i == 0 && j == (get<1>(this->S)) && (get<0>(this->S) == this->height - 1) && m[4] != -1){
+        if(m[4] == '#'){
+          this->map[i][j] = _BLOCK;
+          cout << this->map[i][j] << ' ';
+        }
+        else{
+          M q = 0;
+          M u = get<0>(this->F);
+          M l = j;
+          M h = get<1>(this->F);
           if(this->map[i][j] != -2) this->map[i][j] = abs(q - u) + abs(l - h);
           cout << this->map[i][j] << ' ' << ' ';
         }
       }
+      /*____________________________________________________________*/
       else{
         if(this->map[i][j] == '.' || this->map[i][j] == 'R' || this->map[i][j] == 'F'){
           cout << (char)this->map[i][j] << ' ' << ' ';
@@ -242,6 +393,10 @@ template<typename P, typename M> bool Robot<P, M>::step(){
     down = this->map[x + 1][y];
     d_pr = sqrt(pow((get<0>(this->F) - (x + 1)), 2) + pow((get<1>(this->F) - y), 2));
   }
+  else if(x == (this->height - 1) && m[4] != -1 && ((this->map[0][y] != -1) && (this->map[0][y] != -2)){
+    down = this->map[0][y];
+    d_pr = sqrt(pow((get<0>(this->F) - (0)), 2) + pow((get<1>(this->F) - y), 2));
+  }
   else {
     down = min;
     --move_flag;
@@ -269,7 +424,8 @@ template<typename P, typename M> bool Robot<P, M>::step(){
   }
   if(down < min && pr == d_pr && pr_fl == 0) {
     min = down;
-    x_min = x + 1;
+    if(m[4] != -1) x_min = 0; // for tor down
+    else x_min = x + 1;
     y_min = y;
     pr_fl = 1;
   }
@@ -339,6 +495,12 @@ template<typename P, typename M> bool Robot<P, M>::step(){
       }
     }
     return 1;
+  }
+  if(this->limit != -1){
+    if (this->length >= this->limit){
+      cout << "This robot is too simple or you want too much! Limit is exceeded!" << endl;
+      return 1;
+    }
   }
   return 0;
 }
