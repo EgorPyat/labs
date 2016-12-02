@@ -36,7 +36,7 @@ int main(int argc, char* argv[]){
     }
     a[N - 1] = 0;
     T = -1;
-    for(int q = 0; q < 5; ++q) {
+    for(int q = 0; q < 5; q++) {
       asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
       for (int k=0, i=0; i<N*K; i++){
         k = a[k];
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]){
     }
     a[0] = N - 1;
     T = -1;
-    for(int q = 0; q < 5; ++q) {
+    for(int q = 0; q < 5; q++) {
       asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
       for (int k=0, i=0; i<N*K; i++){
         k = a[k];
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
       swap(&a[u], &a[o]);
     }
     T = -1;
-    for(int q = 0; q < 5; ++q) {
+    for(int q = 0; q < 5; q++) {
       asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
       for (int k=0, i=0; i<N*K; i++){
         k = a[k];

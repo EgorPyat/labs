@@ -40,7 +40,6 @@ int main(int argc, char* argv[]){
 	int N;
 	int M;
 	double *a;
-	// double a[]={2,5,7,6,3,4,5,-2,-3,8,4,3,-5,-5,1,0};
 
 	if(argc < 3){
 		printf("Enter matrix size N = ");
@@ -52,33 +51,31 @@ int main(int argc, char* argv[]){
 		N = atoi(argv[1]);
 		M = atoi(argv[2]);
 	}
+	// double a[]={2,5,7,6,3,4,5,-2,-3,8,4,3,-5,-5,1,0};
+
+	// a=(double*)malloc(sizeof(double)*N*N);
+	// matr_mk(N, a);
+	// clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+	// inverse(a, N, M);
+	// clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+  // printf("PURE Time taken: %.10lf sec.\n",end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
+	// free(a);
 
 	a=(double*)malloc(sizeof(double)*N*N);
 	matr_mk(N, a);
 
 	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-	inverse(a, N, M);
+	blas_inverse(a, N, M);
 	clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-  printf("PURE Time taken: %.10lf sec.\n",end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
-
+  printf("BLAS Time taken: %.10lf sec.\n",end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
 	free(a);
-	// a=(double*)malloc(sizeof(double)*N*N);
-	// matr_mk(N, a);
-	//
-	// clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-	// blas_inverse(a, N, M);
-	// clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-  // printf("BLAS Time taken: %.10lf sec.\n",end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
-	//
-	// free(a);
+
 	// a=(double*)_mm_malloc(sizeof(double)*N*N, 64);
 	// matr_mk(N, a);
-	//
 	// clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 	// hand_inverse(a,N,M);
 	// clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 	// printf("HAND Time taken: %.10lf sec.\n",end.tv_sec-start.tv_sec+ 0.000000001*(end.tv_nsec-start.tv_nsec));
-	//
 	// _mm_free(a);
 
 	return 0;
@@ -217,9 +214,25 @@ void inverse(double *a, int N, int M){
 
 	mult(I, b, c, N);
 
+	// memset(a,0,N*N*sizeof(double));
+	// matr_mk(N,a);
+	// mult(a,c,r,N);
+	// print(N, "a", a);
 	if (N < 17) {
 		print(N, "c", c);
 	}
+
+	// double sum = 0;
+	// double summ = 0;
+	// for (int i = 0; i < N; i++) {
+	// 	sum += r[i*N+i];
+	// }
+	// for(int i = 0; i < N; i++){
+	// 	for(int j = 0; j < N; j++){
+	// 		summ += r[i*N+j];
+	// 	}
+	// }
+	// printf("diag sum %f\nall summ %f\n", sum, summ);
 
 	free(b);
 	free(c);
@@ -305,11 +318,26 @@ void blas_inverse(double *a, int N, int M){
 
 	blas_mult(I, b, c, N);
 
+	memset(a,0,N*N*sizeof(double));
+	matr_mk(N,a);
+	blas_mult(a,c,r,N);
+	// print(N, "a", a);
 	if (N < 17) {
 		print(N, "c", c);
 	}
 
-	// blas_mult()
+	double sum = 0;
+	double summ = 0;
+	for (int i = 0; i < N; i++) {
+		sum += r[i*N+i];
+	}
+	for(int i = 0; i < N; i++){
+		for(int j = 0; j < N; j++){
+			summ += r[i*N+j];
+		}
+	}
+	printf("diag sum %f\nall summ %f\n", sum, summ);
+
 	free(b);
 	free(c);
 	free(I);
@@ -317,56 +345,29 @@ void blas_inverse(double *a, int N, int M){
 	free(r);
 }
 
-// double scal(double* x, double* y, int n){
-// 	__m128d *xx, *yy;
-// 	__m128d p, s, a, b;
-// 	xx = (__m128d*)x;
-// 	yy = (__m128d*)y;
-// 	s = _mm_setzero_pd();
-// 	for(int i=0; i<n; i+=2){
-// 		a = _mm_load_pd(&x[i]);
-// 		b = _mm_load_pd(&y[i]);
-// 		p = _mm_mul_pd(a,b);
-// 		s = _mm_add_pd(s,p);
-// 	}
-// 	// p = _mm_movehl_ps(p,s);
-// 	// s = _mm_add_pd(s,p);
-// 	p = _mm_shuffle_pd(s,s,1);
-// 	s = _mm_add_sd(s,p);
-// 	double sum;
-// 	_mm_store_sd(&sum,s);
-// 	return sum;
-// }
 void hand_sum(double *y, double *r, int N){
 	__m128d *m1 = (__m128d*)r;
 	__m128d *m2 = (__m128d*)y;
-  // __m128d *m3 = (__m128d*)r;
 
-  // for(int i = 0; i < N*N; i+=2) {
-      for(int j = 0; j < N*N/2; j++) {
-          m2[j] = _mm_add_pd(m1[j], m2[j]);
-      }
-  // }
+  for(int j = 0; j < N*N/2; j++) {
+      m2[j] = _mm_add_pd(m1[j], m2[j]);
+  }
 }
 
 void hand_mult(double* a, double* b, double* r, int N){
-	// __m128d *xx, *yy;
-	// xx = (__m128d*)a;
-	// yy = (__m128d*)b;
 	__m128d p, s, x, u;
 	double *y=(double*)_mm_malloc(sizeof(double)*N*N, 64);
 	transpose(b, y, N);
-	// printf("\n%f\n", scal(&a[2], &y[2], N));
 	for(int i = 0; i < N; i++){
 		for(int j = 0; j < N; j++){
 			s = _mm_setzero_pd();
 			for(int k=0; k<N; k+=2){
 				x = _mm_load_pd(a + i*N + k);
-				u = _mm_load_pd(b + j*N + k);
+				u = _mm_load_pd(y + j*N + k);
 				p = _mm_mul_pd(x,u);
 				s = _mm_add_pd(s,p);
 			}
-			// p = _mm_movehl_ps(p,s);
+			// p = _mm_movehl_pd(p,s);
 			// s = _mm_add_pd(s,p);
 			p = _mm_shuffle_pd(s,s,1);
 			s = _mm_add_sd(s,p);
@@ -380,16 +381,13 @@ void hand_mult(double* a, double* b, double* r, int N){
 
 void hand_divsc(double *matr, double *tr, int N, double r){
 	r = 1/r;
-	// printf("%f\n", r);
-
 	__m128d *xx = (__m128d*)tr;
 	__m128d *yy = (__m128d*)matr;
 	__m128d tmp = {r,r};
-	// for(int i = 0; i < N*N; i+=2){
-		for(int j = 0; j < N*N / 2; j++){
-			yy[j] = _mm_mul_pd(xx[j], tmp);
-		}
-	// }
+
+	for(int j = 0; j < N*N / 2; j++){
+		yy[j] = _mm_mul_pd(xx[j], tmp);
+	}
 }
 void hand_make_r(double *a, double *b, double *I, double *r, int N){
 	double *y=(double*)_mm_malloc(sizeof(double)*N*N, 64);
@@ -398,11 +396,10 @@ void hand_make_r(double *a, double *b, double *I, double *r, int N){
 	__m128d *m2 = (__m128d*)y;
   __m128d *m3 = (__m128d*)r;
 
-  // for(int i = 0; i < N*N; i+=2) {
-      for(int j = 0; j < N*N/2; j++) {
-          m3[j] = _mm_sub_pd(m1[j], m2[j]);
-      }
-  // }
+  for(int j = 0; j < N*N / 2; j++) {
+      m3[j] = _mm_sub_pd(m1[j], m2[j]);
+  }
+
 	_mm_free(y);
 };
 
@@ -419,32 +416,17 @@ void hand_inverse(double *a, int N, int M){
 	r=(double*)_mm_malloc(sizeof(double)*N*N, 64);
 	c=(double*)_mm_malloc(sizeof(double)*N*N, 64);
 
+	// double v[]={2,5,7,6,3,4,5,-2,-3,8,4,3,-5,-5,1,0};
+
 	for(int j = 0; j < N; j++){
 		I[j*N + j] = 1;
 	} // получаем I
-	// print(N, "a", a);
-	// print(N, "I", I);
-	// print(N, "b", b);
-
 
 	transpose(a, t, N); // получаем t
-	// print(N, "t", t);
-
 	io = maxj(a, N)*maxi(a,N);
-	// printf("\nio = %f\n", io);
 	hand_divsc(b, t, N, io); // получаем b
-	// print(N, "b", b);
-
-	// print(N, "t", t);
-
 	hand_make_r(a,b,I,r,N);
-	// print(N, "r", r);
 	hand_make_r(a,b,I,t,N);
-	// for(int i = 0; i < N; i++){
-	// 	for(int j = 0; j < N; j++){
-	// 		t[i*N+j]=r[i*N+j];
-	// 	}
-	// }
 	for(int i = 1; i <= M; i++){
 		hand_sum(I, t, N);
 		hand_mult(t, r, a, N);
@@ -452,98 +434,31 @@ void hand_inverse(double *a, int N, int M){
 	}
 
 	hand_mult(I, b, c, N);
-	// print(N, "I", I);
-	// print(N, "b", b);
 
+	// memset(a,0,N*N*sizeof(double));
+	// matr_mk(N,a);
+	// hand_mult(a,c,r,N);
+	// print(N, "a", a);
 	if (N < 17) {
 		print(N, "c", c);
 	}
-	memset(a,0,N*N*sizeof(double));
-	matr_mk(N,a);
-	// hand_mult(a,c,r,N);
-	// print(N, "a", a);
 	// print(N, "r", r);
+	// проверка на единичность
+	// double sum = 0;
+	// double summ = 0;
+	// for (int i = 0; i < N; i++) {
+	// 	sum += r[i*N+i];
+	// }
+	// for(int i = 0; i < N; i++){
+	// 	for(int j = 0; j < N; j++){
+	// 		summ += r[i*N+j];
+	// 	}
+	// }
+	// printf("diag sum %f\nall summ %f\n", sum, summ);
+
 	_mm_free(b);
 	_mm_free(c);
 	_mm_free(I);
 	_mm_free(t);
 	_mm_free(r);
 }
-
-//calculate determinant
-// double det(double *matr, int N){
-//   int temp = 0;
-//   int k = 1;
-//   if(N < 1){
-//       printf("Неверный размер матрицы!!!");
-//       return 0;
-//   }
-//   else if (N == 1) temp = matr[0];
-//   else if (N == 2) temp = matr[0] * matr[1*N + 1] - matr[1*N + 0] * matr[1];
-//   else{
-//       for(int i = 0; i < N; i++){
-//           int m = N - 1;
-//           double *temp_matr = (double*)malloc(sizeof(double)*m*m);
-// 					if(!temp_matr) exit(1);
-//           // for(int j = 0; j < m; j++)
-//               // temp_matr[j] = new int [m];
-//           // get_matr(matr, N, temp_matr, 0, 0);
-// 					for(int i = 1; i < N; i++){
-// 						for(int j = 1; j < N; j++){
-//
-// 							temp_matr[(i-1)*m + (j - 1)] = matr[i*N+j];
-// 						}
-// 					}
-// 					// k = gaussMethod(N, N, )
-// 					print(N,"matr", matr);
-// 					print(m,"temp", temp_matr);
-// 					printf("%f\n", temp_matr[2]);
-// 					getchar();
-//           temp = temp + k * matr[0*N+i] * det(temp_matr, m);
-//           k = -k;
-//           // FreeMem(temp_matr, m);
-// 					free(temp_matr);
-//       }
-//   }
-//   return temp;
-// }
-
-//strike out
-// void get_matr(double *matr, int N, double *temp_matr, int indRow, int indCol){
-// 	int ki = 0;
-// 	for (int i = 0; i < N; i++){
-// 		if(i != indRow){
-// 			for (int j = 0, kj = 0; j < N; j++){
-// 				if (j != indCol){
-// 					temp_matr[ki*N + kj] = matr[i*N + j];
-// 					kj++;
-// 				}
-// 			}
-// 			ki++;
-// 		}
-// 	}
-// }
-
-// double *y=(double*)malloc(sizeof(double)*N*N);
-// transpose(a, y, N);
-// __m128d * xx = (__m128d*)a;
-// __m128d * yy = (__m128d*)y;
-// __m128d p, s;
-// for(unsigned i = 0; i < N; ++i) {
-//   for(unsigned j = 0; j < N; ++j) {
-// 		s = _mm_setzero_pd();
-// 		for(int k = 0; k < N/4; k++){
-// 			p = _mm_mul_pd(xx[i], yy[i]);
-// 			s = _mm_add_pd(s,p);
-// 		}
-//
-// 		p=_mm_movehl_pd(p,s);
-// 		s=_mm_add_pd(s,p);
-// 		p=_mm_shuffle_pd(s,s,1);
-// 		s=_mm_add_sd(s,p);
-// 		double sum;
-// 		_mm_store_sd(&sum, s);
-//
-// 		r[i*N+j] = sum;
-// 	}
-// }

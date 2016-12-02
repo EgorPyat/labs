@@ -49,24 +49,26 @@ int main(){
 
 
   while (STOP==FALSE) {
-    
-    if(write(fd, "[[[testing RS-232]]]", strlen("[[[Testing RS-232]]]")) == -1){
+
+    scanf("%s", buf);
+
+    if(write(fd, buf, strlen(buf)) == -1){
      fprintf(stderr, "failed to write to port\n");
      break;
     }
-    usleep(500000); 
+    usleep(500000);  
 
     res = read(fd,buf,255);
     buf[res]=0;
-   
+
     if(res == 1){
      res = read(fd,buf,255);
      buf[res]=0;
      printf("2:%s:%d\n", buf, res);
     }
-   
+
     else printf("1:%s:%d\n", buf, res);
-   
+
     if (buf[3]=='z') STOP=TRUE;
   }
 
@@ -74,4 +76,3 @@ int main(){
 
   return 0;
 }
-
