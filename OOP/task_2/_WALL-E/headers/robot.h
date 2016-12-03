@@ -314,14 +314,59 @@ template<typename P, typename M> bool Robot<P, M>::step(){
          cout << this->map[i][j] << ' ' << ' ';
         }
       }
-      /*_____________________________UP_____________________________*/
-      else if(i == 0 && j == (get<1>(this->S)) && (get<0>(this->S) == this->height - 1) && m[4] != -1){
+      /*____________________________DOWN____________________________*/
+      else if(i == 0 && j == (get<1>(this->S)) && (get<0>(this->S) == this->height - 1) && m[4] != -1){ // TOR DOWN
         if(m[4] == '#'){
           this->map[i][j] = _BLOCK;
           cout << this->map[i][j] << ' ';
         }
         else{
-          M q = 0;
+          M q = i;
+          M u = get<0>(this->F);
+          M l = j;
+          M h = get<1>(this->F);
+          if(this->map[i][j] != -2) this->map[i][j] = abs(q - u) + abs(l - h);
+          cout << this->map[i][j] << ' ' << ' ';
+        }
+      }
+      /*_____________________________UP_____________________________*/
+      else if((i == this->height - 1) && j == (get<1>(this->S)) && (get<0>(this->S) == 0) && m[1] != -1){ // TOR UP
+        if(m[1] == '#'){
+          this->map[i][j] = _BLOCK;
+          cout << this->map[i][j] << ' ';
+        }
+        else{
+          M q = i;
+          M u = get<0>(this->F);
+          M l = j;
+          M h = get<1>(this->F);
+          if(this->map[i][j] != -2) this->map[i][j] = abs(q - u) + abs(l - h);
+          cout << this->map[i][j] << ' ' << ' ';
+        }
+      }
+      /*____________________________LEFT_____________________________*/
+      else if(i == (get<0>(this->S)) && (j == this->width - 1) && (get<1>(this->S) == 0) && m[3] != -1){ // TOR / CYLINDER LEFT
+        if(m[3] == '#'){
+          this->map[i][j] = _BLOCK;
+          cout << this->map[i][j] << ' ';
+        }
+        else{
+          M q = i;
+          M u = get<0>(this->F);
+          M l = j;
+          M h = get<1>(this->F);
+          if(this->map[i][j] != -2) this->map[i][j] = abs(q - u) + abs(l - h);
+          cout << this->map[i][j] << ' ' << ' ';
+        }
+      }
+      /*____________________________RIGHT____________________________*/
+      else if(i == (get<0>(this->S)) && j == 0 && (get<1>(this->S) == this->width - 1) && m[2] != -1){ // TOR / CYLINDER RIGHT
+        if(m[2] == '#'){
+          this->map[i][j] = _BLOCK;
+          cout << this->map[i][j] << ' ';
+        }
+        else{
+          M q = i;
           M u = get<0>(this->F);
           M l = j;
           M h = get<1>(this->F);
@@ -369,6 +414,10 @@ template<typename P, typename M> bool Robot<P, M>::step(){
     up = this->map[x - 1][y];
     u_pr = sqrt(pow((get<0>(this->F) - (x - 1)), 2) + pow((get<1>(this->F) - y), 2));
   }
+  else if(x == 0 && m[1] != -1 && this->map[this->height - 1][y] != -1 && this->map[this->height - 1][y] != -2){ // tor up
+    up = this->map[this->height - 1][y];
+    u_pr = sqrt(pow((get<0>(this->F) - (this->height - 1)), 2) + pow((get<1>(this->F) - y), 2));
+  }
   else {
     up = min;
     --move_flag;
@@ -376,6 +425,10 @@ template<typename P, typename M> bool Robot<P, M>::step(){
   if((y != this->width - 1) && ((this->map[x][y + 1] != -1) && (this->map[x][y + 1] != -2) && (this->map[x][y + 1] != -3))) {
     right = this->map[x][y + 1];
     r_pr = sqrt(pow((get<0>(this->F) - (x)), 2) + pow((get<1>(this->F) - (y + 1)), 2));
+  }
+  else if(y == (this->width - 1) && m[2] != -1 && this->map[x][0] != -1 && this->map[x][0] != -2){ // tor / cylinder right
+    right = this->map[x][0];
+    r_pr = sqrt(pow((get<0>(this->F) - (x)), 2) + pow((get<1>(this->F) - (0)), 2));
   }
   else {
     right = min;
@@ -385,6 +438,10 @@ template<typename P, typename M> bool Robot<P, M>::step(){
     left = this->map[x][y - 1];
     l_pr = sqrt(pow((get<0>(this->F) - (x)), 2) + pow((get<1>(this->F) - (y - 1)), 2));
   }
+  else if(y == 0 && m[3] != -1 && this->map[x][this->width - 1] != -1 && this->map[x][this->width - 1] != -2){ // tor / cylinder left
+    left = this->map[x][this->width - 1];
+    l_pr = sqrt(pow((get<0>(this->F) - (x)), 2) + pow((get<1>(this->F) - (this->width - 1)), 2));
+  }
   else {
     left = min;
     --move_flag;
@@ -393,7 +450,7 @@ template<typename P, typename M> bool Robot<P, M>::step(){
     down = this->map[x + 1][y];
     d_pr = sqrt(pow((get<0>(this->F) - (x + 1)), 2) + pow((get<1>(this->F) - y), 2));
   }
-  else if(x == (this->height - 1) && m[4] != -1 && ((this->map[0][y] != -1) && (this->map[0][y] != -2)){
+  else if(x == (this->height - 1) && m[4] != -1 && (this->map[0][y] != -1) && (this->map[0][y] != -2)){ // tor down
     down = this->map[0][y];
     d_pr = sqrt(pow((get<0>(this->F) - (0)), 2) + pow((get<1>(this->F) - y), 2));
   }
@@ -406,25 +463,28 @@ template<typename P, typename M> bool Robot<P, M>::step(){
   M pr_fl = 0;
   if(up < min && pr == u_pr && pr_fl == 0) {
     min = up;
-    x_min = x - 1;
+    if(x == 0 && m[1] != -1) x_min = this->height - 1; // for tor up
+    else  x_min = x - 1;
     y_min = y;
     pr_fl = 1;
   }
   if(right < min && pr == r_pr && pr_fl == 0) {
     min = right;
     x_min = x;
-    y_min = y + 1;
+    if(y == this->width - 1 && m[2] != -1) y_min = 0; // for tor / cylinder right
+    else y_min = y + 1;
     pr_fl = 1;
   }
   if(left < min && pr == l_pr && pr_fl == 0) {
     min = left;
     x_min = x;
-    y_min = y - 1;
+    if(y == 0 && m[3] != -1) y_min = this->width - 1; // for tor /cylinder left
+    else y_min = y - 1;
     pr_fl = 1;
   }
   if(down < min && pr == d_pr && pr_fl == 0) {
     min = down;
-    if(m[4] != -1) x_min = 0; // for tor down
+    if((x == this->height - 1) && m[4] != -1) x_min = 0; // for tor down
     else x_min = x + 1;
     y_min = y;
     pr_fl = 1;
