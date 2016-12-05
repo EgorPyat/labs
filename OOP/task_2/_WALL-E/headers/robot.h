@@ -13,7 +13,65 @@ template<typename P, typename M> class Robot : public Mapper<P,M> {
   int limit;
   bool step();
 public:
+  void write(istream& is){
+    if(!this->map.empty()) {
+      cout << "Robot configuration is already uploaded!" << endl;
+      return;
+    }
+    is.clear();
+    is.seekg(0);
+    M i;
+    M j;
+    string line;
+    for (i = 0; getline(is, line); i++) {
+      this->map.push_back(vector<M>());
+      for (j = 0; j <= line.size(); j++) {
+        if(line[j] == 'R' || line[j] == 'F'){
+          if(line[j] == 'R') this->S = make_tuple(i, j);
+          if(line[j] == 'F') this->F = make_tuple(i, j);
+          this->map[i].push_back(line[j]);
+        }
+        else this->map[i].push_back('.');
+        cout << (char)this->map[i][j] << ' ' << ' ';
+        if(j == line.size()){
+          // this->map[i].pop_back();
+          cout << '\n' << '\n';
+        }
+      }
+    }
+    cout << endl;
+    this->height = i;
+    this->width = j - 1;
+    cout << this->height << ' ' << this->width << endl;
+    cout << "Robot is done!" << endl;
+    getchar();
+  };
+  void print(ostream& os){
+    for(M i = 0; i < this->height; i++){
+      for(M j = 0; j < this->width; j++){
+        if(this->map[i][j] == '.' || this->map[i][j] == 'R' || this->map[i][j] == 'F'){
+          os << (char)this->map[i][j] << ' ' << ' ';
+        }
+        else if(this->map[i][j] == '*' || this->map[i][j] == 0){
+          os << (char)this->map[i][j] << ' ' << ' ';
+        }
+        else if(this->map[i][j] == -1) os << -1 << ' ';
+        else os << '.' << ' ' << ' ';
+        if(j == this->width - 1) {
+          os << '\n' << '\n';
+        }
+      }
+    }
+  };
   Robot(ifstream&, Map<P,M>&, int);
+  Robot(Map<P,M>& m, int limit){
+    this->hidmap = &m;
+    // this->map = NULL;
+    this->width = 0;
+    this->height = 0;
+    this->limit = limit;
+    this->length = 0;
+  };
   ~Robot(){};
   void explore();
 };
@@ -26,7 +84,55 @@ template<typename M> class Robot<string,M> : public Mapper<string, M>{
   int limit;
   bool step();
 public:
+  void print(ostream& os){
+    list<string>::iterator l;
+    list<string>::iterator r;
+    for(l = this->map.begin(), r = this->map.end(); l != r; l++){
+      os << *l << endl;
+    }
+  }
+  void write(istream& is){
+    if(!this->map.empty()) {
+      cout << "Robot configuration is already uploaded!" << endl;
+      return;
+    }
+    is.clear();
+    is.seekg(0);
+    M i;
+    for(i = 0; getline(is, this->finish); i++){
+      if(i == 0) {
+        this->start = this->finish;
+        this->map.push_back(this->finish);
+      }
+      this->map.pop_back();
+      this->map.push_back(this->finish);
+      // cout << this->finish << endl;
+    }
+    this->map.push_front(this->start);
+    this->finish = this->map.back();
+    // cout << this->start << ' ' << this->finish << " sdsd"<< endl;
+  }
   Robot(ifstream&, Map<string,M>&, int);
+  Robot(Map<string,M>&m, int limit){
+    this->hidmap = &m;
+    this->length = 0;
+    this->limit = limit;
+    this->start = "";
+    this->finish = "";
+    try{
+      this->dict.open("dictionary.map");
+      if(!this->dict) throw &this->dict;
+    }
+    catch(ifstream*){
+      cout << "No such dictionary!" << endl;
+      exit(1);
+    }
+    M i;
+    string line;
+    for(i = 0; getline(this->dict, line); i++){
+      this->dictionary.push_back(line);
+    }
+  }
   ~Robot(){};
   void explore();
 };
@@ -218,6 +324,10 @@ template<typename M> bool Robot<string, M>::step(){
 }
 
 template<typename M> void Robot<string,M>::explore(){
+  if(this->map.empty()){
+    cout << "No robot configuration! Can't move!" << endl;
+    return;
+  }
   bool k;
   while(!(k = this->step())){}
 }
@@ -566,6 +676,10 @@ template<typename P, typename M> bool Robot<P, M>::step(){
 }
 
 template<typename P, typename M> void Robot<P,M>::explore(){
+  if(this->map.empty()){
+    cout << "No robot configuration! Can't move!" << endl;
+    return;
+  }
   bool k;
   while(!(k = this->step())){}
 }

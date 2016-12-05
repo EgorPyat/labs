@@ -7,6 +7,7 @@ protected:
   M height;
   M width;
 public:
+  Mapper(){};
   Mapper(ifstream& im);
   virtual ~Mapper(){};
 };
@@ -17,6 +18,7 @@ protected:
   string start;
   string finish;
 public:
+  Mapper(){};
   Mapper(ifstream& im);
   virtual ~Mapper(){};
 };

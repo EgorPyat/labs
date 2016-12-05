@@ -20,13 +20,20 @@ unsigned int edit_distance(const std::string& s1, const std::string& s2)
 int main( int argc, char* argv[] ){
   ifstream in;
   ifstream rm;
-  ofstream out;
+	ifstream is("single.map");
+	ifstream iss("dictt.txt");
+  ofstream out("route.txt");
 	int limit = -1;
 	int topology = 0;
   parse(argc, argv, in, rm, out, &limit, &topology);
-  Explore<Point, int> ex(in, rm, limit, topology);
+  Explore<string, int> ex(limit, topology);
   ex.start();
-  in.close();
-  out.close();
+	iss >> ex;
+	ex.start();
+	out << ex;
+
+	is.close();
+	out.close();
+	in.close();
   return 0;
 }

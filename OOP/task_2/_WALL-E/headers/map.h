@@ -7,6 +7,41 @@ public:
   Map(ifstream& in, int topology) : Mapper<P,M>(in){
     this->topology = topology;
   };
+  Map(int topology){
+    this->height = 0;
+    this->width = 0;
+    this->topology = topology;
+  };
+  void write(istream& is){
+    M i;
+    M j;
+    string line;
+    if(!this->map.empty()) {
+      cout << "Map configuration is already uploaded!" << endl;
+      return;
+    }
+    is.clear();
+    is.seekg(0);
+    for (i = 0; getline(is, line); i++) {
+      this->map.push_back(vector<M>());
+      for (j = 0; j <= line.size(); j++) {
+        if(line[j] == 'R' || line[j] == 'F'){
+          this->map[i].push_back('.');
+        }
+        else this->map[i].push_back(line[j]);
+        cout << (char)this->map[i][j] << ' ' << ' ';
+        if(j == line.size()) {
+          cout << '\n' << '\n';
+        }
+      }
+    }
+    cout << endl;
+    this->height = i;
+    this->width = j - 1;
+    cout << this->height << ' ' << this->width << endl;
+
+    cout << "Map is done!" << endl;
+  };
   ~Map(){};
   unordered_map<M, M, hash<M>> respond(P);
 };
@@ -14,6 +49,24 @@ public:
 template<typename M> class Map<string, M> : public Mapper<string, M>{
 public:
   Map(ifstream& in, int topology) : Mapper<string,M>(in){};
+  Map(int topology){
+    this->start = "";
+    this->finish = "";
+  };
+  void write(istream& is){
+    if(!this->map.empty()){
+      cout << "Map configuration is already uploaded!" << endl;
+      return;
+    }
+    is.clear();
+    is.seekg(0);
+    M i;
+    for(i = 0; getline(is, this->finish); i++){
+      if(i == 0) this->start = this->finish;
+      this->map.push_back(this->finish);
+    }
+    this->finish = this->map.back();
+  };
   ~Map(){};
   unordered_map<M, string, hash<M>> respond(string);
 };
