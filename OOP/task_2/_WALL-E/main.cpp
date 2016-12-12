@@ -26,10 +26,10 @@ int main( int argc, char* argv[] ){
 	int limit = -1;
 	int topology = 0;
   parse(argc, argv, in, rm, out, &limit, &topology);
-  Explore<string, int> ex(limit, topology);
+  Explore<Point, int> ex(in, rm, limit, topology);
   ex.start();
-	iss >> ex;
-	ex.start();
+	// iss >> ex;
+	// ex.start();
 	out << ex;
 
 	is.close();
