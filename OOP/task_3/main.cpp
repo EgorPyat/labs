@@ -1,7 +1,10 @@
 #include "node.h"
 
 int main(){
-  tuple<double, string, char> tup = make_tuple(3.56, "Rocket", 'W');
-  cout << tup << endl;
-  return 0;
+  ifstream in("test.txt");
+  CSVparser<string, double, char, size_t> r(in);
+  for (tuple<string, double, char, size_t> rs : r) {
+    cout << rs << endl;
+  }
+  in.close();
 }
