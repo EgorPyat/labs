@@ -105,7 +105,8 @@ private:
           throw BadParse(this->row_num + 1, 2);
         }
       }
-      if((it + 1) == line.end() && line_part != ""){
+      if((it + 1) == line.end()){
+        if(line_part == "") line_part = "0";
         this->arr[i] = line_part;
         ++i;
         if(i < sizeof...(Types)){
