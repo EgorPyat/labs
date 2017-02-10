@@ -1,1 +1,1 @@
-Repository for OOP and ЭВМ labs.
+Repository for FIT labs.
