@@ -18,9 +18,7 @@ int main(){
 	signal(SIGINT, interruption);
 	signal(SIGQUIT, interruption);
 
-	for (;;) pause();
-	
+	for (;;) {}
+  
 	return 0;
 }
-
-                    
