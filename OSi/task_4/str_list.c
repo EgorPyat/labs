@@ -14,13 +14,13 @@ List* new_node(List* head, char* str){
 		head->string = (char*)malloc(strlen(str));
 		strcpy(head->string, str);
 		head->next = NULL;
-		return head;	
+		return head;
 	}
 	t = (List*)malloc(sizeof(List));
 	t->string = (char*)malloc(strlen(str) + 1);
 	strcpy(t->string, str);
 	t->next = head;
-	
+
 	return t;
 }
 List* reverse(List *head){
@@ -30,8 +30,8 @@ List* reverse(List *head){
 		p = head;
 		head = head->next;
 		p->next = t;
-		t = p;	
-	}		
+		t = p;
+	}
 	return t;
 }
 
@@ -60,8 +60,8 @@ int main(){
 		List *tmp = head->next;
 		free(head->string);
 		free(head);
-		head = head->next;
-			
+		head = tmp;
+
 	}
 	return 0;
 }
