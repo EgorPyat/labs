@@ -55,12 +55,13 @@ int main(){
 	}
 	printf("\nList:\n");
 	head = reverse(head);
+	List *t = NULL;
 	while(head != NULL){
 		printf("	%s\n", head->string);
-		List *tmp = head->next;
+		t = head->next;
 		free(head->string);
 		free(head);
-		head = tmp;
+		head = t;
 
 	}
 	return 0;
