@@ -5,21 +5,20 @@
 #include <wait.h>
 
 int main(int argc, char *argv[]){
+	int ex_code;
 	pid_t proc;
-
-	if((proc = fork()) == 0){
-		execl("/bin/cat","cat", "processes.c", (char *)0);
+	proc = fork();
+	if(proc == 0){
+		if(argc > 1) execvp(argv[1], &argv[1]);	
 	}
 	else if(proc == -1){
 		perror(argv[0]);
 		return -1;
-
 	}
-	printf("Parent waits ...\n");
-
-	wait(0);	
-
-	printf("Parent's turn.\n");			
-
+	
+	wait(&ex_code);
+	
+	if(WIFEXITED(ex_code)) printf("Process finished with status: %d.\n", WEXITSTATUS(ex_code)); 
+		
 	return 0;
 }
