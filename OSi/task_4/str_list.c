@@ -38,19 +38,13 @@ List* reverse(List *head){
 int main(){
 	List *head = NULL;
 	char tmp[256];
-	printf("Hello, Solaris!\n");
 
 	for(;;){
 		gets(tmp);
 		if(tmp[0] == '.') {
-			/*printf("String: \"%s\".\n", tmp);
-			printf("Length: %d.\n", strlen(tmp));
-			printf("tmp[0]: \"%c\".\nFinish!\n", tmp[0]);*/
 			head = new_node(head, tmp);
 			break;
 		}
-		/*printf("String: \"%s\".\n", tmp);
-		printf("Length: %d.\n", strlen(tmp));*/
 		head = new_node(head, tmp);
 	}
 	printf("\nList:\n");
