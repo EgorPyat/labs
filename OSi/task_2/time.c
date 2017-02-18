@@ -8,7 +8,7 @@ int main(){
 	t = time(0);
 	printf("My: %s", ctime(&t));
 	putenv("TZ=PST8PDT");
-	printf("Ca: %s", ctime(&t)); 
+	printf("Ca: %s", ctime(&t));
 
 	return 0;
 }
