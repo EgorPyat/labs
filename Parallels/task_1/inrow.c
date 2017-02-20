@@ -1,4 +1,4 @@
-//#include <mpi.h>
+#include <mpi.h>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
@@ -45,46 +45,50 @@ const double tau_p = +0.001;
 const double tau_n = -0.001;
 
 int main (int argc, char* argv[]){
-  int N = 7;
+  int rank, size;
+  int N = 10;
   double t = tau_p;
-  double A[49] = {
-    2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-    1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-    1.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0,
-    1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0,
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
+  double A[100] = {
+    2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+    1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0,
+    1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0,
   };
-  double B[7] = {8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0};
-  double X[7] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  double S[7];
-  double R[7];
+  double B[10] = {11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0, 11.0};
+  double X[10] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  double S[10];
+  double R[10];
   double u;
 
-  for(;;){
-    mul(A, X, R, N);
-    sub(R, B, S, N);
-    u = norm(S, B, N);
-    // printf("Norm = %f\n", u);
-    if(u < EPS) break;
-    scmul(S, t, N);
-    sub(X, S, R, N);
-    memcpy(X, R, N*sizeof(double));
-  }
-  for(int i = 0; i < N; i++){
-    printf("%f\n", X[i]);
-  }
+  MPI_Init (&argc, &argv);
+  MPI_Comm_rank (MPI_COMM_WORLD, &rank);
+  MPI_Comm_size (MPI_COMM_WORLD, &size);
+  printf( "Hello world from process %d of %d\n", rank, size );
 
+
+  if(rank == 0){
+    for(;;){
+      mul(A, X, R, N);
+      sub(R, B, S, N);
+      u = norm(S, B, N);
+      if(u < EPS) break;
+      scmul(S, t, N);
+      sub(X, S, R, N);
+      memcpy(X, R, N*sizeof(double));
+    }
+    for(int i = 0; i < N; i++){
+      printf("%f\n", X[i]);
+    }
+  }
+  else{
+    printf("rank = %d\n", rank);
+  }
+  MPI_Finalize();
   return 0;
 }
-
-/*
-int rank, size;
-
-MPI_Init (&argc, &argv);
-MPI_Comm_rank (MPI_COMM_WORLD, &rank);
-MPI_Comm_size (MPI_COMM_WORLD, &size);
-printf( "Hello world from process %d of %d\n", rank, size );
-MPI_Finalize();
-*/
