@@ -2,23 +2,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/mman.h>
 
 int main(){
-	char c;	
 	int file;
 	int lines[100];
 	int num = 0;
-	char string[256];
 	char str[4];
 	int fd;
+	int length;
+	char *pa;
+	int pos = 0;
 	int i;
-	file = open("find_str_wait.c", O_RDONLY);
 
-	while(read(file, &c, 1)){
-		if(c == '\n'){
-			lines[num] = lseek(file, 0, SEEK_CUR);
+	file = open("mem_refl.c", O_RDONLY);
+	length = lseek(file, 0, SEEK_END);
+	pa = mmap(0, length, PROT_READ, MAP_SHARED, file, 0);
+	
+	for(i = 0; i < length; i++){
+		if(*(pa + i) == '\n'){
+			++pos;
+			lines[num] = pos;
 			++num;					
 		}
+		else ++pos;
 	}
 	if ((fd = open("/dev/tty", O_RDONLY | O_NDELAY)) == -1) {
 		perror("/dev/tty");
@@ -29,26 +36,17 @@ int main(){
 		sleep(5);
 		if(read(fd, str, 4) == 0){
 			printf("Time is over!\n");
-			lseek(file, 0, SEEK_SET);
-			while(read(file, &c, 1)){
-				write(1, &c, 1);
-			}
+			write(1, pa, length);
 			return 0;
 		};
 		num = atoi(str);
 		if(num == 0) return 0;
 		else if(num < 0) printf("N should be > 0!\n");
 		else if(num == 1){
-			lseek(file, 0, SEEK_SET);
-			read(file, string, lines[0]);
-			string[lines[0] - 1] = '\n';
-			write(1, string, lines[0]);		
+			write(1, pa, lines[0]);	
 		}	
 		else if(num >= 2){
-			lseek(file, lines[num - 2], SEEK_SET);
-			read(file, string, lines[num - 1] - lines[num - 2] - 1);
-			string[lines[num - 1] - lines[num - 2] - 1] = '\n';
-			write(1, string, lines[num - 1] - lines[num - 2]);
+			write(1, pa + lines[num - 2], lines[num - 1] - lines[num - 2]);
 		}
 	}
 

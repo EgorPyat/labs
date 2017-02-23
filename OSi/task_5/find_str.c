@@ -26,14 +26,14 @@ int main(){
 		if(num == 1){
 			lseek(file, 0, SEEK_SET);
 			read(file, string, lines[0]);
-			string[lines[0] - 1] = '\0';
-			printf("%s\n", string);		
+			string[lines[0] - 1] = '\n';
+			write(1, string, lines[0]);		
 		}	
 		else if( num >= 2){
 			lseek(file, lines[num - 2], SEEK_SET);
 			read(file, string, lines[num - 1] - lines[num - 2] - 1);
-			string[lines[num - 1] - lines[num - 2] - 1] = '\0';
-			printf("%s\n", string);
+			string[lines[num - 1] - lines[num - 2] - 1] = '\n';
+			write(1, string, lines[num - 1] - lines[num - 2]);
 		}
 	}
 
