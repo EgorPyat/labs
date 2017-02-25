@@ -74,21 +74,26 @@ int suit(char* filename, char* template){
 	return 0;
 }
 
-char** parse(char* template){
-	printf("Template: %s\n", template);
+char** parse(char* template, int* sz){
+	// printf("Template: %s\n", template);
 	int i;
 	int size = 0;
 	int len = strlen(template);
 	char** parsed;
 	int j = 0;
+	int end = 0;
+
 	for(i = 0; i < len; i++){
 		if(template[i] == '/'){
 			++size;
+			if(i == len - 1) end = 1;
 		}
 	}
-	if(size == 0) return (char**)0;
+	if(end == 0) ++size;
+	if(size == 0) ++size;
 
 	parsed = (char**)malloc(size);
+	*sz = size;
 	size = 0;
 
 	for(i = 0; i < len; i++){
@@ -101,6 +106,11 @@ char** parse(char* template){
 			++size;
 		}
 	}
+	if(end == 0){
+		parsed[size] = (char*)malloc(len - j + 1);
+		memcpy(parsed[size], template + j, len - j);
+		parsed[size][len] = '\0';
+	}
 
 	return parsed;
 }
@@ -108,21 +118,20 @@ char** parse(char* template){
 int main(int argc, char *argv[]){
 	DIR *dirp;
 	struct dirent *dp;
+	int i;
 	int find = 0;
+	int sz = 0;
 	char** template;
 	if(argc == 3){
-		template = parse(argv[2]);
-		if(template == NULL) return 0;
-
-		while(1){
-			write(0, template[find], strlen(template[find]));
-			++find;
-			// getchar();
-		}
 		if ((dirp = opendir(argv[1])) == NULL) {
 			perror(argv[1]);
 			return 1;
 		}
+		template = parse(argv[2], &sz);
+		// if(template == NULL) return 0;
+		// for(i = 0; i < sz; i++){
+		// 	printf("%s\n", template[i]);
+		// }
 		while ((dp = readdir(dirp)) != NULL){
 			if(!suit(dp->d_name, argv[2])) {
 				printf("%-14.*s\n", dp->d_reclen, dp->d_name);
