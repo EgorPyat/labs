@@ -31,11 +31,11 @@ int suit(char* filename, char* template){
 					if(filename[j] == template[i]){
 						find = 1;
 						if(star == 0 && (j - last) != ques){
-							printf("Don't match!\n");
+							// printf("Don't match!\n");
 							return 1;
 						}
 			 			else if(star == 1 && (j - last) < ques){
-							printf("Don't match!\n");
+							// printf("Don't match!\n");
 							return 1;
 						}
 						j++;
@@ -44,7 +44,7 @@ int suit(char* filename, char* template){
 					}
 				}
 				if(find == 0){
-					printf("Don't match! %c\n", template[i]);
+					// printf("Don't match! %c\n", template[i]);
 					return 1;
 				}
 				ques = 0;
@@ -54,19 +54,19 @@ int suit(char* filename, char* template){
 		}
 	}
  	if(symb == 0 && star == 0 && flen != ques){
-		printf("Don't match!\n");
+		// printf("Don't match!\n");
 		return 1;
 	}
 	else if(symb == 0 && star == 1 && flen < ques){
-		printf("Don't match!\n");
+		// printf("Don't match!\n");
 		return 1;
 	}
 	else if(symb == 1 && star == 0 && ques != (flen - last)){
-		printf("Don't match!\n");
+		// printf("Don't match!\n");
 		return 1;
 	}
 	else if(symb == 1 && star == 1 && ques > (flen - last)){
-		printf("Don't match!\n");
+		// printf("Don't match!\n");
 		return 1;
 	}
 	return 0;
@@ -75,6 +75,7 @@ int suit(char* filename, char* template){
 int main(int argc, char *argv[]){
 	DIR *dirp;
 	struct dirent *dp;
+	int find = 0;
 
 	if(argc == 3){
 		if ((dirp = opendir(argv[1])) == NULL) {
@@ -82,9 +83,13 @@ int main(int argc, char *argv[]){
 			return 1;
 		}
 		while ((dp = readdir(dirp)) != NULL){
-			if(!suit(dp->d_name, argv[2])) printf("\tFilename: %-14.*s\n", dp->d_reclen, dp->d_name);
-			else printf("\tTemplate: %s\n", argv[2]);
+			if(!suit(dp->d_name, argv[2])) {
+				printf("%-14.*s\n", dp->d_reclen, dp->d_name);
+				++find;
+			}
 		}
+		if(find == 0) printf("Template: %s\n", argv[2]);
+
 		closedir(dirp);
 	}
 	else printf("%s: Bad arguments\n", argv[0]);
