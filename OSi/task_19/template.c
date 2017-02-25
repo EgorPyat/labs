@@ -14,7 +14,8 @@ int suit(char* filename, char* template){
 	int find = 0;
 	int star = 0;
 	int quest = 0;
-	
+	printf("%s\n", template);
+	//printf("%s\n", filename);
 	flen = strlen(filename);
 	tlen = strlen(template);
 
@@ -43,25 +44,34 @@ int suit(char* filename, char* template){
 							printf("Don't match!\n");
 							return 1;					
 						}	
-						j++;	
+						j++;
+						s = j;
+						//printf("s %d, j %d\n", s, j);	
 						break;	
 					}		
-				}			
+				}	
+				//printf("s %d, j %d\n", s, j);		
 				if(find == 0){
 					printf("Don't match! %c\n", template[i]);
 					return 1;					
 				}
-				s = j;	
+				//s = j;	
 				quest = 0;
-				star = 0;	
+				star = 0;
+				find = 0;
+				//symbol = 0;	
 				break;	
 		}
 	}
-	if(symbol == 0 && flen > quest && star == 0){
+	printf("star: %d\n", star);
+	if(symbol == 0 && flen != quest && star == 0){
+		printf("Don't atch!\n");
+		return 1;	
+	}
+	else if(star == 0 && quest > flen){
 		printf("Don't match!\n");
 		return 1;	
 	}
-
 	return 0;
 }
 
