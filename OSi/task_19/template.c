@@ -34,7 +34,7 @@ int suit(char* filename, char* template){
 							printf("Don't match!\n");
 							return 1;
 						}
-			 else if(star == 1 && (j - last) < ques){
+			 			else if(star == 1 && (j - last) < ques){
 							printf("Don't match!\n");
 							return 1;
 						}
