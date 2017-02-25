@@ -4,20 +4,15 @@
 #include <ctype.h>
 
 int suit(char* filename, char* template){
-	int flen;
-	int tlen;
 	int i = 0;
 	int j = 0;
-	int s = 0;
-	int t = 0;
-	int symbol = 0;
+	int last = 0;
+	int symb = 0;
 	int find = 0;
 	int star = 0;
-	int quest = 0;
-	//printf("%s\n", template);
-	//printf("%s\n", filename);
-	flen = strlen(filename);
-	tlen = strlen(template);
+	int ques = 0;
+	int flen = strlen(filename);
+	int tlen = strlen(template);
 
 	for(; i < tlen; i++){
 		switch(template[i]){
@@ -25,49 +20,52 @@ int suit(char* filename, char* template){
 				printf("Bad template format\n");
 				return 1;
 			case '?':
-				++quest;
+				++ques;
 				break;
 			case '*':
 				star = 1;
 				break;
 			default:
-				symbol = 1;
+				symb = 1;
 				for(; j < flen; j++){
 					if(filename[j] == template[i]){
 						find = 1;
-						if((j - s) < quest){
+						if(star == 0 && (j - last) != ques){
 							printf("Don't match!\n");
 							return 1;
 						}
-						if((j - s) > quest && star == 0){
+			 else if(star == 1 && (j - last) < ques){
 							printf("Don't match!\n");
 							return 1;
 						}
 						j++;
-						s = j;
-						//printf("s %d, j %d\n", s, j);
+						last = j;
 						break;
 					}
 				}
-				//printf("s %d, j %d\n", s, j);
 				if(find == 0){
 					printf("Don't match! %c\n", template[i]);
 					return 1;
 				}
-				//s = j;
-				quest = 0;
+				ques = 0;
 				star = 0;
 				find = 0;
-				//symbol = 0;
 				break;
 		}
 	}
-	//printf("star: %d\n", star);
-	if(symbol == 0 && flen != quest && star == 0){
-		printf("Don't atch!\n");
+ 	if(symb == 0 && star == 0 && flen != ques){
+		printf("Don't match!\n");
 		return 1;
 	}
-	else if(quest > flen){
+	else if(symb == 0 && star == 1 && flen < ques){
+		printf("Don't match!\n");
+		return 1;
+	}
+	else if(symb == 1 && star == 0 && ques != (flen - last)){
+		printf("Don't match!\n");
+		return 1;
+	}
+	else if(symb == 1 && star == 1 && ques > (flen - last)){
 		printf("Don't match!\n");
 		return 1;
 	}
