@@ -115,6 +115,51 @@ char** parse(char* template, int* sz){
 	return parsed;
 }
 
+void dir(char** template, int* sz, int* count, char* argv){
+	struct dirent *dp;
+	DIR* dirp;
+	int i;
+
+	if ((dirp = opendir(argv)) == NULL) {
+		// perror(argv);
+		return;
+	}
+	printf("Now in DIR: %s\n", argv);
+	chdir(argv);
+
+	while ((dp = readdir(dirp)) != NULL){
+		if(!suit(dp->d_name, template[*count])){
+			// if ((di = opendir(dp->d_name)) == NULL){
+				// printf("%sdd\n", dp->d_name);
+				// return;
+				// continue;
+			// }
+			// else{
+				// printf("d: %s\n", dp->d_name);
+				printf("   %s/", dp->d_name);
+				(*count)++;
+			if(*count != *sz){
+				getchar();
+				dir(template, sz, count, dp->d_name);
+			}
+			else {
+				(*count)--;
+				printf("qwe\n");
+				getchar();
+			}
+			// }
+			// printf("%-14.*s\n", dp->d_reclen, dp->d_name);
+			// ++find;
+		}
+	}
+	printf("ending\n");
+	getchar();
+	chdir("..");
+	(*count)--;
+	closedir(dirp);
+	// return 0;
+}
+
 int main(int argc, char *argv[]){
 	DIR *dirp;
 	struct dirent *dp;
@@ -123,24 +168,25 @@ int main(int argc, char *argv[]){
 	int sz = 0;
 	char** template;
 	if(argc == 3){
-		if ((dirp = opendir(argv[1])) == NULL) {
-			perror(argv[1]);
-			return 1;
-		}
+		// if ((dirp = opendir(argv[1])) == NULL) {
+		// 	perror(argv[1]);
+		// 	return 1;
+		// }
 		template = parse(argv[2], &sz);
 		// if(template == NULL) return 0;
 		// for(i = 0; i < sz; i++){
 		// 	printf("%s\n", template[i]);
 		// }
-		while ((dp = readdir(dirp)) != NULL){
-			if(!suit(dp->d_name, argv[2])) {
-				printf("%-14.*s\n", dp->d_reclen, dp->d_name);
-				++find;
-			}
-		}
-		if(find == 0) printf("Template: %s\n", argv[2]);
+		dir(template, &sz, &find, argv[1]);
+		// while ((dp = readdir(dirp)) != NULL){
+		// 	if(!suit(dp->d_name, argv[2])) {
+		// 		printf("%-14.*s\n", dp->d_reclen, dp->d_name);
+		// 		++find;
+		// 	}
+		// }
+		// if(find == 0) printf("Template: %s\n", argv[2]);
 
-		closedir(dirp);
+		// closedir(dirp);
 	}
 	else printf("%s: Bad arguments\n", argv[0]);
 
