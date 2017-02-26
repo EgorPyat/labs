@@ -121,11 +121,13 @@ void dir(char** template, int* sz, int* count, char* argv){
 	int i;
 
 	if ((dirp = opendir(argv)) == NULL) {
-		// perror(argv);
+		printf("%d %s\n",*count, argv);
+		perror(argv);
+		(*count)--;
 		return;
 	}
-	printf("Now in DIR: %s\n", argv);
-	chdir(argv);
+	printf("Now in DIR: %s . Level: %d .\n", argv, *count);
+	// chdir(argv);
 
 	while ((dp = readdir(dirp)) != NULL){
 		if(!suit(dp->d_name, template[*count])){
@@ -135,16 +137,19 @@ void dir(char** template, int* sz, int* count, char* argv){
 				// continue;
 			// }
 			// else{
+			printf("%d\n",*count);
+
 				// printf("d: %s\n", dp->d_name);
-				printf("   %s/", dp->d_name);
+				printf("   file: %s", dp->d_name);
 				(*count)++;
 			if(*count != *sz){
 				getchar();
 				dir(template, sz, count, dp->d_name);
+				printf("%d\n",*count);
+
 			}
 			else {
 				(*count)--;
-				printf("qwe\n");
 				getchar();
 			}
 			// }
@@ -152,10 +157,10 @@ void dir(char** template, int* sz, int* count, char* argv){
 			// ++find;
 		}
 	}
-	printf("ending\n");
-	getchar();
-	chdir("..");
 	(*count)--;
+	printf("\nto Level %d\n", *count);
+	getchar();
+	// chdir("..");
 	closedir(dirp);
 	// return 0;
 }
