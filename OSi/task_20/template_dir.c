@@ -115,12 +115,11 @@ char** parse(char* template, int* sz){
 	return parsed;
 }
 
-void dir(char** template, int* sz, int* count, char* argv, char* lpath){
+void dir(char** template, int* sz, int* count, char* argv){
 	struct dirent *dp;
 	DIR* dirp;
 	int i;
-	char* path = (char*)malloc(strlen(argv) + 1);
-	memcpy(path, argv, strlen(argv) + 1);
+
 	if ((dirp = opendir(argv)) == NULL) {
 		// perror(argv);
 		(*count)--;
@@ -138,7 +137,7 @@ void dir(char** template, int* sz, int* count, char* argv, char* lpath){
 		if(!suit(dp->d_name, template[*count])){
 			(*count)++;
 			if(*count != *sz){
-				dir(template, sz, count, dp->d_name, argv);
+				dir(template, sz, count, dp->d_name);
 			}
 			else {
 				for(i = 0; i < *count; i++) printf("\t");
@@ -162,7 +161,7 @@ int main(int argc, char *argv[]){
 	printf("%s\n", argv[2]);
 	if(argc == 3){
 		template = parse(argv[2], &sz);
-		dir(template, &sz, &find, argv[1], argv[1]);
+		dir(template, &sz, &find, argv[1]);
 	}
 	else printf("%s: Bad arguments\n", argv[0]);
 
