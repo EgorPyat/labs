@@ -115,54 +115,41 @@ char** parse(char* template, int* sz){
 	return parsed;
 }
 
-void dir(char** template, int* sz, int* count, char* argv){
+void dir(char** template, int* sz, int* count, char* argv, char* lpath){
 	struct dirent *dp;
 	DIR* dirp;
 	int i;
-
+	char* path = (char*)malloc(strlen(argv) + 1);
+	memcpy(path, argv, strlen(argv) + 1);
 	if ((dirp = opendir(argv)) == NULL) {
-		printf("%d %s\n",*count, argv);
-		perror(argv);
+		// perror(argv);
 		(*count)--;
 		return;
 	}
-	printf("Now in DIR: %s . Level: %d .\n", argv, *count);
-	// chdir(argv);
+	chdir(argv);
+	if(*count == 0) printf("Current: %s/\n", argv);
+	else{
+		for(i = 0; i < *count; i++) printf("\t");
+		printf("%d DIR: %s/\n", *count, argv);
+	}
 
 	while ((dp = readdir(dirp)) != NULL){
+		if(strcmp(".", dp->d_name) == 0 || strcmp("..", dp->d_name) == 0) continue;
 		if(!suit(dp->d_name, template[*count])){
-			// if ((di = opendir(dp->d_name)) == NULL){
-				// printf("%sdd\n", dp->d_name);
-				// return;
-				// continue;
-			// }
-			// else{
-			printf("%d\n",*count);
-
-				// printf("d: %s\n", dp->d_name);
-				printf("   file: %s", dp->d_name);
-				(*count)++;
+			(*count)++;
 			if(*count != *sz){
-				getchar();
-				dir(template, sz, count, dp->d_name);
-				printf("%d\n",*count);
-
+				dir(template, sz, count, dp->d_name, argv);
 			}
 			else {
+				for(i = 0; i < *count; i++) printf("\t");
+				printf("File: %s\n", dp->d_name);
 				(*count)--;
-				getchar();
 			}
-			// }
-			// printf("%-14.*s\n", dp->d_reclen, dp->d_name);
-			// ++find;
 		}
 	}
+	chdir("..");
 	(*count)--;
-	printf("\nto Level %d\n", *count);
-	getchar();
-	// chdir("..");
 	closedir(dirp);
-	// return 0;
 }
 
 int main(int argc, char *argv[]){
@@ -172,26 +159,10 @@ int main(int argc, char *argv[]){
 	int find = 0;
 	int sz = 0;
 	char** template;
+	printf("%s\n", argv[2]);
 	if(argc == 3){
-		// if ((dirp = opendir(argv[1])) == NULL) {
-		// 	perror(argv[1]);
-		// 	return 1;
-		// }
 		template = parse(argv[2], &sz);
-		// if(template == NULL) return 0;
-		// for(i = 0; i < sz; i++){
-		// 	printf("%s\n", template[i]);
-		// }
-		dir(template, &sz, &find, argv[1]);
-		// while ((dp = readdir(dirp)) != NULL){
-		// 	if(!suit(dp->d_name, argv[2])) {
-		// 		printf("%-14.*s\n", dp->d_reclen, dp->d_name);
-		// 		++find;
-		// 	}
-		// }
-		// if(find == 0) printf("Template: %s\n", argv[2]);
-
-		// closedir(dirp);
+		dir(template, &sz, &find, argv[1], argv[1]);
 	}
 	else printf("%s: Bad arguments\n", argv[0]);
 
