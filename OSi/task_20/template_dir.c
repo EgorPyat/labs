@@ -115,10 +115,11 @@ char** parse(char* template, int* sz){
 	return parsed;
 }
 
-void dir(char** template, int* sz, int* count, char* argv){
+void dir(char** template, int* sz, int* count, char* argv, char* path){
 	struct dirent *dp;
 	DIR* dirp;
 	int i;
+	int len;
 
 	if ((dirp = opendir(argv)) == NULL) {
 		// perror(argv);
@@ -127,22 +128,29 @@ void dir(char** template, int* sz, int* count, char* argv){
 	}
 	chdir(argv);
 	if(*count == 0) printf("Current: %s/\n", argv);
-	else{
-		for(i = 0; i < *count; i++) printf("\t");
-		printf("%d DIR: %s/\n", *count, argv);
-	}
+	// else{
+		// for(i = 0; i < *count; i++) printf("\t");
+		// printf("%d DIR: %s/\n", *count, argv);
+	// }
+	if(*count > 0) path = strcat(strcat(path,"/"), argv);
+	len = strlen(path);
 
 	while ((dp = readdir(dirp)) != NULL){
 		if(strcmp(".", dp->d_name) == 0 || strcmp("..", dp->d_name) == 0) continue;
 		if(!suit(dp->d_name, template[*count])){
 			(*count)++;
 			if(*count != *sz){
-				dir(template, sz, count, dp->d_name);
+				dir(template, sz, count, dp->d_name, path);
+				path[len] = '\0';
+
 			}
 			else {
 				for(i = 0; i < *count; i++) printf("\t");
-				printf("File: %s\n", dp->d_name);
+				// printf("File: %s\n", dp->d_name);
+				path = strcat(strcat(path,"/"), dp->d_name);
+				printf("%s\n", path); //getchar();
 				(*count)--;
+				path[len] = '\0';
 			}
 		}
 	}
@@ -161,7 +169,7 @@ int main(int argc, char *argv[]){
 	printf("%s\n", argv[2]);
 	if(argc == 3){
 		template = parse(argv[2], &sz);
-		dir(template, &sz, &find, argv[1]);
+		dir(template, &sz, &find, argv[1], argv[1]);
 	}
 	else printf("%s: Bad arguments\n", argv[0]);
 
