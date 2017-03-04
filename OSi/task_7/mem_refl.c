@@ -6,14 +6,17 @@
 
 int main(){
 	int file;
-	int lines[100];
-	int num = 0;
+	int lines[101] = {0};
+	int num = 1;
 	char str[4];
 	int fd;
 	int length;
 	char *pa;
 	int pos = 0;
 	int i;
+	fd_set rfds;
+	struct timeval tv;
+	int retval;
 
 	file = open("mem_refl.c", O_RDONLY);
 	length = lseek(file, 0, SEEK_END);
@@ -27,26 +30,35 @@ int main(){
 		}
 		else ++pos;
 	}
-	if ((fd = open("/dev/tty", O_RDONLY | O_NDELAY)) == -1) {
-		perror("/dev/tty");
-		exit(2);
-	}
+	pos = num;
 	while(1){
 		printf("Write N of string: \n");
-		sleep(5);
-		if(read(fd, str, 4) == 0){
+		FD_ZERO(&rfds);
+		FD_SET(0, &rfds);
+		tv.tv_sec = 5;
+		tv.tv_usec = 0;
+		retval = select(1, &rfds, NULL, NULL, &tv);
+		if(retval == 0){
 			printf("Time is over!\n");
 			write(1, pa, length);
 			return 0;
-		};
-		num = atoi(str);
-		if(num == 0) return 0;
-		else if(num < 0) printf("N should be > 0!\n");
-		else if(num == 1){
-			write(1, pa, lines[0]);	
-		}	
-		else if(num >= 2){
-			write(1, pa + lines[num - 2], lines[num - 1] - lines[num - 2]);
+		}
+		else if(retval == -1){
+			printf("select\n");
+			return 0;		
+		}
+		else{
+			read(1, str, 4);
+			num = atoi(str);
+			if(num == 0) {
+				close(file);
+				return 0;
+			}
+			else if(num < 0) printf("N should be > 0!\n");
+			else if(num >= pos) printf("Out of range!\n");
+			else if(num >= 1){
+				write(1, pa + lines[num - 1], lines[num] - lines[num - 1]);
+			}
 		}
 	}
 

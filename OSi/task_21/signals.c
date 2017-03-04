@@ -5,7 +5,7 @@
 int count;
 void interruption(int sig){
         if (sig == SIGQUIT) {
-		if(count == 1) printf("   %d interruption.\n", count);
+		if(count == 1) printf("   %d interruption.\a\n", count);
 		else printf("   %d interruptions.\n", count);
         	exit(1);
         }

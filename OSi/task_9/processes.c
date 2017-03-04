@@ -11,8 +11,7 @@ int main(int argc, char *argv[]){
 		execl("/bin/cat","cat", "processes.c", (char *)0);
 	}
 	else if(proc == -1){
-		perror(argv[0]);
-		return -1;
+		return 1;
 
 	}
 	printf("Parent waits ...\n");

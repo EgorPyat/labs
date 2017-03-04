@@ -33,11 +33,9 @@ int suit(char* filename, char* template){
 					if(filename[j] == template[i]){
 						find = 1;
 						if(star == 0 && (j - last) != ques){
-							// printf("Don't match!\n");
 							return 1;
 						}
 			 			else if(star == 1 && (j - last) < ques){
-							// printf("Don't match!\n");
 							return 1;
 						}
 						j++;
@@ -46,7 +44,6 @@ int suit(char* filename, char* template){
 					}
 				}
 				if(find == 0){
-					// printf("Don't match! %c\n", template[i]);
 					return 1;
 				}
 				ques = 0;
@@ -56,26 +53,21 @@ int suit(char* filename, char* template){
 		}
 	}
  	if(symb == 0 && star == 0 && flen != ques){
-		// printf("Don't match!\n");
 		return 1;
 	}
 	else if(symb == 0 && star == 1 && flen < ques){
-		// printf("Don't match!\n");
 		return 1;
 	}
 	else if(symb == 1 && star == 0 && ques != (flen - last)){
-		// printf("Don't match!\n");
 		return 1;
 	}
 	else if(symb == 1 && star == 1 && ques > (flen - last)){
-		// printf("Don't match!\n");
 		return 1;
 	}
 	return 0;
 }
 
 char** parse(char* template, int* sz){
-	// printf("Template: %s\n", template);
 	int i;
 	int size = 0;
 	int len = strlen(template);
@@ -100,7 +92,7 @@ char** parse(char* template, int* sz){
 		if(template[i] == '/'){
 			parsed[size] = (char*)malloc(i - j + 1);
 			memcpy(parsed[size], template + j, i - j);
-			parsed[size][i] = '\0';
+			parsed[size][i - j] = '\0';
 			j = i;
 			++j;
 			++size;
@@ -109,7 +101,7 @@ char** parse(char* template, int* sz){
 	if(end == 0){
 		parsed[size] = (char*)malloc(len - j + 1);
 		memcpy(parsed[size], template + j, len - j);
-		parsed[size][len] = '\0';
+		parsed[size][len - j] = '\0';
 	}
 
 	return parsed;
@@ -122,16 +114,11 @@ void dir(char** template, int* sz, int* count, char* argv, char* path){
 	int len;
 
 	if ((dirp = opendir(argv)) == NULL) {
-		// perror(argv);
 		(*count)--;
 		return;
 	}
 	chdir(argv);
 	if(*count == 0) printf("Current: %s/\n", argv);
-	// else{
-		// for(i = 0; i < *count; i++) printf("\t");
-		// printf("%d DIR: %s/\n", *count, argv);
-	// }
 	if(*count > 0) path = strcat(strcat(path,"/"), argv);
 	len = strlen(path);
 
@@ -146,9 +133,8 @@ void dir(char** template, int* sz, int* count, char* argv, char* path){
 			}
 			else {
 				for(i = 0; i < *count; i++) printf("\t");
-				// printf("File: %s\n", dp->d_name);
 				path = strcat(strcat(path,"/"), dp->d_name);
-				printf("%s\n", path); //getchar();
+				printf("%s\n", path);
 				(*count)--;
 				path[len] = '\0';
 			}
