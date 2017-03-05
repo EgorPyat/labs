@@ -45,7 +45,7 @@ int main(){
 			return 0;
 		}
 		else{
-			read(1, str, 4);
+			read(0, str, 4);
 			num = atoi(str);
 			if(num == 0){
 				close(file);
