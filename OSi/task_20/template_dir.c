@@ -151,13 +151,18 @@ int main(int argc, char *argv[]){
 	int i;
 	int find = 0;
 	int sz = 0;
-	char** template;
-	printf("%s\n", argv[2]);
+	char** template = NULL;
+	
 	if(argc == 3){
+		printf("%s\n", argv[2]);	
 		template = parse(argv[2], &sz);
 		dir(template, &sz, &find, argv[1], argv[1]);
 	}
 	else printf("%s: Bad arguments\n", argv[0]);
-
+	
+	for(i = 0; i < sz; i++){
+		free(template[i]);
+	}
+	free(template);
 	return 0;
 }
