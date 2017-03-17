@@ -9,11 +9,12 @@ int main(int argc, char *argv[]){
 	pid_t proc;
 	proc = fork();
 	if(proc == 0){
-		if(argc > 1) execvp(argv[1], &argv[1]);	
+		if(argc > 1){
+			execvp(argv[1], &argv[1]);		
+		}	
 	}
 	else if(proc == -1){
-		perror(argv[0]);
-		return -1;
+		return 1;
 	}
 	
 	wait(&ex_code);

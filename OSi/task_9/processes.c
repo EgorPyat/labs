@@ -8,7 +8,7 @@ int main(int argc, char *argv[]){
 	pid_t proc;
 
 	if((proc = fork()) == 0){
-		execl("/bin/cat","cat", "processes.c", (char *)0);
+		execl("/bin/cat","cat", "processes.c", NULL);
 	}
 	else if(proc == -1){
 		return 1;
