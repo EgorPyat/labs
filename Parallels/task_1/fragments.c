@@ -47,9 +47,12 @@ int main(int argc, char* argv[]){
   /*____________________________________________________________________________________*/
   int shift = ((rank < N % size) ? 1 : 0);
 
-  double a[N*(N/size + shift)];
-  double b[N/size + shift];
-  double x[N/size + 1];
+  double *a = (double*)malloc(N*(N/size + shift)*sizeof(double));
+  double *b = (double*)malloc((N/size + shift)*sizeof(double));
+  double *S = (double*)malloc((N/size + shift)*sizeof(double));
+  double *R = (double*)malloc((N/size + shift)*sizeof(double));
+  double *x = (double*)malloc((N/size + 1)*sizeof(double));
+  double *x_ = (double*)malloc((N/size + 1)*sizeof(double));
 
   int rows = 0;
 
@@ -76,17 +79,15 @@ int main(int argc, char* argv[]){
   memset(x, 0, (N/size + 1)*sizeof(double));
 
   /*____________________________________________________________________________________*/
-
   double t1 = MPI_Wtime();
 
-  /*____________________________________________________________________________________*/
-  double S[N/size + shift];
-  double R[N/size + shift];
   double norm_U;
   double c;
 
   int shift_ = 0;
   int rank_ = 0;
+  double *q;
+  /*____________________________________________________________________________________*/
 
   for(;;){
     norm_U = 0;
@@ -96,11 +97,11 @@ int main(int argc, char* argv[]){
     shift_ = shift;
 
     for(int p = 0; p < size; p++){
-// double* mul(double *matrix, double *vector, double *result, int cols, int rows, int sh, int N)
-      mul(a, x, R, N/size + shift_, N/size + shift, rows, N);
-      MPI_Send(x, N/size + 1, MPI_DOUBLE, (rank + 1) % size, 0, MPI_COMM_WORLD);
-      MPI_Recv(x, N/size + 1, MPI_DOUBLE, (rank - 1 + size) % size, 0, MPI_COMM_WORLD, 0);
-
+      mul(a, x, R,   N/size + shift_, N/size + shift, rows, N);
+      MPI_Sendrecv(x, N/size + 1, MPI_DOUBLE, (rank + 1) % size, 0, x_, N/size + 1, MPI_DOUBLE, (rank - 1 + size) % size, 0, MPI_COMM_WORLD, 0);
+      q = x;
+      x = x_;
+      x_ = q;
       shift_ = ((rank - 1 - p + size) % size < N % size) ? 1 : 0;
       rank_ = (rank - 1 - p + size) % size;
       rows = 0;
@@ -108,15 +109,7 @@ int main(int argc, char* argv[]){
       for(int i = 0; i < rank_; i++){
         rows += N/size + (i < N % size ? 1 : 0);
       }
-      // printf("%d multy\n", rank);
-
     }
-
-    // printf("done\n");
-    // for(int i = 0; i < N/size + shift; i++){
-    //   printf("%d %.10f\n", rank, x[i]);
-    // }
-    // getchar();
 
     sub(R, b, S, N/size + shift);
 
@@ -131,26 +124,18 @@ int main(int argc, char* argv[]){
 
 
     if(c/nB < EPS*EPS){
+      int count = 0;
       for(int i = 0; i < N/size + shift; i++){
         printf("%d %.10f\n", rank, x[i]);
+        if(fabs(x[i] - 1) < EPS) continue;
+        else {
+          ++count;
+          break;
+        }
       }
+      printf("%d\n", count);
       break;
     }
-    //
-    // if(rank == 0){
-    //   int r = N/size + shift;
-    //   for(int p = 1; p < size; p++){
-    //     MPI_Recv(x + r, N/size + ((p < N % size) ? 1 : 0), MPI_DOUBLE, p, 0, MPI_COMM_WORLD, 0);
-    //     r += N/size + ((p < N % size) ? 1 : 0);
-    //   }
-    //   for(int p = 1; p < size; p++){
-    //     MPI_Send(x, N, MPI_DOUBLE, p, 0, MPI_COMM_WORLD);
-    //   }
-    // }
-    // else{
-    //   MPI_Send(R, N/size + shift, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-    //   MPI_Recv(x, N, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, 0);
-    // }
   }
   /*____________________________________________________________________________________*/
 
@@ -158,6 +143,13 @@ int main(int argc, char* argv[]){
   // printf("%d %f\n", rank, t2 - t1);
 
   MPI_Finalize();
+
+  free(a);
+  free(b);
+  free(R);
+  free(S);
+  free(x);
+  free(x_);
 
   return 0;
 }
