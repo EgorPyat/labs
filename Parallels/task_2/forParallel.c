@@ -14,7 +14,6 @@ int main(int argc, char* argv[]){
   double *A = (double*)malloc(N*N*sizeof(double));
   double *B = (double*)malloc(N*sizeof(double));
   double *X = (double*)malloc(N*sizeof(double));
-  double *S = (double*)malloc(N*sizeof(double));
   double *R = (double*)malloc(N*sizeof(double));
   double b = 0;
   double u = 0;
@@ -37,7 +36,6 @@ int main(int argc, char* argv[]){
   for(;;){
     u = 0;
     memset(R, 0, N*sizeof(double));
-    memset(S, 0, N*sizeof(double));
 
     #pragma omp parallel for
     for(int i = 0; i < N; i++){
@@ -48,29 +46,28 @@ int main(int argc, char* argv[]){
 
     #pragma omp parallel for
     for(int i = 0; i < N; i++){
-      S[i] = R[i] - B[i];
+      R[i] -= B[i];
     }
 
     #pragma omp parallel for reduction(+:u)
     for(int i = 0; i < N; i++){
-      u += S[i]*S[i];
+      u += R[i]*R[i];
     }
 
     #pragma omp parallel for
     for (int i = 0; i < N; i++){
-      S[i] *= t;
+      R[i] *= t;
     }
 
     #pragma omp parallel for
     for(int i = 0; i < N; i++){
-      R[i] = X[i] - S[i];
+      X[i] -= R[i];
     }
 
-    memcpy(X, R, N*sizeof(double));
     if(u/b < EPS*EPS){
       int count = 0;
       for(int i = 0; i < N; i++){
-        // printf("%.10f\n", X[i]);
+        printf("%.10f\n", X[i]);
         if(fabs(X[i] - 1) < EPS) continue;
         else {
           ++count;
@@ -85,7 +82,6 @@ int main(int argc, char* argv[]){
   free(A);
   free(B);
   free(R);
-  free(S);
   free(X);
 
   return 0;
