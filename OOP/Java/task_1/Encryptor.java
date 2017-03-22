@@ -41,6 +41,17 @@ class CharStat{
   void incCh(){
     ++(this.stat);
   }
+
+  public boolean equals(Object stat){
+   if(stat == this) return true;
+   if(stat == null || this.getClass() != stat.getClass()) return false;
+   CharStat st = (CharStat)stat;
+   return this.ch == st.ch;
+  }
+
+  public int hashCode(){
+   return (int)this.ch;
+  }
 }
 
 class Statistic{
@@ -51,15 +62,13 @@ class Statistic{
   }
 
   void makeNote(char ch){
-    boolean add = false;
+    if(this.stat.add(new CharStat(ch))) return;
     for(CharStat s : this.stat) {
       if(s.getCh() == ch) {
         s.incCh();
-        add = true;
         break;
       }
     }
-    if(add == false) this.stat.add(new CharStat(ch));
   }
 
   void printToFile(){
@@ -131,7 +140,7 @@ class DeCode implements Handler{
     {
       while((ch = file.read()) != -1){
         if(ch == ' '){
-          if(count == 0){
+          if(count == 0 && strb.length() != 0){
             char c = abc.getDeCode(strb.toString());
             if(c == '$') ou.write("\n", 0, 1);
             else ou.write(Character.toString(c), 0, 1);
@@ -148,6 +157,13 @@ class DeCode implements Handler{
         }
         stat.makeNote((char)ch);
       }
+      if(strb.length() - 1 > 0){
+        strb.deleteCharAt(strb.length() - 1);
+        char c = abc.getDeCode(strb.toString());
+        if(c == '$') ou.write("\n", 0, 1);
+        else ou.write(Character.toString(c), 0, 1);
+        strb = new StringBuilder();
+      }
       stat.printToFile();
     }
     catch (IOException e){
@@ -162,6 +178,22 @@ class Encryptor{
     make.put("code", new Code());
     make.put("decode", new DeCode());
     Scanner scan = new Scanner(System.in);
+    MorseABC abc = new MorseABC();
+    try
+    (
+      BufferedReader readABC = new BufferedReader(new InputStreamReader(new FileInputStream("morse.abc")));
+    )
+    {
+      String line;
+      String splited[];
+      while((line = readABC.readLine()) != null){
+        splited = line.split(" ");
+        abc.makeNote(splited[0].charAt(0), splited[1]);
+      }
+    }
+    catch (IOException e){
+      System.err.println("Error while reading file: " + e.getLocalizedMessage());
+    }
     while(true){
       String[] comm;
       while(true){
@@ -183,37 +215,16 @@ class Encryptor{
           }
         }
       }
-      MorseABC abc = new MorseABC();
       try
       (
-        BufferedReader readABC = new BufferedReader(new InputStreamReader(new FileInputStream("morse.abc")));
         InputStreamReader file = new InputStreamReader(new FileInputStream(comm[1]));
       )
       {
-        String line;
-        String splited[];
-        while((line = readABC.readLine()) != null){
-          splited = line.split(" ");
-          abc.makeNote(splited[0].charAt(0), splited[1]);
-        }
         make.get(comm[0]).secret(file, abc);
       }
       catch (IOException e){
         System.err.println("Error while reading file: " + e.getLocalizedMessage());
       }
-
     }
-
   }
 }
-
-// finally{
-//   if (readABC != null){
-//     try{
-//       readABC.close();
-//     }
-//     catch (IOException e){
-//       e.printStackTrace(System.err);
-//     }
-//   }
-// }
