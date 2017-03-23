@@ -63,7 +63,7 @@ class Statistic{
 
   void makeNote(char ch){
     if(this.stat.add(new CharStat(ch))) return;
-    for(CharStat s : this.stat) {
+    for(CharStat s : this.stat){
       if(s.getCh() == ch) {
         s.incCh();
         break;
