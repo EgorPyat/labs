@@ -1,35 +1,38 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 int main(int argc, char *argv[])
 {
-	FILE *fp;
-	uid_t uid;
+	FILE *file;
+	uid_t id;
 
 	if(argc < 2){
-		printf("Usage: %s file_name\n", argv[0]);
-		exit(1);
+		printf("Bad argc!\n");
+		return 1;
 	}
-	printf("initially uid=%ld and euid=%ld\n", getuid(), geteuid());
-	if ((fp = fopen(argv[1], "r")) == NULL) {
-		exit(2);
+
+	printf("1 RUID: %d\nEUID: %d\n", getuid(), geteuid());
+	
+	if ((file = fopen(argv[1], "r")) == NULL) {
+		return 1;
 	}
 	else {
-		printf("first open successful\n");
-		fclose(fp);
+		printf("1 Success\n");
+		fclose(file);
 	}
 
-	setuid(uid = getuid());
+	setuid(id = getuid());
 
-	printf("after setuid(%ld):\n   uid=%ld and euid=%ld\n", uid, getuid(), geteuid() );
+	printf("2 RUID: %d\nEUID: %d\n", uid, getuid(), geteuid() );
 
-	if ((fp = fopen(argv[1], "r")) == NULL) {
-		exit(3);
+	if ((file = fopen(argv[1], "r")) == NULL) {
+		return 1;
 	}
 	else {
-		printf("second open successful\n");
+		printf("2 Success\n");
 		fclose(fp);
 	}
+	
+	return 0;
 }

@@ -6,12 +6,13 @@
 extern char **environ;
 	
 int main(int argc, char* argv[]){
-	char options[ ] = "ispuU:cC:dvV:";
-	struct rlimit rlp;
-	char **p;
+	char opts[ ] = "ispuU:cC:dvV:";
+	struct rlimit lim;
+	char **env;
 	char ch;
-	while ((ch = getopt(argc, argv, options)) != EOF) {
-		switch (ch) {
+	char *buf;
+	while ((ch = getopt(argc, argv, opts)) != EOF) {
+		switch(ch) {
 			case 'i':
 				printf("RUID: %d\n", getuid());
 				printf("EUID: %d\n", geteuid());
@@ -33,23 +34,23 @@ int main(int argc, char* argv[]){
 				ulimit(UL_SETFSIZE, atol(optarg));
 				break;
 			case 'c':
-				getrlimit(RLIMIT_CORE, &rlp);
-				printf("Core sz = %ld\n", rlp.rlim_cur);
+				getrlimit(RLIMIT_CORE, &lim);
+				printf("Core sz = %ld\n", lim.rlim_cur);
 				break;
 
 			case 'C':
-				getrlimit(RLIMIT_CORE, &rlp);
-				rlp.rlim_cur = atol(optarg);
-				if (setrlimit(RLIMIT_CORE, &rlp) == -1)
-				printf("Can't do it!\n");
+				getrlimit(RLIMIT_CORE, &lim);
+				lim.rlim_cur = atol(optarg);
+				setrlimit(RLIMIT_CORE, &lim);
 				break;
 			case 'd':
-				printf("DIR: %s\n", getcwd(NULL,100));
+				printf("DIR: %s\n", buf = getcwd(NULL, 256));
+				free(buf);
 				break;
 			case 'v':
 				printf("ENV:\n");
-				for (p = environ; *p; p++)
-				printf("%s\n", *p);
+				env = environ;
+				while(*env) printf("%s\n", *env++);
 				break;
 			case 'V':
 				putenv(optarg);
