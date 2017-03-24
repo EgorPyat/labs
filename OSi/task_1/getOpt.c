@@ -6,12 +6,12 @@
 extern char **environ;
 	
 int main(int argc, char* argv[]){
-	char opts[ ] = "ispuU:cC:dvV:";
 	struct rlimit lim;
-	char **env;
 	char ch;
 	char *buf;
-	while ((ch = getopt(argc, argv, opts)) != EOF) {
+	int i = 0;
+
+	while ((ch = getopt(argc, argv, "ispuU:cC:dvV:")) != EOF) {
 		switch(ch) {
 			case 'i':
 				printf("RUID: %d\n", getuid());
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]){
 				printf("Ulimit = %ld\n", ulimit(UL_GETFSIZE, 0) );
 				break;
 			case 'U':
-				ulimit(UL_SETFSIZE, atol(optarg));
+				if(ulimit(UL_SETFSIZE, atol(optarg)) == -1) printf("Bad arg!\n");
 				break;
 			case 'c':
 				getrlimit(RLIMIT_CORE, &lim);
@@ -48,9 +48,10 @@ int main(int argc, char* argv[]){
 				free(buf);
 				break;
 			case 'v':
-				printf("ENV:\n");
-				env = environ;
-				while(*env) printf("%s\n", *env++);
+				while(*(environ + i)) {
+					printf("%s\n", *(environ + i));
+					++i;
+				}
 				break;
 			case 'V':
 				putenv(optarg);
