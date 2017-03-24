@@ -4,13 +4,13 @@
 
 int count;
 void interruption(int sig){
-        if (sig == SIGQUIT) {
-		if(count == 1) printf("   %d interruption.\a\n", count);
-		else printf("   %d interruptions.\n", count);
-        	exit(1);
-        }
-	printf("   Oops!\n");
-        count++;
+  if (sig == SIGQUIT){
+  	if(count == 1) printf("   %d interruption.\a\n", count);
+  	else printf("   %d interruptions.\n", count);
+    exit(1);
+  }
+  ++count;
+  printf("\a   %d\n", count);
 	signal(sig, interruption);
 }
 
@@ -19,6 +19,6 @@ int main(){
 	signal(SIGQUIT, interruption);
 
 	for (;;) {}
-  
+
 	return 0;
 }
