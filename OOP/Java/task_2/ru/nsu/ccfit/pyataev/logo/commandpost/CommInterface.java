@@ -1,5 +1,5 @@
 package ru.nsu.ccfit.pyataev.logo.commandpost;
 
-interface CommInterface{
-  void doJob();
+public interface CommInterface{
+  public void doJob(String[] args, Field field);
 }
