@@ -7,8 +7,8 @@ public class CommFactory{
   private Map<String, Class> commands = new HashMap<String, Class>();
   private ClassHunter agent = new ClassHunter();
 
-  public CommInterface create(String name){
-    CommInterface comm;
+  public CommInterface create(String name) throws InstantiationException, ClassNotFoundException, IllegalAccessException{
+    Object comm;
 
     if(!commands.containsKey(name)){
       commands.put(name, Class.forName(agent.find(name)));
@@ -16,7 +16,7 @@ public class CommFactory{
 
     comm = commands.get(name).newInstance();
 
-    return comm;
+    return (CommInterface)comm;
   }
 
 }

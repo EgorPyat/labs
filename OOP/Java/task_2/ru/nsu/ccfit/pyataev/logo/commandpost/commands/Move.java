@@ -4,7 +4,7 @@ import ru.nsu.ccfit.pyataev.logo.commandpost.CommInterface;
 import ru.nsu.ccfit.pyataev.logo.area.Field;
 import ru.nsu.ccfit.pyataev.logo.area.Position;
 
-class Move implements CommInterface{
+public class Move implements CommInterface{
   public void doJob(String[] args, Field field){
     int steps = Integer.parseInt(args[1]);
     Position playerPos = field.getPlayerPos();
@@ -15,15 +15,15 @@ class Move implements CommInterface{
       for(int i = 0; i < steps; i++){
         if(draw == true) field.setPositionMark(playerPos, true);
 
-        playerPos.setX(--(playerPos.getX()));
-        if(playerPos.getX() < 0) playerPos.setX(--(fieldSize.getX()));
+        playerPos.setX((playerPos.getX()) - 1);
+        if(playerPos.getX() < 0) playerPos.setX((fieldSize.getX()) - 1);
       }
     }
     else if(args[0].equals("R")){
       for(int i = 0; i < steps; i++){
         if(draw == true) field.setPositionMark(playerPos, true);
 
-        playerPos.setX(++(playerPos.getX()));
+        playerPos.setX((playerPos.getX()) + 1);
         if(playerPos.getX() == fieldSize.getX()) playerPos.setX(0);
       }
     }
@@ -31,15 +31,15 @@ class Move implements CommInterface{
       for(int i = 0; i < steps; i++){
         if(draw == true) field.setPositionMark(playerPos, true);
 
-        playerPos.setY(--(playerPos.getY()));
-        if(playerPos.getY() < 0) playerPos.setY(--(fieldSize.getY()));
+        playerPos.setY((playerPos.getY()) - 1);
+        if(playerPos.getY() < 0) playerPos.setY((fieldSize.getY()) - 1);
       }
     }
     else if(args[0].equals("D")){
       for(int i = 0; i < steps; i++){
         if(draw == true) field.setPositionMark(playerPos, true);
 
-        playerPos.setY(++(playerPos.getY()));
+        playerPos.setY((playerPos.getY()) + 1);
         if(playerPos.getY() == fieldSize.getY()) playerPos.setY(0);
       }
     }

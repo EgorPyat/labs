@@ -5,9 +5,13 @@ public class Transmitter{
   private String[] commArgs;
 
   public Transmitter(String command){
-    this.commName = command[0];
-    command.replaceFirst(this.commName + " ", "");
-    this.commArgs = command.split(" ");
+    String[] strs = command.split(" ");
+    this.commName = strs[0];
+    String[] newSt = new String[strs.length - 1];
+    for(int i = 0; i < strs.length - 1; i++){
+      newSt[i] = strs[i + 1];
+    }
+    this.commArgs = newSt;
   }
 
   public String getName(){

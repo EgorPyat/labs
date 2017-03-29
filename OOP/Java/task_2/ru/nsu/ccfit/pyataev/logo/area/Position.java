@@ -9,7 +9,7 @@ public class Position{
   }
 
   public int getY(){
-    return this.y
+    return this.y;
   }
 
   public void setX(int x){

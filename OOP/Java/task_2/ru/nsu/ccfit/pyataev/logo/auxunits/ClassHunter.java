@@ -6,15 +6,14 @@ import java.util.*;
 public class ClassHunter{
   public String find(String name){
     Properties prop = new Properties();
-    ImputStream io;
-    String path;
+    String path = null;
 
     try
     (
-      io = ClassLoader.getResourceAsStream("commands.conf");
+      InputStream inp = ClassLoader.getSystemResourceAsStream("commands.conf");
     )
     {
-      prop.load(io);
+      prop.load(inp);
       for(String pr : prop.stringPropertyNames()){
         if(pr.equals(name)){
           path = prop.getProperty(pr);
