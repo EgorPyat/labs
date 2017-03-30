@@ -8,7 +8,16 @@ import ru.nsu.ccfit.pyataev.logo.auxunits.Transmitter;
 import java.io.*;
 import java.util.*;
 
+/**
+  * Main class of LogoWorld Interpreter program
+  * @author EgorPyat
+  */
+
 public class Interpreter{
+  /**
+    * Main method of LogoWorld Interpreter program for starting program
+    * @param argv cmd args
+    */
   public static void main(String[] argv){
     Field field = new Field();
     CommFactory factory = new CommFactory();

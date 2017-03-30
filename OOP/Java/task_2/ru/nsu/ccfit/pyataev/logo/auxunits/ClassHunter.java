@@ -3,7 +3,18 @@ package ru.nsu.ccfit.pyataev.logo.auxunits;
 import java.io.*;
 import java.util.*;
 
+/**
+  * Class for finding classes by config file
+  * @author EgorPyat
+  */
 public class ClassHunter{
+  /**
+    * Find class by config file
+    * @param name class name
+    * @return path to class
+    * @exception IOException
+    * @exception NullPointerException
+    */
   public String find(String name) throws IOException, NullPointerException{
     Properties prop = new Properties();
     String path = null;
