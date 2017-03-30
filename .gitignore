@@ -4,3 +4,6 @@
 *.odt
 *.class
 OOP/C++/task_2/*
+OOP/Java/*/dist/*
+OOP/Java/*/bin/*
+OOP/Java/*/docs/*

@@ -6,12 +6,20 @@
         <property name="build.dir" location="bin" />
         <property name="dist.dir" location="dist" />
         <property name="docs.dir" location="docs" />
+        <property name="lib.dir" location="libraries" />
+        <property name="log.dir" location="log" />
 
+        <path id="Interpreter.classpath">
+           <pathelement location="${lib.dir}/log4j-api-2.8.1.jar"/>
+           <pathelement location="${lib.dir}/log4j-core-2.8.1.jar"/>
+           <pathelement location="."/>
+        </path>
         <!-- Deletes the existing build, docs and dist directory-->
         <target name="clean">
                 <delete dir="${build.dir}" />
                 <delete dir="${docs.dir}" />
                 <delete dir="${dist.dir}" />
+                <delete dir="${log.dir}" />
         </target>
 
         <!-- Creates the  build, docs and dist directory-->
@@ -19,18 +27,20 @@
                 <mkdir dir="${build.dir}" />
                 <mkdir dir="${docs.dir}" />
                 <mkdir dir="${dist.dir}" />
+                <mkdir dir="${dist.dir}/libraries" />
+                <mkdir dir="${log.dir}" />
         </target>
 
         <!-- Compiles the java code (including the usage of library for JUnit -->
         <target name="compile" depends="clean, makedir">
-                <javac srcdir="${src.dir}" destdir="${build.dir}">
+                <javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="Interpreter.classpath" includeantruntime="false">
                 </javac>
 
         </target>
 
         <!-- Creates Javadoc -->
         <target name="docs" depends="compile">
-                <javadoc packagenames="src" sourcepath="${src.dir}" destdir="${docs.dir}">
+                <javadoc packagenames="src" sourcepath="${src.dir}" destdir="${docs.dir}" classpathref="Interpreter.classpath">
                         <!-- Define which files / directory should get included, we include all -->
                          <fileset dir="${src.dir}">
                 <include name="**" />
@@ -40,16 +50,25 @@
 
         <!--Creates the deployable jar file  -->
         <target name="jar" depends="compile">
-                <jar destfile="${dist.dir}\interpreter.jar" basedir="${build.dir}">
+                <copy file="${lib.dir}/log4j-api-2.8.1.jar" todir="${dist.dir}/libraries" />
+                <copy file="${lib.dir}/log4j-core-2.8.1.jar" todir="${dist.dir}/libraries" />
+
+                <jar destfile="${dist.dir}/interpreter.jar" basedir="${build.dir}">
                         <fileset file="commands.conf"/>
+                        <fileset file="log4j2.xml" />
                         <manifest>
                                 <attribute name="Main-Class" value="ru.nsu.ccfit.pyataev.logo.Interpreter" />
+                                <attribute name="Class-Path" value="libraries/log4j-api-2.8.1.jar libraries/log4j-core-2.8.1.jar"/>
                         </manifest>
                 </jar>
         </target>
         <!--Run program -->
         <target name="run">
-              <java jar="${dist.dir}\interpreter.jar" fork="true"/>
+              <java jar="${dist.dir}\interpreter.jar" fork="true">
+                <!-- <classpath>
+                   <pathelement location="/home/egor/Documents/programming/labs/OOP/Java/task_2/libraries/log4j-api-2.8.1.jar"/>
+                </classpath> -->
+              </java>
         </target>
 
         <!--Main -->
