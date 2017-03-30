@@ -19,22 +19,30 @@ public class Interpreter{
         System.out.print("> ");
         Transmitter commDiler = new Transmitter(scan.nextLine());
         if(commDiler.getName().equals("END")) return;
-        System.out.println("transmit");
         CommInterface command = factory.create(commDiler.getName());
-        System.out.println("factory");
         command.doJob(commDiler.getArgs(), field);
-        System.out.println("diler");
         field.print();
-        System.out.println("print");
       }
       catch(ClassNotFoundException e){
-        e.getMessage();
+        System.out.println(e.getMessage());
       }
       catch(InstantiationException e){
-        e.getMessage();
+        System.out.println(e.getMessage());
       }
       catch(IllegalAccessException e){
-        e.getMessage();
+        System.out.println(e.getMessage());
+      }
+      catch(IllegalArgumentException e){
+        System.out.println(e.getMessage());
+      }
+      catch(IllegalStateException e){
+        System.out.println(e.getMessage());
+      }
+      catch(IOException e){
+        System.out.println(e.getMessage());
+      }
+      catch(NullPointerException e){
+        System.out.println(e.getMessage());
       }
     }
 

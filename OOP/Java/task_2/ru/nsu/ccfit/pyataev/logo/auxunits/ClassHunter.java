@@ -4,15 +4,16 @@ import java.io.*;
 import java.util.*;
 
 public class ClassHunter{
-  public String find(String name){
+  public String find(String name) throws IOException, NullPointerException{
     Properties prop = new Properties();
     String path = null;
 
     try
     (
-      InputStream inp = ClassLoader.getSystemResourceAsStream("commands.conf");
+    InputStream inp = ClassLoader.getSystemResourceAsStream("commands.conf");
     )
     {
+      if(inp == null) throw new IOException("Problems with config!");
       prop.load(inp);
       for(String pr : prop.stringPropertyNames()){
         if(pr.equals(name)){
@@ -22,8 +23,10 @@ public class ClassHunter{
       }
     }
     catch(IOException e){
-      System.err.println("Error while writing file: " + e.getLocalizedMessage());
+      throw new IOException("Problems with config!", e);
     }
+
+    if(path == null) throw new NullPointerException("No such class!");
 
     return path;
   }

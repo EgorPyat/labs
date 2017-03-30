@@ -23,7 +23,8 @@ public class Field{
     return this.playerPos;
   }
 
-  public void setPlayerPos(Position newPos){
+  public void setPlayerPos(Position newPos) throws IllegalArgumentException{
+    if(newPos.getX() < 0 || newPos.getY() < 0 || newPos.getX() > this.fieldSize.getX() - 1 || newPos.getY() > this.fieldSize.getY() - 1) throw new IllegalArgumentException("Bad coordinates!");
     this.playerPos = newPos;
   }
 
@@ -35,7 +36,10 @@ public class Field{
     this.field[pos.getY()][pos.getX()] = mark;
   }
 
-  public void create(Position playerPos, Position fieldSize){
+  public void create(Position playerPos, Position fieldSize) throws IllegalArgumentException{
+    if(fieldSize.getX() <= 0 || fieldSize.getY() <= 0) throw new IllegalArgumentException("Bad field size!");
+    if(playerPos.getX() < 0 || playerPos.getY() < 0 || playerPos.getX() > fieldSize.getX() - 1 || playerPos.getY() > fieldSize.getY() - 1) throw new IllegalArgumentException("Bad coordinates!");
+
     this.playerPos = playerPos;
     this.fieldSize = fieldSize;
 

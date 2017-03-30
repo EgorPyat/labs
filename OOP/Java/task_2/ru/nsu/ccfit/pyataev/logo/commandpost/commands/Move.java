@@ -5,8 +5,11 @@ import ru.nsu.ccfit.pyataev.logo.area.Field;
 import ru.nsu.ccfit.pyataev.logo.area.Position;
 
 public class Move implements CommInterface{
-  public void doJob(String[] args, Field field){
+  public void doJob(String[] args, Field field) throws IllegalArgumentException, IllegalStateException{
+    if(!field.isExist()) throw new IllegalStateException("Field isn't already exist!");
+    if(args.length != 2) throw new IllegalArgumentException("Not enough args!");
     int steps = Integer.parseInt(args[1]);
+    if(steps < 0) throw new IllegalArgumentException("Bad way length!");
     Position playerPos = field.getPlayerPos();
     Position fieldSize = field.getFieldSize();
     boolean draw = field.isDraw();
@@ -43,5 +46,6 @@ public class Move implements CommInterface{
         if(playerPos.getY() == fieldSize.getY()) playerPos.setY(0);
       }
     }
+    else throw new IllegalArgumentException("Bad way arg!");
   }
 }
