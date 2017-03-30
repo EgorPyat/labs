@@ -8,7 +8,7 @@ import ru.nsu.ccfit.pyataev.logo.area.Position;
   * Class for moving AE
   * @author EgorPyat
   */
-  
+
 public class Init implements CommInterface{
   /**
     * Create program field
@@ -29,6 +29,5 @@ public class Init implements CommInterface{
     playerPos.setX(Integer.parseInt(args[3]));
 
     field.create(playerPos, fieldSize);
-    System.out.println("init");
   }
 }

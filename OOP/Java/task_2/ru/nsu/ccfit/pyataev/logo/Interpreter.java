@@ -25,7 +25,6 @@ public class Interpreter{
 
     while(true){
       try{
-        System.out.print("> ");
         Transmitter commDiler = new Transmitter(scan.nextLine());
         if(commDiler.getName().equals("END")) return;
         CommInterface command = factory.create(commDiler.getName());
