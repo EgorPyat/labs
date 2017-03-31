@@ -14,12 +14,21 @@
            <pathelement location="${lib.dir}/log4j-core-2.8.1.jar"/>
            <pathelement location="."/>
         </path>
+
+        <path id="Interpreter.test.classpath">
+           <pathelement location="${lib.dir}/log4j-api-2.8.1.jar"/>
+           <pathelement location="${lib.dir}/log4j-core-2.8.1.jar"/>
+           <pathelement location="${build.dir}"/>
+           <pathelement location="."/>
+        </path>
         <!-- Deletes the existing build, docs and dist directory-->
         <target name="clean">
                 <delete dir="${build.dir}" />
                 <delete dir="${docs.dir}" />
                 <delete dir="${dist.dir}" />
                 <delete dir="${log.dir}" />
+                <delete dir="jtestbin" />
+                <delete dir="jtestresults" />
         </target>
 
         <!-- Creates the  build, docs and dist directory-->
@@ -29,13 +38,12 @@
                 <mkdir dir="${dist.dir}" />
                 <mkdir dir="${dist.dir}/libraries" />
                 <mkdir dir="${log.dir}" />
+                <mkdir dir="jtestresults" />
         </target>
 
         <!-- Compiles the java code (including the usage of library for JUnit -->
         <target name="compile" depends="clean, makedir">
-                <javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="Interpreter.classpath" includeantruntime="false">
-                </javac>
-
+                <javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="Interpreter.classpath" includeantruntime="false"></javac>
         </target>
 
         <!-- Creates Javadoc -->
@@ -62,13 +70,16 @@
                         </manifest>
                 </jar>
         </target>
+
         <!--Run program -->
         <target name="run">
-              <java jar="${dist.dir}\interpreter.jar" fork="true">
-                <!-- <classpath>
-                   <pathelement location="/home/egor/Documents/programming/labs/OOP/Java/task_2/libraries/log4j-api-2.8.1.jar"/>
-                </classpath> -->
-              </java>
+              <java jar="${dist.dir}\interpreter.jar" fork="true"></java>
+        </target>
+
+        <!-- Make tests -->
+        <target name="jtest" depends="compile">
+              <mkdir dir="jtestbin" />
+              <javac srcdir="jtest/ru" destdir="jtestbin" classpathref="Interpreter.test.classpath" includeantruntime="false"></javac>
         </target>
 
         <!--Main -->
