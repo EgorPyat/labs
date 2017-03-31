@@ -1,5 +1,8 @@
 package ru.nsu.ccfit.pyataev.logo.commandpost.commands;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import ru.nsu.ccfit.pyataev.logo.commandpost.CommInterface;
 import ru.nsu.ccfit.pyataev.logo.area.Field;
 import ru.nsu.ccfit.pyataev.logo.area.Position;
@@ -10,6 +13,7 @@ import ru.nsu.ccfit.pyataev.logo.area.Position;
   */
 
 public class Teleport implements CommInterface{
+  private static final Logger logger = LogManager.getLogger(Teleport.class);
   /**
     * Teleport AE
     * @param args command args
@@ -26,5 +30,6 @@ public class Teleport implements CommInterface{
     newPos.setY(Integer.parseInt(args[1]));
 
     field.setPlayerPos(newPos);
+    logger.info("AE TELEPORT to X: " + args[0] + " Y: " + args[1] + "!");
   }
 }

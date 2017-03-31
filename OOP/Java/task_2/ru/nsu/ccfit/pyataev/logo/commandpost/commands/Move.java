@@ -1,5 +1,8 @@
 package ru.nsu.ccfit.pyataev.logo.commandpost.commands;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import ru.nsu.ccfit.pyataev.logo.commandpost.CommInterface;
 import ru.nsu.ccfit.pyataev.logo.area.Field;
 import ru.nsu.ccfit.pyataev.logo.area.Position;
@@ -8,8 +11,9 @@ import ru.nsu.ccfit.pyataev.logo.area.Position;
   * class for AE moving
   * @author EgorPyat
   */
-  
+
 public class Move implements CommInterface{
+  private static final Logger logger = LogManager.getLogger(Move.class);
   /**
     * Move AE
     * @param args command args
@@ -59,5 +63,6 @@ public class Move implements CommInterface{
       }
     }
     else throw new IllegalArgumentException("Bad way arg!");
+    logger.info("AE MOVE to " + args[0] + " by " + steps + " steps!");
   }
 }

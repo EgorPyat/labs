@@ -1,5 +1,8 @@
 package ru.nsu.ccfit.pyataev.logo.commandpost.commands;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import ru.nsu.ccfit.pyataev.logo.commandpost.CommInterface;
 import ru.nsu.ccfit.pyataev.logo.area.Field;
 import ru.nsu.ccfit.pyataev.logo.area.Position;
@@ -10,6 +13,7 @@ import ru.nsu.ccfit.pyataev.logo.area.Position;
   */
 
 public class Init implements CommInterface{
+  private static final Logger logger = LogManager.getLogger(Init.class);
   /**
     * Create program field
     * @param args command args
@@ -29,5 +33,7 @@ public class Init implements CommInterface{
     playerPos.setX(Integer.parseInt(args[3]));
 
     field.create(playerPos, fieldSize);
+    logger.info("Field created with X: " + fieldSize.getX() + " Y: " + fieldSize.getY() + " !");
+    logger.info("AE created with X: " + playerPos.getX() + " Y: " + playerPos.getY() + " !");
   }
 }

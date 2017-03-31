@@ -30,34 +30,49 @@ public class Interpreter{
 
     while(true){
       try{
+        logger.info("Getting command!");
         Transmitter commDiler = new Transmitter(scan.nextLine());
+        logger.info("Command parsed!");
         if(commDiler.getName().equals("END")){
-          logger.info("Program finish!");
+          logger.info("Program finished!");
           return;
         }
+        logger.info("Start command object creating!");
         CommInterface command = factory.create(commDiler.getName());
+        logger.info("Command created!");
+        logger.info("Run command!");
         command.doJob(commDiler.getArgs(), field);
+        logger.info("Command finished!");
+        logger.info("Start printing field!");
         field.print();
+        logger.info("Printing completed!");
       }
       catch(ClassNotFoundException e){
+        logger.warn(e.getMessage());
         System.out.println(e.getMessage());
       }
       catch(InstantiationException e){
+        logger.warn(e.getMessage());
         System.out.println(e.getMessage());
       }
       catch(IllegalAccessException e){
+        logger.warn(e.getMessage());
         System.out.println(e.getMessage());
       }
       catch(IllegalArgumentException e){
+        logger.warn(e.getMessage());
         System.out.println(e.getMessage());
       }
       catch(IllegalStateException e){
+        logger.warn(e.getMessage());
         System.out.println(e.getMessage());
       }
       catch(IOException e){
+        logger.error(e.getMessage());
         System.out.println(e.getMessage());
       }
       catch(NullPointerException e){
+        logger.warn(e.getMessage());
         System.out.println(e.getMessage());
       }
     }
