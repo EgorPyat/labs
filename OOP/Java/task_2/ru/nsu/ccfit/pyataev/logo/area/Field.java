@@ -4,7 +4,7 @@ package ru.nsu.ccfit.pyataev.logo.area;
   * Class contain prgramm field
   * @author EgorPyat
   */
-public class Field{
+public class Field implements Comparable<Field>{
   private boolean[][] field = null;
   private boolean draw = false;
   private boolean exist = false;
@@ -92,4 +92,15 @@ public class Field{
     }
   }
 
+  @Override
+  public int compareTo(Field o){
+    Position cmp = o.getFieldSize();
+    if(this.fieldSize.getX() * this.fieldSize.getY() > cmp.getY() * cmp.getX()){
+      return 1;
+    }
+    else if(this.fieldSize.getX() * this.fieldSize.getY() < cmp.getY() * cmp.getX()){
+      return -1;
+    }
+    else return 0;
+  }
 }
