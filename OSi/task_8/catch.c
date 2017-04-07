@@ -23,5 +23,9 @@ int main(int argc, char *argv[]){
 
 	system("vi catch.c");
 		
+	str.l_type = F_UNLCK;
+
+	fcntl(file, F_SETLK, &str);
+
 	return 0;	
 }
