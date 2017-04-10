@@ -5,8 +5,9 @@
 #include <math.h>
 
 double* mul(double *matrix, double *vector, double *result, int cols, int rows, int sh, int N){
-  for(int i = 0; i < rows; i++){
-    for(int j = 0; j < cols; j++){
+  int i,j;
+  for(i = 0; i < rows; i++){
+    for(j = 0; j < cols; j++){
       result[i] += matrix[i*N + (j + sh)]*vector[j];
     }
   }
@@ -14,21 +15,23 @@ double* mul(double *matrix, double *vector, double *result, int cols, int rows, 
 };
 
 double* sub(double *vec1, double *vec2, double *result, int N){
-  for(int i = 0; i < N; i++){
+  int i;
+  for(i = 0; i < N; i++){
     result[i] = vec1[i] - vec2[i];
   }
   return result;
 };
 
 double* scmul(double *vec, double tau, int N){
-  for (int i = 0; i < N; i++) {
+  int i;
+  for(i = 0; i < N; i++) {
     vec[i] *= tau;
   }
   return vec;
 };
 
-const double EPS = 0.00001;
-const double tau_p = +0.001;
+const double EPS = 10e-9;
+const double tau_p = 10e-6;
 const double tau_n = -0.001;
 
 int main(int argc, char* argv[]){
@@ -55,13 +58,14 @@ int main(int argc, char* argv[]){
   double *x_ = (double*)malloc((N/size + 1)*sizeof(double));
 
   int rows = 0;
+  int i, j;
 
-  for(int i = 0; i < rank; i++){
+  for(i = 0; i < rank; i++){
     rows += N/size + (i < N % size ? 1 : 0);
   }
 
-  for(int i = 0; i < N/size + shift; i++){
-    for(int j = 0; j < N; j++){
+  for(i = 0; i < N/size + shift; i++){
+    for(j = 0; j < N; j++){
       if((i*N + j - rows) % (N + 1) == 0){
         a[i*N + j] = 2.0;
       }
@@ -70,7 +74,7 @@ int main(int argc, char* argv[]){
   }
   double norm_B = 0;
   double nB;
-  for(int i = 0; i < N/size + shift; i++){
+  for(i = 0; i < N/size + shift; i++){
      b[i] = N + 1;
      norm_B += b[i]*b[i];
   }
@@ -88,6 +92,7 @@ int main(int argc, char* argv[]){
   int rank_ = 0;
   double *q;
   /*____________________________________________________________________________________*/
+  int p;
 
   for(;;){
     norm_U = 0;
@@ -96,7 +101,7 @@ int main(int argc, char* argv[]){
 
     shift_ = shift;
 
-    for(int p = 0; p < size; p++){
+    for(p = 0; p < size; p++){
       mul(a, x, R,   N/size + shift_, N/size + shift, rows, N);
       MPI_Sendrecv(x, N/size + 1, MPI_DOUBLE, (rank + 1) % size, 0, x_, N/size + 1, MPI_DOUBLE, (rank - 1 + size) % size, 0, MPI_COMM_WORLD, 0);
       q = x;
@@ -106,27 +111,29 @@ int main(int argc, char* argv[]){
       rank_ = (rank - 1 - p + size) % size;
       rows = 0;
 
-      for(int i = 0; i < rank_; i++){
+      for(i = 0; i < rank_; i++){
         rows += N/size + (i < N % size ? 1 : 0);
       }
     }
 
     sub(R, b, S, N/size + shift);
 
-    for(int i = 0; i < N/size + shift; i++){
+    for(i = 0; i < N/size + shift; i++){
       norm_U += S[i]*S[i];
     }
     MPI_Allreduce(&norm_U, &c, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
     scmul(S, tau_p, N/size + shift);
     sub(x, S, R, N/size + shift);
-    memcpy(x, R, (N/size + shift)*sizeof(double));
-
+    // memcpy(x, R, (N/size + shift)*sizeof(double));
+    for(i = 0; i < (N/size +shift); i++){
+      x[i] = R[i];
+    };
 
     if(c/nB < EPS*EPS){
       int count = 0;
-      for(int i = 0; i < N/size + shift; i++){
-        printf("%d %.10f\n", rank, x[i]);
+      for(i = 0; i < N/size + shift; i++){
+        // printf("%d %.10f\n", rank, x[i]);
         if(fabs(x[i] - 1) < EPS) continue;
         else {
           ++count;
@@ -140,6 +147,13 @@ int main(int argc, char* argv[]){
   /*____________________________________________________________________________________*/
 
   double t2 = MPI_Wtime();
+  double t3 = t2 - t1;
+  double t4;
+
+  MPI_Reduce(&t3, &t4, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  if(rank == 0){
+    printf("N = %d\nThreads = %d\nTime = %f\n", N, size, t4);
+  }
   // printf("%d %f\n", rank, t2 - t1);
 
   MPI_Finalize();
