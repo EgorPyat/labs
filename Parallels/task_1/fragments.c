@@ -35,7 +35,7 @@ const double tau_p = 10e-6;
 const double tau_n = -0.001;
 
 int main(int argc, char* argv[]){
-  int N = 8;
+  int N = 5000;
   int rank, size;
 
   MPI_Init (&argc, &argv);

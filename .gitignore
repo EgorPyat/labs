@@ -10,3 +10,5 @@ OOP/Java/*/docs/*
 OOP/Java/*/jtestbin/*
 OOP/Java/*/jtestresults/*
 *.log
+*.clog2
+*.slog2
