@@ -4,12 +4,12 @@
 #include <omp.h>
 #include <stdlib.h>
 
-const double EPS = 0.00001;
-const double tau_p = +0.001;
+const double EPS = 10e-9;
+const double tau_p = 10e-6;
 const double tau_n = -0.001;
 
 int main(int argc, char* argv[]){
-  int N = 10;
+  int N = 1000;
   double t = tau_p;
   double *A = (double*)malloc(N*N*sizeof(double));
   double *B = (double*)malloc(N*sizeof(double));
@@ -36,6 +36,7 @@ int main(int argc, char* argv[]){
   memset(R, 0, N*sizeof(double));
 
   int f = 1;
+  double start = omp_get_wtime();
   #pragma omp parallel
   {
     while(f){
@@ -82,15 +83,16 @@ int main(int argc, char* argv[]){
 
   int count = 0;
   for(int i = 0; i < N; i++){
-    printf("%.10f\n", X[i]);
+    // printf("%.10f\n", X[i]);
     if(fabs(X[i] - 1) < EPS) continue;
     else {
       ++count;
       break;
     }
   }
-  printf("%d\n", count);
-
+  if(count > 0) printf("%d\n", count);
+  double finish = omp_get_wtime();
+  printf("N: %d\nTime: %f\n", N, finish - start);
   free(A);
   free(B);
   free(R);
