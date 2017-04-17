@@ -206,8 +206,17 @@ int main(int argc, char *argv[]){
     }
   }
 
+  double t1 = MPI_Wtime();
   mult(n, A, B, C, p, comm);
+  double t2 = MPI_Wtime();
+  double t3 = t2 - t1;
+  double t4;
 
+  MPI_Reduce(&t3, &t4, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  if(rank == 0){
+    printf("N = %d\nThreads = %d\nTime = %f\n", N, size, t4);
+  }
+  /*
   if(rank == 0){
     for(i = 0; i < M; i++){
      for(j = 0; j < K; j++){
@@ -230,6 +239,7 @@ int main(int argc, char *argv[]){
        printf("\n");
     }
   }
+  */
 
   if(rank == 0){
     free(A);
