@@ -9,11 +9,11 @@
 /* NUM_DIMS - размер декартовой топологии. "двумерная решетка" P0xP1 */
   #define NUM_DIMS 2
   #define P0 2
-  #define P1 2
+  #define P1 4
 /* Задаем размеры матриц A = MxN, B = NxK и C = MxK (Эти размеры значимы в ветви 0)*/
-  #define M 8
-  #define N 8
-  #define K 8
+  #define M 1600
+  #define N 1600
+  #define K 1600
 
   #define A(i,j) A[N*i+j]
   #define B(i,j) B[K*i+j]
@@ -31,9 +31,8 @@ int mult(int *n, double *A, double *B, double *C, int *p, MPI_Comm comm){
   /* Смещения и размер подматриц CС для сборки в корневом процессе (ветви) */
   int *countc, *dispc, *countb, *dispb;
   /* Типы данных и массивы для создаваемых типов */
-  MPI_Datatype typeb, typec, types[2];
+  MPI_Datatype typeb, typec, ntype;
 
-  int blen[2];
   int i, j, k;
   int periods[2];
   int remains[2];
@@ -71,9 +70,9 @@ int mult(int *n, double *A, double *B, double *C, int *p, MPI_Comm comm){
   CC = (double*)malloc(nn[0]*nn[1]*sizeof(double));
 
   if(rank == 0){
-    MPI_Type_vector(n[1], nn[1], n[2], MPI_DOUBLE, &types[0]);
-    MPI_Type_commit(&types[0]);
-    MPI_Type_create_resized(types[0], 0, nn[1]*sizeof(MPI_DOUBLE), &typeb);
+    MPI_Type_vector(n[1], nn[1], n[2], MPI_DOUBLE, &ntype);
+    MPI_Type_commit(&ntype);
+    MPI_Type_create_resized(ntype, 0, nn[1]*sizeof(MPI_DOUBLE), &typeb);
     MPI_Type_commit(&typeb);
   /* Вычисление размера подматрицы BB и смещений каждой
    * подматрицы в матрице B. Подматрицы BB упорядочены в B
@@ -89,9 +88,9 @@ int mult(int *n, double *A, double *B, double *C, int *p, MPI_Comm comm){
      countb[j] = 1;
     }
 
-    MPI_Type_vector(n[1], nn[1], n[2], MPI_DOUBLE, &types[0]);
-    MPI_Type_commit(&types[0]);
-    MPI_Type_create_resized(types[0], 0, nn[1]*sizeof(MPI_DOUBLE), &typec);
+    MPI_Type_vector(n[1], nn[1], n[2], MPI_DOUBLE, &ntype);
+    MPI_Type_commit(&ntype);
+    MPI_Type_create_resized(ntype, 0, nn[1]*sizeof(MPI_DOUBLE), &typec);
     MPI_Type_commit(&typec);
 
   /* Вычисление размера подматрицы CС и смещений каждой
@@ -151,7 +150,7 @@ int mult(int *n, double *A, double *B, double *C, int *p, MPI_Comm comm){
     free(dispc);
     MPI_Type_free(&typeb);
     MPI_Type_free(&typec);
-    MPI_Type_free(&types[0]);
+    MPI_Type_free(&ntype);
   }
 
   return 0;
