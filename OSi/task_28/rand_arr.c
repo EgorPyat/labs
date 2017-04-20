@@ -11,11 +11,10 @@ int main(){
 	
 	srand(time(0));
 
-	p2open("sort", fp);
+	p2open("sort -n", fp);
 	
 	for(i = 0; i < 100; i++){
-		sprintf(ch, "%02d\n", rand() % 100);
-		fputs(ch, fp[0]);
+		fprintf(fp[0], "%2d\n", rand() % 100);
 	}
 
 	fclose(fp[0]);
