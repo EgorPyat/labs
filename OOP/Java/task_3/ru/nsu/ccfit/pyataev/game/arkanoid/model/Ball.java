@@ -1,12 +1,11 @@
-package ru.nsu.ccfit.pyataev.game.arkanoid;
+package ru.nsu.ccfit.pyataev.game.arkanoid.model;
 
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.Random;
 import java.time.LocalTime;
 
 public class Ball{
-	private static final int DIAMETER = 30;
+	private final int DIAMETER = 30;
 
   private Random random = new Random(LocalTime.now().hashCode());
 
@@ -15,33 +14,29 @@ public class Ball{
 	private int xa;
 	private int ya;
   private int bn;
+	private boolean falled = false;
+	private World space;
 
-	private Game game;
-
-	public Ball(Game game){
-		this.game = game;
+	Ball(World space){
+		this.space = space;
     ya = 1;
     xa = (random.nextBoolean() == true ? -1 : 1);
 	}
 
 	void move(){
-		if (x + xa < 0)
-			xa = 1;
-		else if (x + xa > game.getWidth() - DIAMETER)
-			xa = -1;
-		else if (y + ya < 0)
-			ya = 1;
-		else if (y + ya > game.getHeight() - DIAMETER)
-			game.gameOver();
+		if (x + xa < 0)	xa = 1;
+		else if (x + xa > space.getWidth() - DIAMETER) xa = -1;
+		else if (y + ya < 0) ya = 1;
+		else if (y + ya > space.getHeight() - DIAMETER)	falled = true;
 		else if (racquetCollision()){
 			ya = -1;
-			y = game.racquet.getTopY() - DIAMETER;
-			game.speed++;
+			y = space.getRacquet().getY() - DIAMETER;
+			space.incScore(1);
     }
     else if(brickCollision()){
-      game.bricks[bn].hide();
-      game.speed += 10;
-      --game.lbn;
+      space.getBricks()[bn].hide();
+      space.incScore(10);
+      space.decrAliveBricksNum();
       ya = (random.nextBoolean() == false ? 1 : -1);
       xa = (random.nextBoolean() == true ? -1 : 1);
     }
@@ -51,13 +46,13 @@ public class Ball{
 	}
 
 	private boolean racquetCollision(){
-		return game.racquet.getBounds().intersects(getBounds());
+		return space.getRacquet().getBounds().intersects(getBounds());
 	}
 
   private boolean brickCollision(){
     Rectangle br;
-    for(int i = 0; i < game.bn; i++){
-      br = game.bricks[i].getBounds();
+    for(int i = 0; i < space.getBricksNum(); i++){
+      br = space.getBricks()[i].getBounds();
       if(br == null) continue;
       if(br.intersects(getBounds()) == true){
         bn = i;
@@ -67,11 +62,23 @@ public class Ball{
     return false;
   }
 
-	public void paint(Graphics2D g){
-		g.fillOval(x, y, DIAMETER, DIAMETER);
+	public int getX(){
+		return this.x;
 	}
 
-	public Rectangle getBounds(){
+	public int getY(){
+		return this.y;
+	}
+
+	public int getDiam(){
+		return this.DIAMETER;
+	}
+
+	boolean getFall(){
+		return this.falled;
+	}
+
+	Rectangle getBounds(){
 		return new Rectangle(x + 5, y + 5, DIAMETER - 10, DIAMETER - 10);
 	}
 }
