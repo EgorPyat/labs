@@ -13,6 +13,7 @@ public class Main{
     Frame fr = new Frame(panel);
     space.addWorld(w);
     panel.addSpace(space);
+    w.addPanel(panel);
 
     while(true){
       panel.change();

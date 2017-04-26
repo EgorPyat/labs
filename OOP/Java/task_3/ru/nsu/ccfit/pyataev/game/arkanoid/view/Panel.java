@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 
 public class Panel extends JPanel{
   private Space space;
+  private boolean modelChanged = true;
 
   public Panel(){
     this.addHandler();
@@ -52,7 +53,10 @@ public class Panel extends JPanel{
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-    space.paint(g2d);
+    if(modelChanged){
+      this.modelChanged = false;
+      this.space.paint(g2d);
+    }
 
 		g2d.setColor(Color.GRAY);
 		g2d.setFont(new Font("Verdana", Font.BOLD, 30));
@@ -82,4 +86,8 @@ public class Panel extends JPanel{
 		JOptionPane.showMessageDialog(this, "Your score is: " + space.getScore(), "You win!!!", JOptionPane.YES_NO_OPTION);
 		System.exit(ABORT);
 	}
+
+  public void setModelCondition(){
+    this.modelChanged = true;
+  }
 }

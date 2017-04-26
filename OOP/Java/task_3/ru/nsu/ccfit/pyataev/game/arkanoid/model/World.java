@@ -1,6 +1,10 @@
 package ru.nsu.ccfit.pyataev.game.arkanoid.model;
 
+import ru.nsu.ccfit.pyataev.game.arkanoid.view.Panel;
+
 public class World{
+  private Panel view;
+
   final private int WIDTH = 300;
   final private int HEIGHT = 400;
 
@@ -70,6 +74,7 @@ public class World{
   public void change(){
     this.moveBall();
     this.moveRacquet();
+    view.setModelCondition();
   }
 
   public void setRacWay(String way){
@@ -90,7 +95,7 @@ public class World{
     else return false;
   }
 
-  public boolean notify(){
-    
+  public void addPanel(Panel view){
+    this.view = view;
   }
 }
