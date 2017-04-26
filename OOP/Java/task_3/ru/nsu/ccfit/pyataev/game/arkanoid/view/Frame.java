@@ -1,6 +1,6 @@
 package ru.nsu.ccfit.pyataev.game.arkanoid.view;
 
-import ru.nsu.ccfit.pyataev.game.arkanoid.model.Space;
+import ru.nsu.ccfit.pyataev.game.arkanoid.controller.Space;
 
 import java.awt.Color;
 import java.awt.Font;
