@@ -3,17 +3,19 @@ package ru.nsu.ccfit.pyataev.game.arkanoid.model;
 import java.awt.Rectangle;
 
 public class Racquet{
-	private final int WIDTH = 60;
+	private final int WIDTH = 80;
 	private final int HEIGHT = 10;
 
-	private int x = 130;
-	private final int y = 330;
+	private int x;
+	private final int y;
 	private int xa = 0;
 
 	private World space;
 
   Racquet(World space){
 		this.space = space;
+		this.y = space.getHeight() - 100;
+		this.x = space.getWidth()/2 - WIDTH / 2;
 	}
 
   void move(){

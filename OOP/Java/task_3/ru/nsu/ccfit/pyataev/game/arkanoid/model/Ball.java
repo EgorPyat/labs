@@ -9,8 +9,8 @@ public class Ball{
 
   private Random random = new Random(LocalTime.now().hashCode());
 
-  private int x = 160;
-	private int y = 330;
+  private int x;
+	private int y;
 	private int xa;
 	private int ya;
   private int bn;
@@ -19,6 +19,9 @@ public class Ball{
 
 	Ball(World space){
 		this.space = space;
+		this.x = space.getWidth() / 2 - DIAMETER / 2;
+		this.y = space.getHeight() - 130;
+
     ya = 1;
     xa = (random.nextBoolean() == true ? -1 : 1);
 	}

@@ -3,6 +3,7 @@ package ru.nsu.ccfit.pyataev.game.arkanoid.view;
 import ru.nsu.ccfit.pyataev.game.arkanoid.model.Ball;
 import ru.nsu.ccfit.pyataev.game.arkanoid.model.Brick;
 import ru.nsu.ccfit.pyataev.game.arkanoid.model.Racquet;
+import ru.nsu.ccfit.pyataev.game.arkanoid.model.World;
 import ru.nsu.ccfit.pyataev.game.arkanoid.controller.Space;
 
 import java.awt.Color;
@@ -19,6 +20,7 @@ import javax.swing.JPanel;
 
 public class Panel extends JPanel{
   private Space space;
+  private World w;
   private boolean modelChanged = true;
 
   public Panel(){
@@ -47,6 +49,10 @@ public class Panel extends JPanel{
     this.space = space;
   }
 
+  public void addWorld(World world){
+    this.w = world;
+  }
+
   @Override
 	public void paint(Graphics g){
 		super.paint(g);
@@ -61,8 +67,6 @@ public class Panel extends JPanel{
 		g2d.setColor(Color.GRAY);
 		g2d.setFont(new Font("Verdana", Font.BOLD, 30));
 		g2d.drawString(String.valueOf(space.getScore()), 10, 30);
-		g2d.draw(new Line2D.Double(0, 330, 300, 330));
-		g2d.draw(new Line2D.Double(0, 340, 300, 340));
 	}
 
   public void change(){
@@ -89,5 +93,13 @@ public class Panel extends JPanel{
 
   public void setModelCondition(){
     this.modelChanged = true;
+  }
+
+  public int getWidth(){
+    return w.getWidth();
+  }
+
+  public int getHeight(){
+    return w.getHeight();
   }
 }

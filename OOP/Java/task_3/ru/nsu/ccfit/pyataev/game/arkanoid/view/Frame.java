@@ -23,7 +23,7 @@ public class Frame extends JFrame{
     this.setResizable(false);
     this.add(this.panel);
     this.setLocation(500, 300);
-    this.setSize(300, 400);
+    this.setSize(panel.getWidth(), panel.getHeight());
     this.setVisible(true);
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }

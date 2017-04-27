@@ -7,9 +7,10 @@ import ru.nsu.ccfit.pyataev.game.arkanoid.view.Panel;
 
 public class Main{
   public static void main(String args[]) throws InterruptedException{
-    World w = new World();
+    World w = new World(args[0]);
     Space space = new Space();
     Panel panel = new Panel();
+    panel.addWorld(w);
     Frame fr = new Frame(panel);
     space.addWorld(w);
     panel.addSpace(space);
@@ -18,7 +19,7 @@ public class Main{
     while(true){
       panel.change();
       panel.repaint();
-      Thread.sleep(5);
+      Thread.sleep(4);
     }
   }
 }
