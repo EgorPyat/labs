@@ -5,8 +5,8 @@
 #include <sys/shm.h>
 
 int main(){
-	static struct sembuf prod = {0,-1, 0};
-	static struct sembuf cons = {1, 1, 0};
+	struct sembuf prod = {0,-1, 0};
+	struct sembuf cons = {1, 1, 0};
 	int sid, shid, i;
 	char *mem;
 
