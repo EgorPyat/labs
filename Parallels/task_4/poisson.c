@@ -15,7 +15,6 @@ int main(int argc, char *argv[]){
   double prev;
   double locmax = 0;
   double globmax;
-  int err = 0;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -79,7 +78,6 @@ int main(int argc, char *argv[]){
     for(i = 0; i < 4; i++){
       if(rank != 0 && rank != size - 1) MPI_Wait(&req[i], &st[i]);
     }
-
 
     MPI_Allreduce(&locmax, &globmax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 
