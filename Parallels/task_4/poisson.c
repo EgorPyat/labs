@@ -6,7 +6,7 @@
 const double EPS = 0.00001;
 
 int main(int argc, char *argv[]){
-  int N = 16;
+  int N = 64;
   int m;
   int size, rank;
   int i;
@@ -82,23 +82,6 @@ int main(int argc, char *argv[]){
 
 
     MPI_Allreduce(&locmax, &globmax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-
-    // for(i = 0; i < m + 2; i++){
-    //   for(j = 0; j < N + 2; j++){
-    //     printf("%6.2f ", A[i][j]);
-    //   }
-    //   printf("\n");
-    // }
-    // printf("\n");
-    //
-    // for(i = 0; i < m; i++){
-    //   for(j = 0; j < N; j++){
-    //     printf("%6.2f ", B[i][j]);
-    //   }
-    //   printf("\n");
-    // }
-    // printf("%f\n", locmax);
-    // getchar();
 
     locmax = 0;
 
