@@ -15,6 +15,9 @@ int main(int argc, char *argv[]){
   double prev;
   double locmax = 0;
   double globmax;
+  double lmd = 0;
+  double gmd;
+  double tmp;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -76,7 +79,8 @@ int main(int argc, char *argv[]){
     }
 
     for(i = 0; i < 4; i++){
-      if(rank != 0 && rank != size - 1) MPI_Wait(&req[i], &st[i]);
+      if((rank == 0 && (i == 0 || i == 2)) || (rank == size - 1 && (i == 3 || i == 1))) continue;
+      else MPI_Wait(&req[i], &st[i]);
     }
 
     MPI_Allreduce(&locmax, &globmax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
@@ -88,9 +92,18 @@ int main(int argc, char *argv[]){
   t2 = MPI_Wtime();
   t2 -= t1;
 
+  for(i = 0; i < m; i++){
+    for(j = 0; j < N; j++){
+      if((tmp = fabs((i + m * rank + j) - B[i][j] + 2)) > lmd) lmd = tmp;
+    }
+  }
+  MPI_Allreduce(&lmd, &gmd, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+
+  if(rank == 0) printf("Max Differece = %f\n", gmd);
+
   MPI_Allreduce(&t2, &tmax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
 
-  if(rank == 0) printf("N = %d\nThreads = %d\nTime = %f\n", N, size, tmax);;
+  if(rank == 0) printf("N = %d\nThreads = %d\nTime = %f\n", N, size, tmax);
 
   MPI_Finalize();
 
