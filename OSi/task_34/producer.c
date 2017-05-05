@@ -8,6 +8,7 @@
 int main(){
 	struct sembuf prod = {0, 1, 0};
 	struct sembuf cons = {1,-1, 0};
+	struct sembuf cons1 = {1, 1, 0}; 
 	int sid, shid, i;
 	char *mem;
 	char *messages[4] = {"Hello", ",", "World", "!"};
@@ -23,9 +24,9 @@ int main(){
 	}
 
 	mem = shmat(shid, 0, 0);
-
+	semop(sid, &cons1, 1);
 	for(i = 0; i < 4; i++){
-		if(i > 0) semop(sid, &cons, 1);
+		semop(sid, &cons, 1);
 		strcpy(mem, messages[i]);
 		semop(sid, &prod, 1);
 	}
