@@ -7,11 +7,13 @@ public class Storage<T extends Detail> implements Storagable<T>{
   private T[] details;
   private int capacity;
   private int detailsAmount;
+  private String name;
 
-  public Storage(Class detail, int capacity){
+  public Storage(Class<T> detail, int capacity){
     this.detailsAmount = 0;
     this.capacity = capacity;
     this.details = createPlace(detail, this.capacity);
+    this.name = detail.toString().substring(42) + " storage";
   }
 
   public synchronized T get() throws InterruptedException{
@@ -42,9 +44,14 @@ public class Storage<T extends Detail> implements Storagable<T>{
       notifyAll();
   }
 
-  private T[] createPlace(Class clazz, int size){
+  private T[] createPlace(Class<T> clazz, int size){
     @SuppressWarnings("unchecked")
     T[] place = (T[])Array.newInstance(clazz, size);
     return place;
+  }
+
+  @Override
+  public synchronized String toString(){
+    return this.name;
   }
 }

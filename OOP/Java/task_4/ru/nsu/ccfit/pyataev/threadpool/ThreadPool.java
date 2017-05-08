@@ -4,17 +4,17 @@ import java.util.*;
 import ru.nsu.ccfit.pyataev.factory.worker.Worker;
 
 public class ThreadPool implements TaskListener{
-   private static final int threadsNum;
-   private List taskQueue = new LinkedList();
-   private Executors[] availableThreads;
+   private final int threadsNum;
+   private List<ThreadPoolTask> taskQueue = new LinkedList<ThreadPoolTask>();
+   private Executor[] availableThreads;
 
-   public ThreadPool(int size, Executors[] execs){
+   public ThreadPool(int size, Executor[] execs){
      this.threadsNum = size;
      this.availableThreads = execs;
 
      for(int i = 0; i < threadsNum; i++){
        availableThreads[i].addTaskQueue(taskQueue);
-       new Thread(availableThreads[i]).start();
+       new Thread(availableThreads[i], "Executor#" + i).start();
      }
    }
 

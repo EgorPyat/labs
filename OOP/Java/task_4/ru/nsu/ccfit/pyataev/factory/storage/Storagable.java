@@ -1,9 +1,8 @@
-package ru.nsu.ccfit.pyataev.storage;
+package ru.nsu.ccfit.pyataev.factory.storage;
 
-import ru.nsu.ccfit.pyataev.detail.Detail;
+import ru.nsu.ccfit.pyataev.factory.detail.Detail;
 
 public interface Storagable<T extends Detail>{
   public T get() throws InterruptedException;
   public void put(T detail) throws InterruptedException;
-  private T[] createPlace(Class clazz, int size);
 }

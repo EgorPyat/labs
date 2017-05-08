@@ -1,6 +1,6 @@
 package ru.nsu.ccfit.pyataev.threadpool;
 
-class ThreadPoolTask {
+public class ThreadPoolTask {
    private TaskListener listener;
    private Task task;
 
@@ -9,23 +9,23 @@ class ThreadPoolTask {
       task = t;
    }
 
-   void prepare(){
+   public void prepare(){
       listener.taskStarted(task);
    }
 
-   void finish(){
+   public void finish(){
       listener.taskFinished(task);
    }
 
-   void interrupted(){
+   public void interrupted(){
       listener.taskInterrupted(task);
    }
 
-   void go() throws InterruptedException{
+   public void go() throws InterruptedException{
       task.performWork();
    }
 
-   String getName(){
+   public String getName(){
       return task.getName();
    }
 }

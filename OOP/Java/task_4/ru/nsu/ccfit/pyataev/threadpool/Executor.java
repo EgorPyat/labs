@@ -1,8 +1,8 @@
 package ru.nsu.ccfit.pyataev.threadpool;
 
-public interface Executor implements Runnable{
-  public void addTaskQueue(List list);
-  private void performTask(ThreadPoolTask t);
-  @Override
-  public void run();
+import java.util.*;
+
+public abstract class Executor implements Runnable{
+  public abstract void addTaskQueue(List<ThreadPoolTask> list);
+  public abstract void performTask(ThreadPoolTask t);
 }

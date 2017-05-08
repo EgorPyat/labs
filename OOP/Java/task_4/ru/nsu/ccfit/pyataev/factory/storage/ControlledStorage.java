@@ -10,11 +10,13 @@ public class ControlledStorage<T extends Detail> implements Storagable<T>{
   private int detailsAmount;
   private int orders = 0;
   private CarStorageController csc;
+  private String name;
 
-  public ControlledStorage(Class detail, int capacity){
+  public ControlledStorage(Class<T> detail, int capacity){
     this.detailsAmount = 0;
     this.capacity = capacity;
     this.details = createPlace(detail, this.capacity);
+    this.name = detail.toString().substring(42) + " storage";
   }
 
   public synchronized T get() throws InterruptedException{
@@ -31,16 +33,20 @@ public class ControlledStorage<T extends Detail> implements Storagable<T>{
     --orders;
 
     csc.analyze();
+    System.out.println(this + " analyzed.");
 
     notifyAll();
 
     return detail;
   };
 
-  public void makeOrder(){
-    synchronized(this){
-      ++orders;
-    }
+  public synchronized void makeOrder(){
+      ++this.orders;
+  }
+
+  public synchronized int getOrders(){
+    int r = orders - detailsAmount;
+    return r > 0 ? r : 0;
   }
 
   public synchronized void put(T detail) throws InterruptedException{
@@ -51,11 +57,11 @@ public class ControlledStorage<T extends Detail> implements Storagable<T>{
       this.details[this.detailsAmount] = detail;
 
       ++detailsAmount;
-
+      System.out.println(this + " got car: " + detail + ".");
       notifyAll();
   }
 
-  private T[] createPlace(Class clazz, int size){
+  private synchronized T[] createPlace(Class<T> clazz, int size){
     @SuppressWarnings("unchecked")
     T[] place = (T[])Array.newInstance(clazz, size);
     return place;
@@ -65,8 +71,14 @@ public class ControlledStorage<T extends Detail> implements Storagable<T>{
     this.csc = csc;
   }
 
-  public boolean orderCondition(){
+  public synchronized boolean orderCondition(){
     if(orders > detailsAmount) return true;
+    if(orders == 0 && detailsAmount == 0) return true;
     else return false;
+  }
+
+  @Override
+  public String toString(){
+    return this.name;
   }
 }
