@@ -3,6 +3,8 @@ package ru.nsu.ccfit.pyataev.factory.storage;
 import ru.nsu.ccfit.pyataev.factory.detail.Detail;
 import ru.nsu.ccfit.pyataev.factory.controller.CarStorageController;
 import java.lang.reflect.Array;
+import java.io.*;
+import java.time.LocalTime;
 
 public class ControlledStorage<T extends Detail> implements Storagable<T>{
   private T[] details;
@@ -12,11 +14,16 @@ public class ControlledStorage<T extends Detail> implements Storagable<T>{
   private CarStorageController csc;
   private String name;
 
-  public ControlledStorage(Class<T> detail, int capacity){
+  private boolean logger;
+  private BufferedWriter log;
+
+  public ControlledStorage(Class<T> detail, int capacity, boolean logger){
     this.detailsAmount = 0;
     this.capacity = capacity;
     this.details = createPlace(detail, this.capacity);
     this.name = detail.toString().substring(42) + " storage";
+
+    this.logger = logger;
   }
 
   public synchronized T get() throws InterruptedException{
@@ -34,6 +41,17 @@ public class ControlledStorage<T extends Detail> implements Storagable<T>{
 
     csc.analyze();
     System.out.println(this + " analyzed.");
+
+    if(this.logger == true){
+      try{
+        this.log = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("logger.log", true)));
+        this.log.write(LocalTime.now().toString() + " " + Thread.currentThread().getName() + " " + detail.toString() + "\n");
+        this.log.close();
+      }
+      catch(IOException e){
+        System.out.println(e.getMessage());
+      }
+    }
 
     notifyAll();
 
