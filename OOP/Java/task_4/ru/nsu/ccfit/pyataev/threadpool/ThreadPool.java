@@ -36,4 +36,8 @@ public class ThreadPool implements TaskListener{
    public void taskInterrupted(Task t){
      System.out.println("Interrupted: " + t.getName());
    }
+
+   public int getTasksNum(){
+     return this.taskQueue.size();
+   }
 }

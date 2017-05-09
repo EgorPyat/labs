@@ -31,7 +31,7 @@ public class CarStorageController implements Runnable{
         }
       }
         if(storage.orderCondition() == true){
-          for(int i = 0; i < 6; i++){
+          for(int i = 0; i < (storage.getOrders() > tp.getTasksNum() ? (storage.getOrders() - tp.getTasksNum()) : 0) + 1; i++){
             tp.addTask(new Task(){
               @Override
               public String getName(){

@@ -13,7 +13,7 @@ public class ControlledStorage<T extends Detail> implements Storagable<T>{
   private int orders = 0;
   private CarStorageController csc;
   private String name;
-
+  private int allTimeDetails = 0;;
   private boolean logger;
   private BufferedWriter log;
 
@@ -75,6 +75,8 @@ public class ControlledStorage<T extends Detail> implements Storagable<T>{
       this.details[this.detailsAmount] = detail;
 
       ++detailsAmount;
+      ++allTimeDetails;
+      
       System.out.println(this + " got car: " + detail + ".");
       notifyAll();
   }
@@ -98,5 +100,13 @@ public class ControlledStorage<T extends Detail> implements Storagable<T>{
   @Override
   public String toString(){
     return this.name;
+  }
+
+  public int getDetNum(){
+    return this.detailsAmount;
+  }
+
+  public int getAllNum(){
+    return this.allTimeDetails;
   }
 }

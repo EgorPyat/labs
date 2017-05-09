@@ -31,6 +31,14 @@ public class Factory{
   private int accessoryStorageCapacity;
   private boolean logger;
 
+  private ThreadPool tp;
+  private CarStorageController csc;
+  private Worker[] workers;
+  private Storagable<Body> bodyStorage;
+  private Storagable<Engine> engineStorage;
+  private Storagable<Accessory> accessoryStorage;
+  private ControlledStorage<Car> carStorage;
+
   private static volatile Factory instance;
 
   private Factory(){}
@@ -95,12 +103,12 @@ public class Factory{
   }
 
   public void startWork(){
-    Storagable<Body> bodyStorage = new Storage<Body>(Body.class, bodyStorageCapacity);
-    Storagable<Engine> engineStorage = new Storage<Engine>(Engine.class, engineStorageCapacity);
-    Storagable<Accessory> accessoryStorage = new Storage<Accessory>(Accessory.class, accessoryStorageCapacity);
-    ControlledStorage<Car> carStorage = new ControlledStorage<Car>(Car.class, carStorageCapacity, logger);
+    bodyStorage = new Storage<Body>(Body.class, bodyStorageCapacity);
+    engineStorage = new Storage<Engine>(Engine.class, engineStorageCapacity);
+    accessoryStorage = new Storage<Accessory>(Accessory.class, accessoryStorageCapacity);
+    carStorage = new ControlledStorage<Car>(Car.class, carStorageCapacity, logger);
 
-    Worker[] workers = new Worker[factoryWorkers];
+    workers = new Worker[factoryWorkers];
     for(int i = 0; i < factoryWorkers; i++){
       workers[i] = new Worker(bodyStorage, engineStorage, accessoryStorage, carStorage);
     }
@@ -125,12 +133,64 @@ public class Factory{
       dealer.start();
     }
 
-    ThreadPool tp = new ThreadPool(factoryWorkers, workers);
-    CarStorageController csc = new CarStorageController(carStorage, tp);
+    tp = new ThreadPool(factoryWorkers, workers);
+    csc = new CarStorageController(carStorage, tp);
     carStorage.addController(csc);
 
     while(carStorage.getOrders() != factoryWorkers){}
 
     new Thread(csc, "Controller").start();
+  }
+
+  public void setDealersTime(int time){
+    Dealer.setTime(time * 1000);
+  }
+
+  public void setAPTime(int time){
+    AccessoryProvider.setTime(time * 1000);
+  }
+
+  public void setBPTime(int time){
+    BodyProvider.setTime(time * 1000);
+  }
+
+  public void setEPTime(int time){
+    EngineProvider.setTime(time * 1000);
+  }
+
+  public int bodyStorageDetNum(){
+    return this.bodyStorage.getDetNum();
+  }
+
+  public int accessoryStorageDetNum(){
+    return this.accessoryStorage.getDetNum();
+  }
+
+  public int engineStorageDetNum(){
+    return this.engineStorage.getDetNum();
+  }
+
+  public int carStorageDetNum(){
+    return this.carStorage.getDetNum();
+  }
+
+  public int bodyAllNum(){
+    return this.bodyStorage.getAllNum();
+  }
+
+  public int engineAllNum(){
+    return this.engineStorage.getAllNum();
+  }
+
+  public int accessoryAllNum(){
+    return this.accessoryStorage.getAllNum();
+  }
+
+  public int carAllNum(){
+    return this.carStorage.getAllNum();
+  }
+
+  public int tasksNum(){
+    return this.tp.getTasksNum();
   }
 }

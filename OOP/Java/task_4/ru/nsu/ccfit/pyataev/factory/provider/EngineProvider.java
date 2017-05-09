@@ -5,6 +5,7 @@ import ru.nsu.ccfit.pyataev.factory.detail.Engine;
 
 public class EngineProvider extends Provider{
   private Storagable<Engine> storage;
+  private static int TIME = 3000;
 
   public EngineProvider(Storagable<Engine> storage){
     this.storage = storage;
@@ -15,7 +16,7 @@ public class EngineProvider extends Provider{
     System.out.println(Thread.currentThread().getName() + " started.");
     while(true){
       try{
-        Thread.sleep(3500);
+        Thread.sleep(TIME);
         Engine e = new Engine();
         this.storage.put(e);
         System.out.println(Thread.currentThread().getName() + " puts a detail: " + e + " to: " + this.storage + ".");
@@ -24,5 +25,9 @@ public class EngineProvider extends Provider{
         System.out.println("Oops! " + e.getMessage());
       }
     }
+  }
+
+  public static void setTime(int time){
+    TIME = time;
   }
 }

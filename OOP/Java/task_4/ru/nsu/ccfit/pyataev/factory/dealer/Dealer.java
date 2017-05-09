@@ -5,6 +5,7 @@ import ru.nsu.ccfit.pyataev.factory.detail.Car;
 
 public class Dealer implements Runnable{
   private ControlledStorage<Car> storage;
+  private static int TIME = 10000;
 
   public Dealer(ControlledStorage<Car> storage){
     this.storage = storage;
@@ -15,7 +16,7 @@ public class Dealer implements Runnable{
     System.out.println(Thread.currentThread().getName() + " started.");
     while(true){
       try{
-        Thread.sleep(10000);
+        Thread.sleep(TIME);
         this.storage.makeOrder();
         System.out.println(Thread.currentThread().getName() + " made order.");
         Car c = this.storage.get();
@@ -25,5 +26,9 @@ public class Dealer implements Runnable{
         System.out.println("Oops! " + e.getMessage());
       }
     }
+  }
+
+  public static void setTime(int time){
+    TIME = time;
   }
 }

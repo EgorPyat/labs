@@ -39,7 +39,6 @@ public class Worker extends Executor{
   public void performTask(ThreadPoolTask t){
     t.prepare();
     try{
-       Thread.sleep(2000);
        body = bst.get();
        engine = est.get();
        accessory = ast.get();

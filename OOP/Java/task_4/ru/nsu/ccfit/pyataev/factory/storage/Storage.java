@@ -7,6 +7,7 @@ public class Storage<T extends Detail> implements Storagable<T>{
   private T[] details;
   private int capacity;
   private int detailsAmount;
+  private int allTimeDetails = 0;
   private String name;
 
   public Storage(Class<T> detail, int capacity){
@@ -40,6 +41,7 @@ public class Storage<T extends Detail> implements Storagable<T>{
       this.details[this.detailsAmount] = detail;
 
       ++detailsAmount;
+      ++allTimeDetails;
 
       notifyAll();
   }
@@ -53,5 +55,13 @@ public class Storage<T extends Detail> implements Storagable<T>{
   @Override
   public synchronized String toString(){
     return this.name;
+  }
+
+  public int getDetNum(){
+    return this.detailsAmount;
+  }
+
+  public int getAllNum(){
+    return this.allTimeDetails;
   }
 }
