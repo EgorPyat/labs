@@ -1,5 +1,7 @@
 package ru.nsu.ccfit.pyataev.chat.server;
 
+import ru.nsu.ccfit.pyataev.chat.message.Message;
+
 import java.net.*;
 import java.io.*;
 import java.util.*;
@@ -10,7 +12,7 @@ public class Server{
 
 	public Server(){
 		try{
-			this.server = new ServerSocket(3000);
+			this.server = new ServerSocket(3001);
 
 			while(true){
 				Socket socket = server.accept();
@@ -40,14 +42,15 @@ public class Server{
 				}
 			}
 		}
-    catch (Exception e){
+    catch(IOException e){
 			System.err.println(e.getMessage());
+      e.printStackTrace();
 		}
 	}
 
 	private class Connection extends Thread{
-		private BufferedReader in;
-		private PrintWriter out;
+		private ObjectInputStream in;
+		private ObjectOutputStream out;
 		private Socket socket;
 
 		private String name = "";
@@ -56,37 +59,40 @@ public class Server{
 			this.socket = socket;
 
 			try{
-				this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				this.out = new PrintWriter(socket.getOutputStream(), true);
+        this.out = new ObjectOutputStream(socket.getOutputStream());
+				this.in = new ObjectInputStream(socket.getInputStream());
 			}
-      catch (IOException e){
+      catch(IOException e){
 				e.printStackTrace();
-				close();
+				this.close();
 			}
 		}
 
 		@Override
 		public void run(){
 			try{
-				this.name = this.in.readLine();
+				this.name = ((Message)this.in.readObject()).toString();
+
 				synchronized(connections){
 					Iterator<Connection> iter = Server.this.connections.iterator();
-
           while(iter.hasNext()){
-						((Connection)iter.next()).out.println(name + " cames now.");
+            Connection c = (Connection)iter.next();
+						c.out.writeObject(new Message(name + " entered."));
+            c.out.flush();
 					}
 				}
 
 				String str = "";
 				while(true){
-					str = this.in.readLine();
+					str = ((Message)this.in.readObject()).toString();
 					if(str.equals("exit")) break;
 
 					synchronized(connections){
 						Iterator<Connection> iter = Server.this.connections.iterator();
-
 						while(iter.hasNext()){
-							((Connection)iter.next()).out.println(this.name + ": " + str);
+              Connection c = (Connection)iter.next();
+    					c.out.writeObject(new Message(this.name + ": " + str));
+              c.out.flush();
 						}
 					}
 				}
@@ -94,12 +100,15 @@ public class Server{
 				synchronized(connections){
 					Iterator<Connection> iter = Server.this.connections.iterator();
 					while(iter.hasNext()){
-						((Connection)iter.next()).out.println(name + " has left.");
+            Connection c = (Connection)iter.next();
+            c.out.writeObject(new Message(this.name + " left."));
+            c.out.flush();
 					}
 				}
 			}
-      catch(IOException e){
-				e.printStackTrace();
+      catch(ClassNotFoundException | IOException e){
+        System.err.println(e.getMessage());
+        e.printStackTrace();
 			}
       finally{
 				this.close();
@@ -121,11 +130,17 @@ public class Server{
 			}
       catch(Exception e){
 				System.err.println(e.getMessage());
+        e.printStackTrace();
 			}
 		}
 	}
 
   public static void main(String[] args){
-    Server server = new Server();
+    try{
+      Server server = new Server();
+    }
+    catch(NullPointerException e){
+      System.err.println("Connection error!");
+    }
   }
 }

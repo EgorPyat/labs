@@ -1,5 +1,7 @@
 package ru.nsu.ccfit.pyataev.chat.message;
 
+import java.io.Serializable;
+
 public class Message implements Serializable{
   private String message;
 

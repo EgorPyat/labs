@@ -1,24 +1,28 @@
 package ru.nsu.ccfit.pyataev.chat.client;
 
+import ru.nsu.ccfit.pyataev.chat.message.Message;
+
 import java.net.*;
 import java.io.*;
 import java.util.*;
 
 public class Client{
-	private BufferedReader in;
-	private PrintWriter out;
+	private ObjectInputStream in;
+	private ObjectOutputStream out;
 	private Socket socket;
 
 	public Client(){
 		Scanner scan = new Scanner(System.in);
 
 		try{
-			this.socket = new Socket("localhost", 3000);
-			this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			this.out = new PrintWriter(socket.getOutputStream(), true);
+			this.socket = new Socket("localhost", 3001);
+
+			this.in = new ObjectInputStream(this.socket.getInputStream());
+      this.out = new ObjectOutputStream(this.socket.getOutputStream());
 
 			System.out.println("Enter your name:");
-			this.out.println(scan.nextLine());
+			this.out.writeObject(new Message(scan.nextLine()));
+      this.out.flush();
 
 			Resender resend = new Resender();
 			resend.start();
@@ -27,13 +31,15 @@ public class Client{
 
       while(!str.equals("exit")){
 				str = scan.nextLine();
-				this.out.println(str);
+				this.out.writeObject(new Message(str));
+        this.out.flush();
 			}
-
-			resend.setStop();
+      synchronized(in){
+        resend.setStop();
+      }
 		}
-    catch(Exception e){
-			e.printStackTrace();
+    catch(IOException e){
+      System.err.println("Server not found!");
 		}
     finally{
 			this.close();
@@ -46,8 +52,8 @@ public class Client{
 			this.out.close();
 			this.socket.close();
 		}
-    catch(Exception e){
-			System.err.println(e.getMessage());
+    catch(IOException e){
+      e.printStackTrace();
 		}
 	}
 
@@ -62,18 +68,25 @@ public class Client{
 		public void run(){
 			try{
 				while(!stopped){
-					String str = Client.this.in.readLine();
-					System.out.println(str);
+          Message str;
+          synchronized(in){
+					       str = (Message)Client.this.in.readObject();
+          }
+          System.out.println(str);
 				}
 			}
-      catch(IOException e){
-				System.err.println(e.getMessage());
-				e.printStackTrace();
+      catch(ClassNotFoundException | IOException e){
+        e.printStackTrace();
 			}
 		}
 	}
 
   public static void main(String[] args){
-    Client client = new Client();
+    try{
+      Client client = new Client();
+    }
+    catch(NullPointerException e){
+      System.err.println("Connection error!");
+    }
   }
 }
