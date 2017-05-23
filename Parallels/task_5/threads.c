@@ -8,7 +8,7 @@ int createThreads();
 void* doTasks(void*);
 void* sendTasks(void*);
 
-const int TASKS = 40;
+const int TASKS = 20;
 int processTaskNum;
 int balance;
 
@@ -38,7 +38,6 @@ int main(int argc, char* argv[]){
     return 1;
   }
 
-  srand(0);
   pthread_mutex_init(&mutex, NULL);
 
   processTaskNum = TASKS / size;
@@ -46,7 +45,7 @@ int main(int argc, char* argv[]){
   tasks = (int*)malloc(sizeof(int) * processTaskNum);
 
   for(i = 0; i < processTaskNum; i++){
-    tasks[i] = 1 + rank * 8 + rand() % 8;
+    tasks[i] = TASKS / size * rank + rand() % (TASKS / size);
   }
 
   t1 = MPI_Wtime();
@@ -140,7 +139,7 @@ void* doTasks(void* args){
         printf("Rank#%d did alien task from Rank#%d.\n", rank, (rank + i) % size);
       }
     }
-    
+
     MPI_Barrier(MPI_COMM_WORLD);
     request = 0;
     MPI_Send(&request, 1, MPI_INT, rank, 0, MPI_COMM_WORLD);
