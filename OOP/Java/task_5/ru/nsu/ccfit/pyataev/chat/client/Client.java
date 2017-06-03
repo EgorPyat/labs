@@ -48,12 +48,12 @@ public class Client{
 
 	private void close(){
 		try{
+			this.socket.close();
 			this.in.close();
 			this.out.close();
-			this.socket.close();
 		}
     catch(IOException e){
-      e.printStackTrace();
+			System.out.println("Bad closing!");
 		}
 	}
 
@@ -70,13 +70,13 @@ public class Client{
 				while(!stopped){
           Message str;
           synchronized(in){
-					       str = (Message)Client.this.in.readObject();
+						str = (Message)Client.this.in.readObject();
           }
           System.out.println(str);
 				}
 			}
       catch(ClassNotFoundException | IOException e){
-        e.printStackTrace();
+				System.out.println("Connection was lost!");
 			}
 		}
 	}

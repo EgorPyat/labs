@@ -15,12 +15,15 @@ public class Server{
 			this.server = new ServerSocket(3001);
 
 			while(true){
-				Socket socket = server.accept();
-
-				Connection con = new Connection(socket);
-				this.connections.add(con);
-
-				con.start();
+				try{
+					Socket socket = server.accept();
+					Connection con = new Connection(socket);
+					this.connections.add(con);
+					con.start();
+				}
+				catch(SocketException | EOFException e){
+					System.out.print(".");
+				}
 			}
 		}
     catch(IOException e){
@@ -107,8 +110,7 @@ public class Server{
 				}
 			}
       catch(ClassNotFoundException | IOException e){
-        System.err.println(e.getMessage());
-        e.printStackTrace();
+				System.out.println("Client was lost!");
 			}
       finally{
 				this.close();
