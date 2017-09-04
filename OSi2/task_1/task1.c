@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <unistd.h>
 
 void* func();
 
@@ -11,8 +12,9 @@ int main(){
 		return 1;
 	} 	
 
-	for(i = 0; i < 100; i++){
+	for(i = 0; i < 10; i++){
 		printf("Parent's String#%d\n", i);
+		sleep(1);
 	}
 	
 	return 0;
@@ -23,5 +25,6 @@ void* func(void* ptr){
 	
 	for(i = 0; i < 10; i++){
 		printf("Child's String#%d\n", i);
+		sleep(2);
 	}
 }
