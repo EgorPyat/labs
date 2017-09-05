@@ -14,11 +14,11 @@ int main(){
 		return 1;
 	}
 
-  sleep(2);
-
-  pthread_cancel(thr);
-
 	sleep(2);
+
+	pthread_cancel(thr);
+
+	pthread_join(thr, NULL);
 
 	return 0;
 }

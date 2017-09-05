@@ -13,11 +13,13 @@ int main(){
 		return 1;
 	}
 
-  sleep(2);
+	sleep(2);
 
-  pthread_cancel(thr);
+	pthread_cancel(thr);
 
-  return 0;
+	pthread_join(thr, NULL);
+
+  	return 0;
 }
 
 void* func(void* ptr){
@@ -27,6 +29,6 @@ void* func(void* ptr){
 
 	for(i = 0; i < 5; i++){
 		printf("%s\n", message[i]);
-    sleep(1);
+		sleep(1);
 	}
 }
