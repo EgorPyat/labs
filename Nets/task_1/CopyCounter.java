@@ -1,7 +1,6 @@
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.util.HashSet;
+import java.net.*;
+import java.util.*;
+import java.io.*;
 
 public class CopyCounter{
   private int mcPort;
@@ -33,41 +32,86 @@ public class CopyCounter{
             mcSocket.leaveGroup(mcIPAddress);
             mcSocket.close();
           }
-          catch(Exception ex){
+          catch(IOException ex){
             System.err.println(ex.getMessage());
           }
         }
       }
     });
 
-    HashSet<InetAddress> set = new HashSet<InetAddress>();
+    Map<SocketAddress, Long> map = Collections.synchronizedMap(new HashMap<SocketAddress, Long>());
 
-    try{
-      mcSocket.send(new DatagramPacket("Hello".getBytes(), 5, mcIPAddress, mcPort));
-
-      while(true){
-        synchronized(monitor){
-          DatagramPacket packet = new DatagramPacket(new byte[16], 16);
-          mcSocket.receive(packet);
-          String msg = new String(packet.getData(), packet.getOffset(), packet.getLength());
-
-          if(msg.equals("Hello")){
-            set.add(packet.getAddress());
-            mcSocket.send(new DatagramPacket("Hello".getBytes(), 5, mcIPAddress, mcPort));
+    Thread deadChecker = new Thread(new Runnable(){
+      @Override
+      public void run(){
+        while(!Thread.interrupted()){
+          for(SocketAddress adr : map.keySet()){
+            if(System.currentTimeMillis()/1000 - map.get(adr) > 5){
+              map.remove(adr);
+            }
           }
-          else if(msg.equals("Bye")){
-            set.remove(packet.getAddress());
-          }
-          else if(!msg.equals("Bye") || !msg.equals("Hello")){
-            System.out.println("Wrong msg");
-          }
-
-          System.out.println("Hosts number: " + set.size());
         }
       }
-    }
-    catch(Exception ex){
-      System.err.println(ex.getMessage() + "!");
+    });
+
+    Thread receiver = new Thread(new Runnable(){
+      @Override
+      public void run(){
+        while(!Thread.interrupted()){
+          try{
+            DatagramPacket packet = new DatagramPacket(new byte[16], 16);
+            mcSocket.receive(packet);
+            String msg = new String(packet.getData(), packet.getOffset(), packet.getLength());
+
+            if(msg.equals("Hello")){
+              map.put(packet.getSocketAddress(), System.currentTimeMillis());
+            }
+            else if(msg.equals("Bye")){
+              map.remove(packet.getAddress());
+            }
+            else if(!msg.equals("Bye") || !msg.equals("Hello")){
+              System.out.println("Wrong msg");
+            }
+          }
+          catch(IOException e){
+            System.err.println("IOError: " + e.getMessage());
+          }
+        }
+      }
+    });
+
+    Thread sender = new Thread(new Runnable(){
+      @Override
+      public void run(){
+        while(!Thread.interrupted()){
+          try{
+            mcSocket.send(new DatagramPacket("Hello".getBytes(), 5, mcIPAddress, mcPort));
+            Thread.sleep(3000);
+          }
+          catch(IOException e){
+            System.err.println("IOError: " + e.getMessage());
+          }
+          catch(InterruptedException e){
+            System.err.println("SleepError: " + e.getMessage());
+          }
+        }
+      }
+    });
+
+    receiver.start();
+    deadChecker.start();
+    sender.start();
+
+    while(true){
+      try{
+        Thread.sleep(1000);
+      }
+      catch(InterruptedException e){
+        System.err.println("Error: " + e.getMessage());
+      }
+
+      System.out.println(map.size());
     }
   }
+
 }
