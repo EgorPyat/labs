@@ -25,16 +25,14 @@ public class CopyCounter{
   public void startCount(){
     Runtime.getRuntime().addShutdownHook(new Thread(){
       public void run(){
-        synchronized(monitor){
-          System.out.println("Finish...");
-          try{
-            mcSocket.send(new DatagramPacket("Bye".getBytes(), 3, mcIPAddress, mcPort));
-            mcSocket.leaveGroup(mcIPAddress);
-            mcSocket.close();
-          }
-          catch(IOException ex){
-            System.err.println(ex.getMessage());
-          }
+        System.out.println("Finish...");
+        try{
+          mcSocket.send(new DatagramPacket("Bye".getBytes(), 3, mcIPAddress, mcPort));
+          mcSocket.leaveGroup(mcIPAddress);
+          mcSocket.close();
+        }
+        catch(IOException ex){
+          System.err.println(ex.getMessage());
         }
       }
     });
