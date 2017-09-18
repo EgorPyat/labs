@@ -65,7 +65,7 @@ public class CopyCounter{
               map.put(packet.getSocketAddress(), System.currentTimeMillis());
             }
             else if(msg.equals("Bye")){
-              map.remove(packet.getAddress());
+              map.remove(packet.getSocketAddress());
             }
             else if(!msg.equals("Bye") || !msg.equals("Hello")){
               System.out.println("Wrong msg");
@@ -102,13 +102,14 @@ public class CopyCounter{
 
     while(true){
       try{
-        Thread.sleep(1000);
+        Thread.sleep(2000);
       }
       catch(InterruptedException e){
         System.err.println("Error: " + e.getMessage());
       }
-
-      System.out.println(map.size());
+      for(SocketAddress adr : map.keySet()){
+        System.out.println(adr);
+      }
     }
   }
 
