@@ -46,11 +46,12 @@ public class CopyCounter{
           for(SocketAddress adr : map.keySet()){
             if(System.currentTimeMillis()/1000 - map.get(adr) > 5){
               map.remove(adr);
+              System.out.println(adr + " time out");
             }
           }
         }
       }
-    });
+    }, "DeadChecker");
 
     Thread receiver = new Thread(new Runnable(){
       @Override
@@ -66,6 +67,7 @@ public class CopyCounter{
             }
             else if(msg.equals("Bye")){
               map.remove(packet.getSocketAddress());
+              System.out.println(packet.getSocketAddress() + " finished");
             }
             else if(!msg.equals("Bye") || !msg.equals("Hello")){
               System.out.println("Wrong msg");
@@ -76,7 +78,7 @@ public class CopyCounter{
           }
         }
       }
-    });
+    }, "Reciever");
 
     Thread sender = new Thread(new Runnable(){
       @Override
@@ -94,7 +96,7 @@ public class CopyCounter{
           }
         }
       }
-    });
+    }, "Sender");
 
     receiver.start();
     deadChecker.start();
