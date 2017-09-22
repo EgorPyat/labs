@@ -2,7 +2,6 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
 
 size_t num_steps = 200000;
 int threads_num = 4;
