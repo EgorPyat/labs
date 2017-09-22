@@ -23,16 +23,14 @@ int main(int argc, char* argv[]){
 
   for(int i = 0; i < threads_num; i++){
     args[i] = i;
-    pthread_create(&threads[i], NULL, calc_pi, (void*)(args + i));
+    if(0 != pthread_create(&threads[i], NULL, calc_pi, (void*)(args + i))) printf("Err\n");
   }
 
   for(int i = 0; i < threads_num; i++){
     if(0 != pthread_join(threads[i], (void**)(&retval))) printf("Err\n");
-    printf("%f\n", *(double*)retval);
     pi += *(double*)retval;
     free(retval);
   }
-
 
   printf("PI: %f | ITERS: %ld\n", pi, num_steps);
 
