@@ -43,7 +43,6 @@ int main(int argc, char* argv[]){
 }
 
 void* calc_pi(void* arg){
-  // int thread_num = *(int*)arg;
   double *pi = (double*)malloc(sizeof(double));
   *pi = 0.0;
   for(int i = *(int*)arg; i < num_steps; i += threads_num){
