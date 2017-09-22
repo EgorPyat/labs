@@ -4,35 +4,37 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NUM_STEPS 200000000
+size_t num_steps = 200000;
+int threads_num = 4;
 
 void* calc_pi(void*);
 
 int main(int argc, char* argv[]){
-  int threads_num;
-  size_t num_steps = NUM_STEPS;
   double *retval;
-  double sum = 0;
-  size_t* args;
+  double sum;
+  double pi = 0.0;
+  int* args;
   pthread_t* threads;
 
   if(argc == 2) threads_num = atoi(argv[1]);
-  else threads_num = 4;
 
   threads = (pthread_t*)malloc(threads_num * sizeof(pthread_t));
-  args = (size_t*)malloc(threads_num * sizeof(size_t));
+  args = (int*)malloc(threads_num * sizeof(int));
 
   for(int i = 0; i < threads_num; i++){
-    args[i] = i + 1;
-    pthread_create(&threads[i], NULL, calc_pi, args + i);
+    args[i] = i;
+    pthread_create(&threads[i], NULL, calc_pi, (void*)(args + i));
   }
 
   for(int i = 0; i < threads_num; i++){
-    pthread_join(threads[i], (void**)&retval);
-    sum += *(size_t*)retval;
+    if(0 != pthread_join(threads[i], (void**)(&retval))) printf("Err\n");
+    printf("%f\n", *(double*)retval);
+    pi += *(double*)retval;
+    free(retval);
   }
 
-  printf("%f\n", sum);
+
+  printf("PI: %f | ITERS: %ld\n", pi, num_steps);
 
   free(args);
   free(threads);
@@ -41,25 +43,17 @@ int main(int argc, char* argv[]){
 }
 
 void* calc_pi(void* arg){
-  size_t* p = (size_t*)arg;
-  printf("%ld\n", *p);
-  pthread_exit(p);
-}
+  // int thread_num = *(int*)arg;
+  double *pi = (double*)malloc(sizeof(double));
+  *pi = 0.0;
+  for(int i = *(int*)arg; i < num_steps; i += threads_num){
+    *pi += 1.0/(i*4.0 + 1.0);
+    *pi -= 1.0/(i*4.0 + 3.0);
+  }
 
-// int
-// main(int argc, char** argv) {
-//
-//     double pi = 0;
-//     int i;
-//
-//     for (i = 0; i < num_steps ; i++) {
-//
-//          pi += 1.0/(i*4.0 + 1.0);
-//          pi -= 1.0/(i*4.0 + 3.0);
-//     }
-//
-//     pi = pi * 4.0;
-//     printf("pi done - %.15g \n", pi);
-//
-//     return (EXIT_SUCCESS);
-// }
+  *pi = *pi * 4.0;
+
+  printf("THR_N: %d | RES: %f\n", *(int*)arg, *pi);
+
+  pthread_exit((void*)pi);
+}
