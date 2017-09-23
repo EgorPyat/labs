@@ -68,6 +68,9 @@ void* calc_pi(void* arg){
 }
 
 void sighandler(int signum){
-  if(stopped == 0) stopped = 1;
+  if(stopped == 0){
+    sleep(1);
+    stopped = 1;
+  }
   else exit(0);
 }
