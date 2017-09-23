@@ -46,15 +46,23 @@ int main(int argc, char* argv[]){
 void* calc_pi(void* arg){
   double *pi = (double*)malloc(sizeof(double));
   *pi = 0.0;
+  size_t iters = 0;
+  size_t cycles = 0;
 
   for(int i = *(int*)arg; ; i += threads_num){
+    ++iters;
     *pi += 1.0/(i*4.0 + 1.0);
     *pi -= 1.0/(i*4.0 + 3.0);
+    if(iters == 200000){
+      iters = 0;
+      ++cycles;
+      if(stopped == 1) break;
+    }
   }
 
   *pi = *pi * 4.0;
 
-  printf("THR_N: %d | RES: %f\n", *(int*)arg, *pi);
+  printf("THR_N: %d | RES: %f | CYC: %lu\n", *(int*)arg, *pi, cycles);
 
   pthread_exit((void*)pi);
 }
