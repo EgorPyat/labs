@@ -87,8 +87,11 @@ public class FileServer{
           out.println("1");
           InputStream inp = this.socket.getInputStream();
           FileOutputStream filOut = new FileOutputStream(file);
-          byte[] buffer = new byte[256];
+          byte[] buffer = new byte[2];
           int r = 0;
+          double speed = 0.0;
+          long time = System.currentTimeMillis();
+
           for(int i = 0; i < new Integer(fileSize);){
             r = inp.read(buffer);
             if(r == -1){
@@ -97,7 +100,15 @@ public class FileServer{
               break;
             }
             i += r;
+            speed +=r;
+
             filOut.write(buffer, 0, r);
+
+            if(System.currentTimeMillis() - time > 3000){
+              time = System.currentTimeMillis();
+              System.out.println("File: " + fileName + " | Speed, kB/s: " + String.format("%.2f", speed / 1024 / 3) + " | Now(bytes): " + r);
+              speed = 0;
+            }
           }
           if(r != -1){
             System.out.println("File: " + fileName + " - " + "Download complete!");

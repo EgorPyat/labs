@@ -32,7 +32,7 @@ public class Client{
       if(req.equals("1")){
         FileInputStream fileIn = new FileInputStream(file);
         OutputStream outp = this.socket.getOutputStream();
-        byte[] buffer = new byte[256];
+        byte[] buffer = new byte[2];
 
         while(fileIn.available() > 0){
           int r = fileIn.read(buffer);
