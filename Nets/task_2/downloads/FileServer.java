@@ -75,6 +75,12 @@ public class FileServer{
 
         fileName = in.readLine();
         fileSize = in.readLine();
+
+        int ch = fileName.lastIndexOf('/');
+        if(-1 != ch){
+          fileName = fileName.substring(ch);
+        }
+
         System.out.println("File: " + fileName + " | " + "Size: " + fileSize + " bytes");
 
         file = new File("./downloads/" + fileName);

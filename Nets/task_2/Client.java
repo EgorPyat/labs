@@ -4,24 +4,25 @@ import java.util.*;
 
 public class Client{
 	private Socket socket;
+	private File file;
 
   public Client(String fileName){
     try{
+			this.file = new File(fileName);
+			if(!file.exists()){
+	      System.out.println("No such file: " + fileName + "!");
+	      return;
+	    }
       this.socket = new Socket("localhost", 3000);
+			this.send(fileName);
     }
     catch(IOException e){
       System.err.println(e.getMessage());
       // e.printStackTrace();
     }
-    this.send(fileName);
   }
   private void send(String fileName){
-    File file = new File(fileName);
-    if(!file.exists()){
-      System.out.println("No such file: " + fileName + "!");
-      return;
-    }
-    try{
+		try{
       BufferedReader in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
       PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true);
 
@@ -37,6 +38,10 @@ public class Client{
           int r = fileIn.read(buffer);
           outp.write(buffer, 0, r);
         }
+
+				req = in.readLine();
+				if(req.equals("1")) System.out.println("Upload success!");
+				else System.out.println("Upload error!");
       }
       else{
         System.out.println("Server is not available to download file: " + fileName + "!");
