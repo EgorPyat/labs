@@ -21,7 +21,7 @@ int main(){
 
   asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
   for(int i = 0; i < 9000000; i++){
-    a /= c;
+    a /= f;
     b /= a;
     c /= b;
     d /= c;
@@ -43,7 +43,7 @@ int main(){
 
   t = (end.t64 - start.t64);
 
-  printf("Throughput: %llu\n", t / 9000000 / 3);
+  printf("Throughput: %llu\n", t / 9000000 / 2);
 
   return 0;
 }
