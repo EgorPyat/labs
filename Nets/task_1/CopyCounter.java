@@ -6,6 +6,7 @@ public class CopyCounter{
   private int mcPort;
   private String mcIPStr;
   private MulticastSocket mcSocket;
+  private DatagramSocket mdSocket;
   private InetAddress mcIPAddress;
   private Object monitor = new Object();
 
@@ -15,6 +16,7 @@ public class CopyCounter{
     try{
       mcIPAddress = InetAddress.getByName(mcIPStr);
       mcSocket = new MulticastSocket(mcPort);
+      mdSocket = new DatagramSocket();
       mcSocket.joinGroup(mcIPAddress);
     }
     catch(Exception ex){
@@ -25,11 +27,12 @@ public class CopyCounter{
   public void startCount(){
     Runtime.getRuntime().addShutdownHook(new Thread(){
       public void run(){
-        System.out.println("Finish...");
         try{
-          mcSocket.send(new DatagramPacket("Bye".getBytes(), 3, mcIPAddress, mcPort));
+          System.out.println("Finish...");
+          mdSocket.send(new DatagramPacket("Bye".getBytes(), 3, mcIPAddress, mcPort));
           mcSocket.leaveGroup(mcIPAddress);
           mcSocket.close();
+          mdSocket.close();
         }
         catch(IOException ex){
           System.err.println(ex.getMessage());
@@ -43,10 +46,12 @@ public class CopyCounter{
       @Override
       public void run(){
         while(!Thread.interrupted()){
-          for(SocketAddress adr : map.keySet()){
-            if(System.currentTimeMillis()/1000 - map.get(adr) > 5){
-              map.remove(adr);
-              System.out.println(adr + " time out");
+          synchronized(map){
+            for(SocketAddress adr : map.keySet()){
+              if(System.currentTimeMillis()/1000 - map.get(adr) > 5){
+                map.remove(adr);
+                System.out.println(adr + " time out");
+              }
             }
           }
         }
@@ -56,14 +61,14 @@ public class CopyCounter{
     Thread receiver = new Thread(new Runnable(){
       @Override
       public void run(){
-        while(!Thread.interrupted()){
-          try{
+        try{
+          while(!Thread.interrupted()){
             DatagramPacket packet = new DatagramPacket(new byte[16], 16);
             mcSocket.receive(packet);
             String msg = new String(packet.getData(), packet.getOffset(), packet.getLength());
 
             if(msg.equals("Hello")){
-              map.put(packet.getSocketAddress(), System.currentTimeMillis());
+              map.put(packet.getSocketAddress(), System.currentTimeMillis() / 1000);
             }
             else if(msg.equals("Bye")){
               map.remove(packet.getSocketAddress());
@@ -73,9 +78,9 @@ public class CopyCounter{
               System.out.println("Wrong msg");
             }
           }
-          catch(IOException e){
-            System.err.println("IOError: " + e.getMessage());
-          }
+        }
+        catch(IOException e){
+          System.err.println("Connetion closed!");
         }
       }
     }, "Reciever");
@@ -85,7 +90,7 @@ public class CopyCounter{
       public void run(){
         while(!Thread.interrupted()){
           try{
-            mcSocket.send(new DatagramPacket("Hello".getBytes(), 5, mcIPAddress, mcPort));
+            mdSocket.send(new DatagramPacket("Hello".getBytes(), 5, mcIPAddress, mcPort));
             Thread.sleep(3000);
           }
           catch(IOException e){
@@ -98,11 +103,11 @@ public class CopyCounter{
       }
     }, "Sender");
 
+    sender.start();
     receiver.start();
     deadChecker.start();
-    sender.start();
 
-    while(true){
+    while(!Thread.interrupted()){
       try{
         Thread.sleep(2000);
       }
@@ -113,6 +118,7 @@ public class CopyCounter{
         System.out.println(adr);
       }
     }
+
   }
 
 }
