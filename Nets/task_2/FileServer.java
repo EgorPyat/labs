@@ -70,11 +70,21 @@ public class FileServer{
       File file;
 
       try{
-        BufferedReader in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-        PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true);
+        BufferedReader in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
 
         fileName = in.readLine();
         fileSize = in.readLine();
+        int index;
+
+        if(fileName.charAt(fileName.length() - 1) == '/'){
+          fileName = fileName.substring(0, fileName.length() - 2);
+        }
+
+        if((index = fileName.lastIndexOf('/')) != -1){
+          fileName = fileName.substring(index);
+        }
+
         System.out.println("File: " + fileName + " | " + "Size: " + fileSize + " bytes");
 
         file = new File("./downloads/" + fileName);
@@ -89,7 +99,9 @@ public class FileServer{
           FileOutputStream filOut = new FileOutputStream(file);
           byte[] buffer = new byte[2];
           int r = 0;
+          int iters = 1;
           double speed = 0.0;
+          double midSpeed = 0.0;
           long time = System.currentTimeMillis();
 
           for(int i = 0; i < new Integer(fileSize);){
@@ -105,9 +117,11 @@ public class FileServer{
             filOut.write(buffer, 0, r);
 
             if(System.currentTimeMillis() - time > 3000){
+              midSpeed += speed;
               time = System.currentTimeMillis();
-              System.out.println("File: " + fileName + " | Speed, kB/s: " + String.format("%.2f", speed / 1024 / 3) + " | Now(bytes): " + r);
+              System.out.println("File: " + fileName + " | Speed, kB/s: " + String.format("%.2f", speed / 1024 / 3) + " | MidSpeed, kB/s: " + String.format("%.2f", midSpeed / 1024 / 3 / iters));
               speed = 0;
+              ++iters;
             }
           }
           if(r != -1){

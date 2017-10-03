@@ -23,8 +23,8 @@ public class Client{
   }
   private void send(String fileName){
 		try{
-      BufferedReader in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-      PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true);
+      BufferedReader in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+      PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
 
       out.println(file.getName());
       out.println(file.length());
@@ -61,6 +61,7 @@ public class Client{
     }
     catch(NullPointerException e){
       System.err.println(e.getMessage());
+			// e.printStackTrace();
     }
   }
 }

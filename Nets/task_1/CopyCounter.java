@@ -115,7 +115,7 @@ public class CopyCounter{
         System.err.println("Error: " + e.getMessage());
       }
       for(SocketAddress adr : map.keySet()){
-        System.out.println(adr);
+        System.out.println("Stil alive: " + adr);
       }
     }
 
