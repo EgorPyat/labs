@@ -6,6 +6,7 @@
 
 int threads_num = 4;
 int stopped = 0;
+pthread_barrier_t barrier;
 
 void* calc_pi(void*);
 void sighandler(int);
@@ -16,6 +17,8 @@ int main(int argc, char* argv[]){
   double pi = 0.0;
   int* args;
   pthread_t* threads;
+
+  pthread_barrier_init(&barrier, NULL, threads_num);
 
   signal(SIGINT, sighandler);
 
@@ -35,7 +38,9 @@ int main(int argc, char* argv[]){
     free(retval);
   }
 
-  printf("PI: %f\n", pi);
+  printf("PI: %.15f\n", pi);
+
+  pthread_barrier_destroy(&barrier);
 
   free(args);
   free(threads);
@@ -56,7 +61,10 @@ void* calc_pi(void* arg){
     if(iters == 200000){
       iters = 0;
       ++cycles;
-      if(stopped == 1) break;
+      if(stopped == 1){
+        // pthread_barrier_wait(&barrier);
+        break;
+      }
     }
   }
 
@@ -69,7 +77,7 @@ void* calc_pi(void* arg){
 
 void sighandler(int signum){
   if(stopped == 0){
-    sleep(1);
+    // sleep(1);
     stopped = 1;
   }
   else exit(0);
