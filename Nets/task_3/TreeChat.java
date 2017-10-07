@@ -19,6 +19,7 @@ public class TreeChat{
   private final String MSG = "1";
   private final String ACC = "2";
   private final String FIN = "3";
+  private final String NRT = "4";
   private boolean connect = false;
   private Random random = new Random(LocalTime.now().hashCode());
 
@@ -60,6 +61,35 @@ public class TreeChat{
       this.notConfMsg = Collections.synchronizedMap(new HashMap<UUID, Message>());
       Scanner scan = new Scanner(System.in);
       String message;
+
+      Runtime.getRuntime().addShutdownHook(new Thread(){
+        public void run(){
+          try{
+            System.out.println("Finished# " + nodeName + "!");
+            UUID uuid = UUID.randomUUID();
+            String message = uuid + ":" + FIN + ":" + "Finished# " + nodeName + "!" + parentIP + "!" + parentPort;
+
+            for(InetSocketAddress addr : addresses){
+              if(!addr.equals(new InetSocketAddress(parentAddr, parentPort))){
+                sendSock.send(new DatagramPacket(message.getBytes(), message.length(), addr.getAddress(), addr.getPort()));
+                notConfMsg.put(uuid, new Message(addr, System.currentTimeMillis(), message));
+              }
+              else continue;
+              break;
+            }
+
+            while(notConfMsg.containsKey(uuid)){System.out.println("dsd");}
+            System.out.println("Bye");
+
+            reciSock.close();
+            sendSock.close();
+          }
+          catch(IOException ex){
+            System.err.println(ex.getMessage());
+            // e.printStackTrace();
+          }
+        }
+      });
 
       Thread sender = new Thread(new Runnable(){
         @Override
@@ -124,7 +154,10 @@ public class TreeChat{
                 }
               }
               else if(dataArray[1].equals(FIN)){
-
+                System.out.println(dataArray[2]);
+                UUID uuid = UUID.randomUUID();
+                String message = uuid + ":" + ACC + ":" + dataArray[0];
+                sendSock.send(new DatagramPacket(message.getBytes(), message.length(), packet.getAddress(), packet.getPort() - 1));
               }
               else if(dataArray[1].equals(ACC)){
                 notConfMsg.remove(UUID.fromString(dataArray[2]));
