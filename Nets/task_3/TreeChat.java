@@ -35,7 +35,7 @@ public class TreeChat{
       }
       else{
         this.parentIP = null;
-        this.parentPort = -1;
+        this.parentPort = 0;
         this.root = true;
       }
       if(this.lossPercent < 0 || this.lossPercent > 100){
@@ -66,25 +66,53 @@ public class TreeChat{
         public void run(){
           try{
             System.out.println("Finished# " + nodeName + "!");
-            UUID uuid = UUID.randomUUID();
-            String message = uuid + ":" + FIN + ":" + "Finished# " + nodeName + "!" + parentIP + "!" + parentPort;
-
-            for(InetSocketAddress addr : addresses){
-              if(!addr.equals(new InetSocketAddress(parentAddr, parentPort))){
+            if(root == false){
+              for(InetSocketAddress addr : addresses){
+                UUID uuid = UUID.randomUUID();
+                String message;
+                if(new InetSocketAddress(parentAddr, parentPort) != addr){
+                  message = uuid + ":" + FIN + ":" + "Finished# " + nodeName + "!" + parentIP + "!" + parentPort;
+                }
+                else{
+                  message = uuid + ":" + FIN + ":" + "Finished# " + nodeName + "!";
+                }
                 sendSock.send(new DatagramPacket(message.getBytes(), message.length(), addr.getAddress(), addr.getPort()));
                 notConfMsg.put(uuid, new Message(addr, System.currentTimeMillis(), message));
               }
-              else continue;
-              break;
+            }
+            else if(addresses.size() > 0){
+              boolean flag = true ;
+              InetSocketAddress a = null;
+
+              for(InetSocketAddress addr : addresses){
+                if(flag){
+                  a = addr;
+                  flag = false;
+                }
+                UUID uuid = UUID.randomUUID();
+                String message;
+                if(addr != a){
+                  message = uuid + ":" + FIN + ":" + "Finished# " + nodeName + "!" + a.getAddress().getHostName() + "!" + a.getPort();
+                }
+                else{
+                  message = uuid + ":" + NRT + ":";
+                }
+                sendSock.send(new DatagramPacket(message.getBytes(), message.length(), addr.getAddress(), addr.getPort()));
+                notConfMsg.put(uuid, new Message(addr, System.currentTimeMillis(), message));
+              }
             }
 
-            while(notConfMsg.containsKey(uuid)){System.out.println("dsd");}
+            while(notConfMsg.size() != 0){}
             System.out.println("Bye");
 
             reciSock.close();
             sendSock.close();
           }
           catch(IOException ex){
+            System.err.println(ex.getMessage());
+            // e.printStackTrace();
+          }
+          catch(IllegalArgumentException ex){
             System.err.println(ex.getMessage());
             // e.printStackTrace();
           }
@@ -139,7 +167,7 @@ public class TreeChat{
                 }
               }
               else if(dataArray[1].equals(MSG)){
-                System.out.println(dataArray[2]);
+                if(2 < dataArray.length) System.out.println(dataArray[2]);
                 UUID uuid = UUID.randomUUID();
                 String message = uuid + ":" + ACC + ":" + dataArray[0];
                 sendSock.send(new DatagramPacket(message.getBytes(), message.length(), packet.getAddress(), packet.getPort() - 1));
@@ -158,9 +186,24 @@ public class TreeChat{
                 UUID uuid = UUID.randomUUID();
                 String message = uuid + ":" + ACC + ":" + dataArray[0];
                 sendSock.send(new DatagramPacket(message.getBytes(), message.length(), packet.getAddress(), packet.getPort() - 1));
+                String[] newParent = dataArray[2].split("!");
+                addresses.remove(new InetSocketAddress(packet.getAddress(), packet.getPort() - 1));
+                if(newParent.length > 1){
+                  parentAddr = InetAddress.getByName(newParent[1]);
+                  parentPort = new Integer(newParent[2]);
+                  connect(parentAddr, parentPort);
+                }
               }
               else if(dataArray[1].equals(ACC)){
                 notConfMsg.remove(UUID.fromString(dataArray[2]));
+              }
+              else if(dataArray[1].equals(NRT)){
+                UUID uuid = UUID.randomUUID();
+                String message = uuid + ":" + ACC + ":" + dataArray[0];
+                sendSock.send(new DatagramPacket(message.getBytes(), message.length(), packet.getAddress(), packet.getPort() - 1));
+                addresses.remove(new InetSocketAddress(packet.getAddress(), packet.getPort() - 1));
+                root = true;
+                System.out.println("i'm new root ");
               }
 
             }
@@ -180,9 +223,9 @@ public class TreeChat{
               Thread.sleep(3000);
               for(UUID u : notConfMsg.keySet()){
                 if(System.currentTimeMillis() - notConfMsg.get(u).getTime() > 3000){
-                  System.out.println("Resend to " + notConfMsg.get(u).getAddress());
                   InetSocketAddress s = notConfMsg.get(u).getAddress();
                   String m = notConfMsg.get(u).getMessage();
+                  System.out.println("Resend to " + s + " " + m);
                   sendSock.send(new DatagramPacket(m.getBytes(), m.length(), s.getAddress(), s.getPort()));
                   notConfMsg.put(u, new Message(s, System.currentTimeMillis(), m));
                 }
@@ -203,23 +246,24 @@ public class TreeChat{
       resender.start();
 
       if(this.root == false){
-        addresses.add(new InetSocketAddress(parentAddr, parentPort));
-
-        UUID uuid = UUID.randomUUID();
-        message = uuid + ":" + this.NEW + ":" + this.nodeName;
-        this.sendSock.send(new DatagramPacket(message.getBytes(), message.length(), parentAddr, parentPort));
-        notConfMsg.put(uuid, new Message(new InetSocketAddress(parentAddr, parentPort), System.currentTimeMillis(), message));
-        while(true){
-          DatagramPacket packet = new DatagramPacket(new byte[256], 256);
-          this.reciSock.receive(packet);
-          String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
-          String[] dataArray = data.split(":");
-          if(dataArray[1].equals(ACC) && uuid.toString().equals(dataArray[2])){
-            notConfMsg.remove(uuid);
-            System.out.println("Connected!");
-            break;
-          }
-        }
+        // addresses.add(new InetSocketAddress(parentAddr, parentPort));
+        //
+        // UUID uuid = UUID.randomUUID();
+        // message = uuid + ":" + this.NEW + ":" + this.nodeName;
+        // this.sendSock.send(new DatagramPacket(message.getBytes(), message.length(), parentAddr, parentPort));
+        // notConfMsg.put(uuid, new Message(new InetSocketAddress(parentAddr, parentPort), System.currentTimeMillis(), message));
+        // while(true){
+        //   DatagramPacket packet = new DatagramPacket(new byte[256], 256);
+        //   this.reciSock.receive(packet);
+        //   String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
+        //   String[] dataArray = data.split(":");
+        //   if(dataArray[1].equals(ACC) && uuid.toString().equals(dataArray[2])){
+        //     notConfMsg.remove(uuid);
+        //     System.out.println("Connected!");
+        //     break;
+        //   }
+        // }
+        connect(parentAddr, parentPort);
       }
 
       receiver.start();
@@ -234,6 +278,31 @@ public class TreeChat{
     catch(UnknownHostException e){
       System.out.println(e.getMessage());
       // e.printStackTrace();
+    }
+    // catch(IOException e){
+    //   System.out.println(e.getMessage());
+    //   // e.printStackTrace();
+    // }
+  }
+
+  private void connect(InetAddress address, int port){
+    try{
+      addresses.add(new InetSocketAddress(address, port));
+      UUID uuid = UUID.randomUUID();
+      String message = uuid + ":" + this.NEW + ":" + this.nodeName;
+      this.sendSock.send(new DatagramPacket(message.getBytes(), message.length(), address, port));
+      notConfMsg.put(uuid, new Message(new InetSocketAddress(address, port), System.currentTimeMillis(), message));
+      while(true){
+        DatagramPacket packet = new DatagramPacket(new byte[256], 256);
+        this.reciSock.receive(packet);
+        String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
+        String[] dataArray = data.split(":");
+        if(dataArray[1].equals(ACC) && uuid.toString().equals(dataArray[2])){
+          notConfMsg.remove(uuid);
+          System.out.println("Connected!");
+          break;
+        }
+      }
     }
     catch(IOException e){
       System.out.println(e.getMessage());
