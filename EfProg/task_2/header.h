@@ -41,7 +41,7 @@ typedef struct{
   double u;
   double v;
   double w;
-  double i;
+  double h;
 } dim7;
 
 typedef struct{
@@ -51,7 +51,7 @@ typedef struct{
   double u;
   double v;
   double w;
-  double i;
+  double h;
   double j;
 } dim8;
 
@@ -62,7 +62,7 @@ typedef struct{
   double u;
   double v;
   double w;
-  double i;
+  double h;
   double j;
   double k;
 } dim9;
@@ -74,7 +74,7 @@ typedef struct{
   double u;
   double v;
   double w;
-  double i;
+  double h;
   double j;
   double k;
   double m;
@@ -87,7 +87,7 @@ typedef struct{
   double u;
   double v;
   double w;
-  double i;
+  double h;
   double j;
   double k;
   double m;
@@ -101,7 +101,7 @@ typedef struct{
   double u;
   double v;
   double w;
-  double i;
+  double h;
   double j;
   double k;
   double m;
