@@ -4,18 +4,28 @@ import java.io.*;
 import java.util.*;
 
 public class FileServer{
-  private List<Connection> connections = Collections.synchronizedList(new ArrayList<Connection>());
+
+  public FileServer(){}
+
+  private List<Connection> connections = new ArrayList<Connection>();
 	private ServerSocket server;
 
-  public FileServer(){
+  public void startDownload(){
     File folder = new File("downloads");
 
-    if (!folder.exists()) {
+    if(!folder.exists()){
       folder.mkdir();
     }
 
     try{
-			this.server = new ServerSocket(3000);
+      this.server = new ServerSocket(3000);
+
+      Runtime.getRuntime().addShutdownHook(new Thread(){
+        public void run(){
+          System.out.println("\nServer work was interrupted!");
+          closeAll();
+        }
+      });
 
 			while(true){
 				try{
@@ -25,39 +35,36 @@ public class FileServer{
 					con.start();
 				}
 				catch(SocketException | EOFException e){
-          System.err.println(e.getMessage());
+          // System.err.println(e.getMessage());
           // e.printStackTrace();
 				}
 			}
 		}
     catch(IOException e){
-      System.err.println(e.getMessage());
+      // System.err.println(e.getMessage());
 			// e.printStackTrace();
 		}
-    finally{
-			this.closeAll();
-		}
+
 	}
 
 	private void closeAll(){
 		try{
-			synchronized(connections){
-				Iterator<Connection> iter = connections.iterator();
-				while(iter.hasNext()){
-					((Connection)iter.next()).close();
-				}
+			Iterator<Connection> iter = connections.iterator();
+			while(iter.hasNext()){
+				iter.next().close(iter);
 			}
 
       this.server.close();
 		}
     catch(IOException e){
-      System.err.println(e.getMessage());
+      // System.err.println(e.getMessage());
       // e.printStackTrace();
 		}
   }
 
   private class Connection extends Thread{
     private Socket socket;
+    File file;
 
     public Connection(Socket socket){
       this.socket = socket;
@@ -67,7 +74,6 @@ public class FileServer{
     public void run(){
       String fileName;
       String fileSize;
-      File file;
 
       try{
         BufferedReader in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
@@ -89,8 +95,8 @@ public class FileServer{
 
         file = new File("./downloads/" + fileName);
 
-        if(file.exists()){
-          System.out.println("File: " + fileName + " exists!");
+        if(file.exists() || new File(".").getFreeSpace() < new Integer(fileSize)){
+          System.out.println("File: " + fileName + " can't be created!");
           out.println("0");
         }
         else{
@@ -131,29 +137,40 @@ public class FileServer{
         }
       }
       catch(IOException e){
-        System.err.println(e.getMessage());
+        // System.err.println(e.getMessage());
         // e.printStackTrace();
       }
 
       this.close();
     }
 
-    public void close(){
+    public void close(Iterator<Connection> iter){
       try{
 				this.socket.close();
-
-				FileServer.this.connections.remove(this);
+        file.delete();
+				iter.remove();
 			}
       catch(Exception e){
-				System.err.println(e.getMessage());
+				// System.err.println(e.getMessage());
         // e.printStackTrace();
 			}
 		}
 
+    public void close(){
+      try{
+				this.socket.close();
+				connections.remove(this);
+			}
+      catch(Exception e){
+				// System.err.println(e.getMessage());
+        // e.printStackTrace();
+			}
+    }
   }
 
   public static void main(String[] args){
     FileServer fs = new FileServer();
+    fs.startDownload();
   }
 
 }
