@@ -34,4 +34,78 @@ typedef struct{
   double w;
 } dim6;
 
+typedef struct{
+  double x;
+  double y;
+  double z;
+  double u;
+  double v;
+  double w;
+  double i;
+} dim7;
+
+typedef struct{
+  double x;
+  double y;
+  double z;
+  double u;
+  double v;
+  double w;
+  double i;
+  double j;
+} dim8;
+
+typedef struct{
+  double x;
+  double y;
+  double z;
+  double u;
+  double v;
+  double w;
+  double i;
+  double j;
+  double k;
+} dim9;
+
+typedef struct{
+  double x;
+  double y;
+  double z;
+  double u;
+  double v;
+  double w;
+  double i;
+  double j;
+  double k;
+  double m;
+} dim10;
+
+typedef struct{
+  double x;
+  double y;
+  double z;
+  double u;
+  double v;
+  double w;
+  double i;
+  double j;
+  double k;
+  double m;
+  double n;
+} dim11;
+
+typedef struct{
+  double x;
+  double y;
+  double z;
+  double u;
+  double v;
+  double w;
+  double i;
+  double j;
+  double k;
+  double m;
+  double n;
+  double o;
+} dim12;
 const int N = 13107200;

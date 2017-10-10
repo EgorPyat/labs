@@ -1,4 +1,14 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+
+static inline uint64_t read_time(void)
+{
+    uint32_t a, d;
+    __asm__ volatile("rdtscp\n\t":"=a"(a),"=d"(d));
+    return ((uint64_t)d<<32)+a;
+}
 
 int main(){
   union ticks {
@@ -7,6 +17,8 @@ int main(){
       long th, tl;
     } t32;
   } start, end;
+
+  uint64_t start1, stop1, tick = 0;
 
   unsigned long long t;
 
@@ -19,7 +31,7 @@ int main(){
 
   for(int i = 0; i < 2000000; i++){}
 
-  asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
+  start1 = read_time();
   for(int i = 0; i < 9000000; i++){
     a /= f;
     b /= a;
@@ -28,22 +40,18 @@ int main(){
     e /= d;
     f /= e;
   }
-  asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
+  stop1 = read_time();
 
-  t = (end.t64 - start.t64);
+  printf("Latency: %f\n", (double)(stop1 - start1) / 9000000 / 6);
 
-  printf("Latency: %llu\n", t / 9000000 / 8);
-
-  asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
+  start1 = read_time();
   for(int i = 0; i < 9000000; i++){
     a = b / c;
     d = e / f;
   }
-  asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
+  stop1 = read_time();
 
-  t = (end.t64 - start.t64);
-
-  printf("Throughput: %llu\n", t / 9000000 / 2);
+  printf("Throughput: %f\n", (double)(stop1 - start1) / 9000000 / 2);
 
   return 0;
 }
