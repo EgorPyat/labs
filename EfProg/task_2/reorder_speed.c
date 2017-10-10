@@ -15,6 +15,12 @@ int main(){
   // dim4* fou = (dim4*)malloc(sizeof(dim4) * N);
   // dim5* fiv = (dim5*)malloc(sizeof(dim5) * N);
   // dim6* six = (dim6*)malloc(sizeof(dim6) * N);
+  // dim7* sev = (dim7*)malloc(sizeof(dim7 * N);
+  // dim8* eig = (dim8*)malloc(sizeof(dim8 * N);
+  // dim9* nin = (dim9*)malloc(sizeof(dim9 * N);
+  // dim10* ten = (dim10*)malloc(sizeof(dim10 * N);
+  // dim11* elf = (dim11*)malloc(sizeof(dim11 * N);
+  // dim12* twe = (dim12*)malloc(sizeof(dim12 * N);
 
   double* x = (double*)malloc(sizeof(double) * N);
   double* y = (double*)malloc(sizeof(double) * N);
@@ -22,6 +28,12 @@ int main(){
   // double* u = (double*)malloc(sizeof(double) * N);
   // double* v = (double*)malloc(sizeof(double) * N);
   // double* w = (double*)malloc(sizeof(double) * N);
+  // double* h = (double*)malloc(sizeof(double) * N);
+  // double* j = (double*)malloc(sizeof(double) * N);
+  // double* k = (double*)malloc(sizeof(double) * N);
+  // double* m = (double*)malloc(sizeof(double) * N);
+  // double* n = (double*)malloc(sizeof(double) * N);
+  // double* o = (double*)malloc(sizeof(double) * N);
 
   asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
   for(int i = 0; i < 13107200; i++){
@@ -93,17 +105,46 @@ int main(){
   // printf("Ticks: %llu\n", t / N / 6);
   // printf("Mb/s: %f\n", 600 / (t / cpu_Hz));
 
+  asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
+  for(int i = 0; i < 13107200; i++){
+    six[i].x = x[i];
+    six[i].y = y[i];
+    six[i].z = z[i];
+    six[i].u = u[i];
+    six[i].v = v[i];
+    six[i].w = w[i];
+    six[i].h = h[i];
+  }
+  asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
+
+  t = (end.t64 - start.t64);
+
+  printf("Ticks: %llu\n", t / N / 7);
+  printf("Mb/s: %f\n", 700 / (t / cpu_Hz));
+
   free(two);
   // free(thr);
   // free(fou);
   // free(fiv);
   // free(six);
+  // free(sev);
+  // free(eig);
+  // free(nin);
+  // free(ten);
+  // free(elf);
+  // free(twe);
   free(x);
   free(y);
   // free(z);
   // free(u);
   // free(v);
   // free(w);
+  // free(i);
+  // free(j);
+  // free(k);
+  // free(m);
+  // free(n);
+  // free(o);
 
   return 0;
   /*Сделать до 12 | скачек*/

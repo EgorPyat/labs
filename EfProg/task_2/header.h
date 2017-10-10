@@ -108,4 +108,5 @@ typedef struct{
   double n;
   double o;
 } dim12;
+
 const int N = 13107200;
