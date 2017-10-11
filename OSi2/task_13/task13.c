@@ -3,14 +3,14 @@
 #include <semaphore.h>
 #include <string.h>
 
-sem_t s1;
-sem_t s2;
+sem_t p;
+sem_t c;
 
 void* print_message(void* str){
     for (int i = 0; i < 10; i++){
-      sem_wait(&s2);
+      sem_wait(&p);
       printf("Message : %s\n",(char*)str);
-      sem_post(&s1);
+      sem_post(&c);
     }
     return NULL;
 }
@@ -20,23 +20,23 @@ int main(int argc, char* argv){
     int i = 0;
     int err;
 
-    sem_init(&s1, 0, 0);
-    sem_init(&s2, 0, 1);
+    sem_init(&p, 0, 0);
+    sem_init(&c, 0, 1);
 
-    if(err = pthread_create(&thread, NULL, print_message, (void*)"child")){
-      fprintf(stderr, "Error in creating thread: %s\n", strerror(err));
+    if(0 != pthread_create(&thread, NULL, print_message, (void*)"child")){
+      printf("Error\n");
     }
 
     for(int i = 0; i < 10; i++){
-      sem_wait(&s1);
+      sem_wait(&c);
       printf("Message : parent\n");
-      sem_post(&s2);
+      sem_post(&p);
     }
 
     pthread_join(thread, NULL);
 
-    sem_destroy(&s1);
-    sem_destroy(&s2);
+    sem_destroy(&p);
+    sem_destroy(&c);
 
     pthread_exit(NULL);
 }
