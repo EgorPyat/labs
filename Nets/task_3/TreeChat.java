@@ -65,7 +65,7 @@ public class TreeChat{
       Runtime.getRuntime().addShutdownHook(new Thread(){
         public void run(){
           try{
-            System.out.println("Finished# " + nodeName + "!");
+            System.out.println("\nFinish work " + nodeName + "!");
             if(root == false){
               for(InetSocketAddress addr : addresses){
                 UUID uuid = UUID.randomUUID();
@@ -104,7 +104,6 @@ public class TreeChat{
             }
 
             while(notConfMsg.size() != 0){}
-            System.out.println("Bye");
 
             reciSock.close();
             sendSock.close();
@@ -157,11 +156,11 @@ public class TreeChat{
                 UUID uuid = UUID.randomUUID();
                 String message = uuid + ":" + ACC + ":" + dataArray[0];
                 sendSock.send(new DatagramPacket(message.getBytes(), message.length(), packet.getAddress(), packet.getPort() - 1));
-                System.out.println("New user# " + dataArray[2] + "!");
+                System.out.println("Connected# " + dataArray[2] + "!");
                 for(InetSocketAddress addr : addresses){
                   if(!addr.equals(new InetSocketAddress(packet.getAddress(), packet.getPort() - 1))){
                     uuid = UUID.randomUUID();
-                    message = uuid + ":" + MSG + ":" + "New user# " + dataArray[2] + "!";
+                    message = uuid + ":" + MSG + ":" + "Connected# " + dataArray[2] + "!";
                     sendSock.send(new DatagramPacket(message.getBytes(), message.length(), addr.getAddress(), addr.getPort()));
                     notConfMsg.put(uuid, new Message(addr, System.currentTimeMillis(), message));
                   }
