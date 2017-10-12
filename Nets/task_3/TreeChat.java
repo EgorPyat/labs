@@ -70,7 +70,8 @@ public class TreeChat{
               for(InetSocketAddress addr : addresses){
                 UUID uuid = UUID.randomUUID();
                 String message;
-                if(new InetSocketAddress(parentAddr, parentPort) != addr){
+
+                if(!new InetSocketAddress(parentAddr, parentPort).equals(addr)){
                   message = uuid + ":" + FIN + ":" + "Finished# " + nodeName + "!" + parentIP + "!" + parentPort;
                 }
                 else{
@@ -91,7 +92,7 @@ public class TreeChat{
                 }
                 UUID uuid = UUID.randomUUID();
                 String message;
-                if(addr != a){
+                if(!addr.equals(a)){
                   message = uuid + ":" + FIN + ":" + "Finished# " + nodeName + "!" + a.getAddress().getHostName() + "!" + a.getPort();
                 }
                 else{
@@ -109,7 +110,7 @@ public class TreeChat{
             sendSock.close();
           }
           catch(IOException ex){
-            System.err.println(ex.getMessage());
+            // System.err.println(ex.getMessage());
             // e.printStackTrace();
           }
           catch(IllegalArgumentException ex){
@@ -134,7 +135,7 @@ public class TreeChat{
             }
           }
           catch(IOException e){
-            System.out.println(e.getMessage());
+            // System.out.println(e.getMessage());
             // e.printStackTrace();
           }
         }
@@ -209,7 +210,7 @@ public class TreeChat{
             }
           }
           catch(IOException e){
-            System.out.println(e.getMessage());
+            // System.out.println(e.getMessage());
             // e.printStackTrace();
           }
         }
@@ -237,7 +238,7 @@ public class TreeChat{
             // e.printStackTrace();
           }
           catch(IOException e){
-            System.out.println(e.getMessage());
+            // System.out.println(e.getMessage());
             // e.printStackTrace();
           }
         }
@@ -246,23 +247,6 @@ public class TreeChat{
       resender.start();
 
       if(this.root == false){
-        // addresses.add(new InetSocketAddress(parentAddr, parentPort));
-        //
-        // UUID uuid = UUID.randomUUID();
-        // message = uuid + ":" + this.NEW + ":" + this.nodeName;
-        // this.sendSock.send(new DatagramPacket(message.getBytes(), message.length(), parentAddr, parentPort));
-        // notConfMsg.put(uuid, new Message(new InetSocketAddress(parentAddr, parentPort), System.currentTimeMillis(), message));
-        // while(true){
-        //   DatagramPacket packet = new DatagramPacket(new byte[256], 256);
-        //   this.reciSock.receive(packet);
-        //   String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
-        //   String[] dataArray = data.split(":");
-        //   if(dataArray[1].equals(ACC) && uuid.toString().equals(dataArray[2])){
-        //     notConfMsg.remove(uuid);
-        //     System.out.println("Connected!");
-        //     break;
-        //   }
-        // }
         connect(parentAddr, parentPort);
       }
 
@@ -272,17 +256,13 @@ public class TreeChat{
       while(true){}
     }
     catch(SocketException e){
-      System.out.println(e.getMessage());
+      // System.out.println(e.getMessage());
       // e.printStackTrace();
     }
     catch(UnknownHostException e){
       System.out.println(e.getMessage());
       // e.printStackTrace();
     }
-    // catch(IOException e){
-    //   System.out.println(e.getMessage());
-    //   // e.printStackTrace();
-    // }
   }
 
   private void connect(InetAddress address, int port){
@@ -305,7 +285,7 @@ public class TreeChat{
       }
     }
     catch(IOException e){
-      System.out.println(e.getMessage());
+      // System.out.println(e.getMessage());
       // e.printStackTrace();
     }
   }
