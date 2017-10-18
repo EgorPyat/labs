@@ -10,7 +10,7 @@ public class ChatNode{
   private boolean root;
   private InetSocketAddress parentAddress;
   private String parentIP;
-  private Set<InetSocketAddress> addresses;
+  private Map<InetSocketAddress, Long> addresses;
   private Map<UUID, Message> unconfirmedMessages;
   private List<UUID> recievedMessages;
   private DatagramSocket sendSocket;
@@ -23,14 +23,18 @@ public class ChatNode{
     private InetSocketAddress addr;
     private long time;
     private String msg;
-
-    public Message(InetSocketAddress addr, long time, String msg){
+    private int tryNum;
+    public Message(InetSocketAddress addr, long time, String msg, int tryNum){
       this.addr = addr;
       this.time = time;
       this.msg = msg;
+      this.tryNum = tryNum;
     }
     public long getTime(){
       return this.time;
+    }
+    public int getTryNum(){
+      return this.tryNum;
     }
     public String getMessage(){
       return this.msg;
@@ -69,19 +73,24 @@ public class ChatNode{
       Thread reciever = this.getReciever();
       Thread sender = this.getSender();
       this.openConnection();
+      boolean connected = true;
       if(this.isNode()){
-        this.connect(parentAddress);
+        connected = this.connect(parentAddress);
       }
-      this.addInterruptionHandler();
-      resender.start();
-      reciever.start();
-      sender.start();
-      resender.join();
-      reciever.join();
-      sender.join();
+      if(connected){
+        this.addInterruptionHandler();
+        resender.start();
+        reciever.start();
+        sender.start();
+        resender.join();
+        reciever.join();
+        sender.join();
+      }
+      else{ this.closeConnection(); }
     }
     catch(Exception e){
       System.out.println("Chatting " + e.getMessage());
+      e.printStackTrace();
     }
   }
   private void addInterruptionHandler(){
@@ -101,7 +110,7 @@ public class ChatNode{
   private void openConnection() throws SocketException{
     this.recievedMessages = Collections.synchronizedList(new ArrayList<UUID>());
     this.unconfirmedMessages = Collections.synchronizedMap(new HashMap<UUID, Message>());
-    this.addresses = Collections.synchronizedSet(new HashSet<InetSocketAddress>());
+    this.addresses = Collections.synchronizedMap(new HashMap<InetSocketAddress, Long>());
     this.recieveSocket = new DatagramSocket(this.nodePort);
     this.sendSocket = new DatagramSocket(this.nodePort + 1);
   }
@@ -109,24 +118,39 @@ public class ChatNode{
     this.sendSocket.close();
     this.recieveSocket.close();
   }
-  private void connect(InetSocketAddress address) throws IOException{
+  private boolean connect(InetSocketAddress address) throws IOException{
     sendMessage(ChatNode.MessageType.NUR, nodeName, parentAddress);
-    addresses.add(address);
-    String[] dataArray;
+    addresses.put(address, System.currentTimeMillis());
+    String[] dataArray = new String[3]; dataArray[0] = ""; dataArray[1] = "";
+    int tries = 0;
+    this.recieveSocket.setSoTimeout(2000);
     do{
-      DatagramPacket packet = new DatagramPacket(new byte[256], 256);
-      this.recieveSocket.receive(packet);
-      String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
-      dataArray = data.split(":");
+      try{
+        if(tries == 5) break;
+        ++tries;
+        DatagramPacket packet = new DatagramPacket(new byte[256], 256);
+        this.recieveSocket.receive(packet);
+        if(lossPercent > random.nextInt(101)) continue;
+        String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
+        dataArray = data.split(":");
+      }
+      catch(SocketTimeoutException e){
+
+      }
     }
     while(!dataArray[1].equals(ChatNode.MessageType.ACC.toString()));
-    unconfirmedMessages.remove(UUID.fromString(dataArray[2]));
-    System.out.println("Connected to new parent node!");
+    this.recieveSocket.setSoTimeout(0);
+    if(tries < 5){
+      unconfirmedMessages.remove(UUID.fromString(dataArray[2]));
+      System.out.println("Connected to new parent node!");
+    }
+    else{ System.out.println("Connecting failed!"); return false;}
+    return true;
   }
   private void disconnect() throws IOException{
     System.out.println("\n" + nodeName + " finished!");
     if(root == false){
-      for(InetSocketAddress addr : addresses){
+      for(InetSocketAddress addr : addresses.keySet()){
         if(!addr.equals(parentAddress)){
           sendMessage(ChatNode.MessageType.FIN, nodeName + " finished!" + parentIP + "!" + parentAddress.getPort(), addr);
         }
@@ -138,7 +162,7 @@ public class ChatNode{
     else if(addresses.size() > 0){
       boolean flag = true ;
       InetSocketAddress a = null;
-      for(InetSocketAddress addr : addresses){
+      for(InetSocketAddress addr : addresses.keySet()){
         if(flag){
           a = addr;
           flag = false;
@@ -159,7 +183,7 @@ public class ChatNode{
     UUID uuid = UUID.randomUUID();
     String message = uuid + ":" + type + ":" + text;
     this.sendSocket.send(new DatagramPacket(message.getBytes(), message.length(), address.getAddress(), address.getPort()));
-    if(!type.equals(ChatNode.MessageType.ACC)){ unconfirmedMessages.put(uuid, new Message(address, System.currentTimeMillis(), message)); }
+    if(!type.equals(ChatNode.MessageType.ACC)){ unconfirmedMessages.put(uuid, new Message(address, System.currentTimeMillis(), message, 0)); }
   }
   private boolean isRecieved(UUID messageUUID){
     return recievedMessages.contains(messageUUID);
@@ -176,17 +200,33 @@ public class ChatNode{
             for(UUID u : unconfirmedMessages.keySet()){
               Message msg = unconfirmedMessages.get(u);
               if(System.currentTimeMillis() - msg.getTime() > 3000){
+                if(msg.getTryNum() >= 5){
+                  unconfirmedMessages.remove(u);
+                  InetSocketAddress addr = msg.getAddress();
+                  if(System.currentTimeMillis() - addresses.get(addr) > 16000){
+                    addresses.remove(addr);
+                    System.out.println("Stop sending to " + addr);
+                    if(parentAddress.equals(addr)){
+                      root = true;
+                      parentAddress = null;
+                      parentIP = null;
+                      System.out.println("Im new root");
+                    }
+                  continue;
+                  }
+                }
                 InetSocketAddress s = msg.getAddress();
                 String m = msg.getMessage();
                 System.out.println("Resend to " + s + " " + m);
                 sendSocket.send(new DatagramPacket(m.getBytes(), m.length(), s.getAddress(), s.getPort()));
-                unconfirmedMessages.put(u, new Message(s, System.currentTimeMillis(), m));
+                unconfirmedMessages.put(u, new Message(s, System.currentTimeMillis(), m, msg.getTryNum() + 1));
               }
             }
           }
         }
         catch(Exception e){
           System.out.println("Resender " + e.getMessage());
+          e.printStackTrace();
         }
       }
     });
@@ -201,7 +241,7 @@ public class ChatNode{
             recieveSocket.receive(packet);
             if(lossPercent > random.nextInt(101)) continue;
             InetSocketAddress newPacket = new InetSocketAddress(packet.getAddress(), packet.getPort() - 1);
-            addresses.add(newPacket);
+            addresses.put(newPacket, System.currentTimeMillis());
             String data = new String(packet.getData(), packet.getOffset(), packet.getLength());
             String[] dataArray = data.split(":");
 
@@ -216,7 +256,7 @@ public class ChatNode{
                 }
                 recievedMessages.add(UUID.fromString(dataArray[0]));
                 System.out.println(dataArray[2]);
-                for(InetSocketAddress addr : addresses){
+                for(InetSocketAddress addr : addresses.keySet()){
                   if(!addr.equals(newPacket)){
                     sendMessage(ChatNode.MessageType.TXT, dataArray[2], addr);
                   }
@@ -233,7 +273,7 @@ public class ChatNode{
                 }
                 recievedMessages.add(UUID.fromString(dataArray[0]));
                 System.out.println(dataArray[2] + " connected!");
-                for(InetSocketAddress addr : addresses){
+                for(InetSocketAddress addr : addresses.keySet()){
                   if(!addr.equals(newPacket)){
                     sendMessage(ChatNode.MessageType.TXT, dataArray[2] + " connected!", addr);
                   }
@@ -266,7 +306,7 @@ public class ChatNode{
                 parentAddress = null;
                 parentIP = null;
                 root = true;
-                System.out.println("i'm new root ");
+                System.out.println("i'm new root");
               }
             }
           }
@@ -285,7 +325,7 @@ public class ChatNode{
           Scanner scan = new Scanner(System.in);
           while(true){
             String text = scan.nextLine();
-            for(InetSocketAddress address : addresses){
+            for(InetSocketAddress address : addresses.keySet()){
               sendMessage(ChatNode.MessageType.TXT, nodeName + ">>" + text, address);
             }
           }
@@ -304,3 +344,9 @@ public class ChatNode{
     chat.startChatting();
   }
 }
+/*
+ *
+ * Добавить попытки на ожидание ACC
+ * Новая обработка завершения
+ *
+ */
