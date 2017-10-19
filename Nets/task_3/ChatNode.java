@@ -344,9 +344,3 @@ public class ChatNode{
     chat.startChatting();
   }
 }
-/*
- *
- * Добавить попытки на ожидание ACC
- * Новая обработка завершения
- *
- */
