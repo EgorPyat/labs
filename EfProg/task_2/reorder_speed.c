@@ -13,7 +13,7 @@ int main(){
   // dim1* one = (dim1*)malloc(sizeof(dim1) * N);
   // dim2* two = (dim2*)malloc(sizeof(dim2) * N);
   // dim3* thr = (dim3*)malloc(sizeof(dim3) * N);
-  // dim4* fou = (dim4*)malloc(sizeof(dim4) * N);
+  dim4* fou = (dim4*)malloc(sizeof(dim4) * N);
   // dim5* fiv = (dim5*)malloc(sizeof(dim5) * N);
   // dim6* six = (dim6*)malloc(sizeof(dim6) * N);
   // dim7* sev = (dim7*)malloc(sizeof(dim7) * N);
@@ -25,24 +25,24 @@ int main(){
   // dim13* ten3 = (dim13*)malloc(sizeof(dim13) * N);
   // dim14* ten4 = (dim14*)malloc(sizeof(dim14) * N);
   // dim15* ten5 = (dim15*)malloc(sizeof(dim15) * N);
-  dim16* ten6 = (dim16*)malloc(sizeof(dim16) * N);
+  // dim16* ten6 = (dim16*)malloc(sizeof(dim16) * N);
 
   double* x = (double*)malloc(sizeof(double) * N);
   double* y = (double*)malloc(sizeof(double) * N);
   double* z = (double*)malloc(sizeof(double) * N);
   double* u = (double*)malloc(sizeof(double) * N);
-  double* v = (double*)malloc(sizeof(double) * N);
-  double* w = (double*)malloc(sizeof(double) * N);
-  double* h = (double*)malloc(sizeof(double) * N);
-  double* j = (double*)malloc(sizeof(double) * N);
-  double* k = (double*)malloc(sizeof(double) * N);
-  double* m = (double*)malloc(sizeof(double) * N);
-  double* n = (double*)malloc(sizeof(double) * N);
-  double* o = (double*)malloc(sizeof(double) * N);
-  double* a = (double*)malloc(sizeof(double) * N);
-  double* s = (double*)malloc(sizeof(double) * N);
-  double* d = (double*)malloc(sizeof(double) * N);
-  double* f = (double*)malloc(sizeof(double) * N);
+  // double* v = (double*)malloc(sizeof(double) * N);
+  // double* w = (double*)malloc(sizeof(double) * N);
+  // double* h = (double*)malloc(sizeof(double) * N);
+  // double* j = (double*)malloc(sizeof(double) * N);
+  // double* k = (double*)malloc(sizeof(double) * N);
+  // double* m = (double*)malloc(sizeof(double) * N);
+  // double* n = (double*)malloc(sizeof(double) * N);
+  // double* o = (double*)malloc(sizeof(double) * N);
+  // double* a = (double*)malloc(sizeof(double) * N);
+  // double* s = (double*)malloc(sizeof(double) * N);
+  // double* d = (double*)malloc(sizeof(double) * N);
+  // double* f = (double*)malloc(sizeof(double) * N);
 
   // asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
   // for(int i = 0; i < 13107200; i++){
@@ -80,19 +80,19 @@ int main(){
   // printf("Ticks: %llu\n", t / N / 3);
   // printf("Mb/s: %f\n", 300 / (t / cpu_Hz));
 
-  // asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
-  // for(int i = 0; i < 13107200; i++){
-  //   fou[i].x = x[i];
-  //   fou[i].y = y[i];
-  //   fou[i].z = z[i];
-  //   fou[i].u = u[i];
-  // }
-  // asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
-  //
-  // t = (end.t64 - start.t64);
-  //
-  // printf("Ticks: %llu\n", t / N / 4);
-  // printf("Mb/s: %f\n", 400 / (t / cpu_Hz));
+  asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
+  for(int i = 0; i < 13107200; i++){
+    fou[i].x = x[i];
+    fou[i].y = y[i];
+    fou[i].z = z[i];
+    fou[i].u = u[i];
+  }
+  asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
+
+  t = (end.t64 - start.t64);
+
+  printf("Ticks: %llu\n", t / N / 4);
+  printf("Mb/s: %f\n", 400 / (t / cpu_Hz));
 
   // asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
   // for(int i = 0; i < 13107200; i++){
@@ -314,36 +314,36 @@ int main(){
   // printf("Ticks: %llu\n", t / N / 15);
   // printf("Mb/s: %f\n", 1500 / (t / cpu_Hz));
 
-  asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
-  for(int i = 0; i < 13107200; i++){
-    ten6[i].x = x[i];
-    ten6[i].y = y[i];
-    ten6[i].z = z[i];
-    ten6[i].u = u[i];
-    ten6[i].v = v[i];
-    ten6[i].w = w[i];
-    ten6[i].h = h[i];
-    ten6[i].j = j[i];
-    ten6[i].k = k[i];
-    ten6[i].m = m[i];
-    ten6[i].n = n[i];
-    ten6[i].o = o[i];
-    ten6[i].a = a[i];
-    ten6[i].s = s[i];
-    ten6[i].d = d[i];
-    ten6[i].f = f[i];
-  }
-  asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
-
-  t = (end.t64 - start.t64);
-
-  printf("Ticks: %llu\n", t / N / 16);
-  printf("Mb/s: %f\n", 1600 / (t / cpu_Hz));
+  // asm("rdtsc\n":"=a"(start.t32.th), "=d"(start.t32.tl));
+  // for(int i = 0; i < 13107200; i++){
+  //   ten6[i].x = x[i];
+  //   ten6[i].y = y[i];
+  //   ten6[i].z = z[i];
+  //   ten6[i].u = u[i];
+  //   ten6[i].v = v[i];
+  //   ten6[i].w = w[i];
+  //   ten6[i].h = h[i];
+  //   ten6[i].j = j[i];
+  //   ten6[i].k = k[i];
+  //   ten6[i].m = m[i];
+  //   ten6[i].n = n[i];
+  //   ten6[i].o = o[i];
+  //   ten6[i].a = a[i];
+  //   ten6[i].s = s[i];
+  //   ten6[i].d = d[i];
+  //   ten6[i].f = f[i];
+  // }
+  // asm("rdtsc\n":"=a"(end.t32.th), "=d"(end.t32.tl));
+  //
+  // t = (end.t64 - start.t64);
+  //
+  // printf("Ticks: %llu\n", t / N / 16);
+  // printf("Mb/s: %f\n", 1600 / (t / cpu_Hz));
 
   // free(one);
   // free(two);
   // free(thr);
-  // free(fou);
+  free(fou);
   // free(fiv);
   // free(six);
   // free(sev);
@@ -355,24 +355,24 @@ int main(){
   // free(ten3);
   // free(ten4);
   // free(ten5);
-  free(ten6);
+  // free(ten6);
 
   free(x);
   free(y);
   free(z);
   free(u);
-  free(v);
-  free(w);
-  free(h);
-  free(j);
-  free(k);
-  free(m);
-  free(n);
-  free(o);
-  free(a);
-  free(s);
-  free(d);
-  free(f);
+  // free(v);
+  // free(w);
+  // free(h);
+  // free(j);
+  // free(k);
+  // free(m);
+  // free(n);
+  // free(o);
+  // free(a);
+  // free(s);
+  // free(d);
+  // free(f);
 
   return 0;
 }
