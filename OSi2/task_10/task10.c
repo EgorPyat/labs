@@ -10,20 +10,20 @@ int flag = 0;
 int ready = 0;
 
 void* print_message(void* str){
-  ready = 1;
-  pthread_mutex_lock(&mute[0]);
+  if(0 == ready){
+    pthread_mutex_lock(&mute[0]);
+    ready = 1;
+
+    while(0 == flag){
+      sched_yield();
+    }
+  }
 
   int k = 1;
 
-  while(!flag){
-    sleep(1);
-  }
-
   pthread_mutex_lock(&mute[2]);
 
-  if(flag){
-    pthread_mutex_unlock(&mute[0]);
-  }
+  if(1 == flag) pthread_mutex_unlock(&mute[0]);
 
   for(int i = 0; i < 10 * 3; i++){
     if(pthread_mutex_lock(&mute[k]) != 0){
@@ -39,6 +39,7 @@ void* print_message(void* str){
     }
     k = (k + 1) % 3;
   }
+  pthread_mutex_unlock(&mute[2]);
 }
 
 int main(){
@@ -54,26 +55,11 @@ int main(){
 
   pthread_create(&pthread, NULL, print_message, (void*)"Child");
 
-  int k = 1;
-  while(!ready){sleep(1);}
-
-  pthread_mutex_lock(&mute[2]);
-
-  for(int i = 0; i < 10 * 3; i++){
-    if(pthread_mutex_lock(&mute[k]) != 0){
-      printf("Err\n");
-    }
-    k = (k + 1) % 3;
-    if(pthread_mutex_unlock(&mute[k]) != 0){
-      printf("Err\n");
-    }
-    if(k == 2){
-      printf("%s's String\n", (char*)"parent");
-      flag = 1;
-    }
-    k = (k + 1) % 3;
+  while(0 == ready){
+    sched_yield();
   }
-  pthread_mutex_unlock(&mute[2]);
+
+  print_message("Parent");
 
   pthread_join(pthread, NULL);
 
