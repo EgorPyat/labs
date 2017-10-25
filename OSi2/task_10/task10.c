@@ -5,29 +5,16 @@
 #include <stdlib.h>
 
 pthread_mutex_t mute[3];
-/*убрать втрой флаг?*/
-/* №11 два мьютекса + флаг*/
-int flag = 0;
 int ready = 0;
 
 void* print_message(void* str){
+  int k = 1;
+
   if(0 == ready){
-    // pthread_mutex_lock(&mute[0]);
     pthread_mutex_lock(&mute[1]);
-
-    // pthread_mutex_lock(&mute[2]);
     ready = 1;
-    // while(0 == flag){
-    //   sched_yield();
-    // }
+    k = 0;
   }
-
-  int k = 0;
-  if(0 == strcmp("Parent", (const char*)str)){
-    k = 1;
-  }
-
-  // if(1 == flag) pthread_mutex_unlock(&mute[0]);
 
   for(int i = 0; i < 10 * 3; i++){
     if(pthread_mutex_lock(&mute[k]) != 0){
@@ -39,7 +26,6 @@ void* print_message(void* str){
     }
     if(k == 2){
       printf("%s's String\n", (char*)str);
-      flag = 1;
     }
     k = (k + 1) % 3;
   }
@@ -56,7 +42,7 @@ int main(){
   for(int i = 0; i < 3; i++){
     pthread_mutex_init(&mute[i], &mattr);
   }
-  // pthread_mutex_lock(&mute[1]);
+
   pthread_mutex_lock(&mute[2]);
 
   pthread_create(&pthread, NULL, print_message, (void*)"Child");
