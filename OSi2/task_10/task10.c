@@ -12,19 +12,22 @@ int ready = 0;
 
 void* print_message(void* str){
   if(0 == ready){
-    pthread_mutex_lock(&mute[0]);
-    ready = 1;
+    // pthread_mutex_lock(&mute[0]);
+    pthread_mutex_lock(&mute[1]);
 
-    while(0 == flag){
-      sched_yield();
-    }
+    // pthread_mutex_lock(&mute[2]);
+    ready = 1;
+    // while(0 == flag){
+    //   sched_yield();
+    // }
   }
 
-  int k = 1;
+  int k = 0;
+  if(0 == strcmp("Parent", (const char*)str)){
+    k = 1;
+  }
 
-  pthread_mutex_lock(&mute[2]);
-
-  if(1 == flag) pthread_mutex_unlock(&mute[0]);
+  // if(1 == flag) pthread_mutex_unlock(&mute[0]);
 
   for(int i = 0; i < 10 * 3; i++){
     if(pthread_mutex_lock(&mute[k]) != 0){
@@ -53,6 +56,8 @@ int main(){
   for(int i = 0; i < 3; i++){
     pthread_mutex_init(&mute[i], &mattr);
   }
+  // pthread_mutex_lock(&mute[1]);
+  pthread_mutex_lock(&mute[2]);
 
   pthread_create(&pthread, NULL, print_message, (void*)"Child");
 
