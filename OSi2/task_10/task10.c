@@ -5,7 +5,8 @@
 #include <stdlib.h>
 
 pthread_mutex_t mute[3];
-
+/*убрать втрой флаг?*/
+/* №11 два мьютекса + флаг*/
 int flag = 0;
 int ready = 0;
 
