@@ -36,14 +36,14 @@ public class Client{
     for(int i = 1; i <= max_length; i++){
       if(startSequenceNum >= sum && startSequenceNum < sum + Math.pow(4, i)){
         if(finalSequenceNum >= sum && finalSequenceNum < sum + Math.pow(4, i)){
-          this.tasks.add(new Task(startSequenceNum, finalSequenceNum, i))
+          this.tasks.add(new Task(startSequenceNum - sum, finalSequenceNum - sum, i));
           break;
         }
         else{
-          this.tasks.add(new Task(startSequenceNum, Math.pow(4, i) - 1, i));
-          startSequenceNum = Math.pow(4, i);
+          this.tasks.add(new Task(startSequenceNum - sum, (int)Math.pow(4, i) - 1, i));
+          sum += Math.pow(4, i);
+          startSequenceNum = sum;
         }
-        sum += Math.pow(4, i);
       }
     }
   }
