@@ -50,33 +50,43 @@ public class Client{
     }
   }
   private void sendResults(String state, String sequence){
-    try{
-      this.socket = new Socket();
-      this.socket.connect(new InetSocketAddress(host, hostPort), 15000);
-      PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
-      out.println(this.clientUUID.toString());
-      out.println(state);
-      if(null != sequence){ out.println(sequence); }
-      out.close();
-      this.socket.close();
-    }
-    catch (IOException e) {
-      System.out.println(e.getMessage());
+    for(int i = 0; i < 5; i++){
+      try{
+        this.socket = new Socket();
+        this.socket.connect(new InetSocketAddress(host, hostPort));
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
+        out.println(this.clientUUID.toString());
+        out.println(state);
+        if(null != sequence){ out.println(sequence); }
+        out.close();
+        this.socket.close();
+        return;
+      }
+      catch(IOException e) {
+        System.out.println(e.getMessage());
+      }
+      try{
+        Thread.sleep(3000);
+      }
+      catch (InterruptedException e) {
+        System.out.println(e.getMessage());
+      }
     }
   }
   private boolean isTaskAvailable(){
-    try{
-      this.socket = new Socket();
-      this.socket.connect(new InetSocketAddress(host, hostPort), 15000);
-      BufferedReader in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
-      PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
-      out.println(this.clientUUID.toString());
-      this.state = in.readLine();
-      switch(state){
-        case "stop":
+    for(int i = 0; i < 5; i++){
+      try{
+        this.socket = new Socket();
+        this.socket.connect(new InetSocketAddress(host, hostPort));
+        BufferedReader in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+        PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
+        out.println(this.clientUUID.toString());
+        this.state = in.readLine();
+        switch(state){
+          case "stop":
           System.out.println("No tasks to do!");
           return false;
-        case "work":
+          case "work":
           this.hash = in.readLine();
           System.out.println("Get hash: " + this.hash);
           this.task[0] = new Integer(in.readLine());
@@ -84,17 +94,25 @@ public class Client{
           this.max_length = new Integer(in.readLine());
           System.out.println("Get task");
           break;
+        }
+        in.close();
+        out.close();
+        this.socket.close();
+        return true;
       }
-      in.close();
-      out.close();
-      this.socket.close();
-      return true;
-    }
-    catch (UnknownHostException e){
-      System.out.println(e.getMessage());
-    }
-    catch (IOException e){
-      System.out.println(e.getMessage());
+      catch(UnknownHostException e){
+        System.out.println(e.getMessage());
+        break;
+      }
+      catch(IOException e){
+        System.out.println(e.getMessage());
+      }
+      try{
+        Thread.sleep(3000);
+      }
+      catch(InterruptedException e){
+        System.out.println(e.getMessage());
+      }
     }
     return false;
   }
@@ -155,8 +173,6 @@ public class Client{
   public static void main(String[] args){
     Client client = new Client();
     client.setServer(args[0], new Integer(args[1]));
-    // System.out.println(client.calcMD5(args[0]));
-    // System.out.println(client.getSequence(2, 4));
     client.doWork();
   }
 }
