@@ -31,6 +31,7 @@ public class Client{
     while(true){
       if(this.isTaskAvailable()){
         this.createTasks(this.task[0], this.task[1]);
+        System.out.println(this.tasks.size());
         for(Task t : this.tasks){
           System.out.println(t.getStartSequenceNum() + " " + t.getFinalSequenceNum());
           for (int num = t.getStartSequenceNum(), end = t.getFinalSequenceNum(); num <= end; num++){
@@ -52,14 +53,18 @@ public class Client{
   private void sendResults(String state, String sequence){
     for(int i = 0; i < 5; i++){
       try{
-        this.socket = new Socket();
-        this.socket.connect(new InetSocketAddress(host, hostPort));
+        this.socket = new Socket(host, hostPort);
+        // this.socket.connect(new InetSocketAddress(host, hostPort));
         PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
+        // System.out.println("start uuid");
         out.println(this.clientUUID.toString());
+        // System.out.println("orint uuid");
         out.println(state);
+        // System.out.println("print state");
         if(null != sequence){ out.println(sequence); }
         out.close();
         this.socket.close();
+        // System.out.println("send results");
         return;
       }
       catch(IOException e) {
@@ -76,24 +81,27 @@ public class Client{
   private boolean isTaskAvailable(){
     for(int i = 0; i < 5; i++){
       try{
-        this.socket = new Socket();
-        this.socket.connect(new InetSocketAddress(host, hostPort));
+        // System.out.println("Getting task");
+        this.socket = new Socket(host, hostPort);
+        // this.socket.connect(new InetSocketAddress(host, hostPort));
         BufferedReader in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
         PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
         out.println(this.clientUUID.toString());
-        this.state = in.readLine();
-        switch(state){
+        out.println("wait");
+        // this.state = in.readLine();
+        // System.out.println("St");
+        switch(in.readLine()){
           case "stop":
-          System.out.println("No tasks to do!");
-          return false;
+            System.out.println("No tasks to do!");
+            return false;
           case "work":
-          this.hash = in.readLine();
-          System.out.println("Get hash: " + this.hash);
-          this.task[0] = new Integer(in.readLine());
-          this.task[1] = new Integer(in.readLine());
-          this.max_length = new Integer(in.readLine());
-          System.out.println("Get task");
-          break;
+          // System.out.println("Get task");
+            this.hash = in.readLine();
+            System.out.println("Get hash: " + this.hash);
+            this.task[0] = new Integer(in.readLine());
+            this.task[1] = new Integer(in.readLine());
+            this.max_length = new Integer(in.readLine());
+            break;
         }
         in.close();
         out.close();
