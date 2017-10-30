@@ -88,6 +88,13 @@ public class Client{
         PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
         out.println(this.clientUUID.toString());
         out.println("wait");
+        try {
+
+          // Thread.sleep(30000);
+        }
+        catch (Exception e) {
+
+        }
         // this.state = in.readLine();
         // System.out.println("St");
         switch(in.readLine()){

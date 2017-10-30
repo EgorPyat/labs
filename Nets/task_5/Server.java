@@ -30,10 +30,12 @@ public class Server{
         while(!(tasks.isEmpty() && unconfirmedTasks.isEmpty())){
           try{
             Thread.sleep(3000);
+            System.out.println("resen");
             for(int[] t : unconfirmedTasks.keySet()){
-              if(unconfirmedTasks.get(t) - System.currentTimeMillis() > 10000){
+              if(System.currentTimeMillis() - unconfirmedTasks.get(t) > 10000){
                 tasks.add(t);
                 unconfirmedTasks.remove(t);
+                System.out.println("Task returned!");
               }
             }
           }
@@ -46,11 +48,11 @@ public class Server{
         }
       }
     });
-    // resender.start();
+    resender.start();
     try{
       this.server = new ServerSocket(this.port);
-      // this.server.setSoTimeout(1000);
-      while(true){
+      this.server.setSoTimeout(1000);
+      while(!(tasks.isEmpty() && unconfirmedTasks.isEmpty())){
         try{
           Socket socket = this.server.accept();
           System.out.println("wait");
@@ -58,7 +60,7 @@ public class Server{
           con.start();
         }
         catch(SocketTimeoutException e){
-          System.out.println("d");
+          // System.out.println("d");
           continue;
         }
         catch(SocketException | EOFException e){
@@ -89,10 +91,10 @@ public class Server{
         switch(state){
           case "wait":
             int[] task;
-            synchronized(tasks){
+            // synchronized(tasks){
               if(tasks.size() != 0){ task = tasks.remove(0); }
               else{ task = null; }
-            }
+            // }
             if(task != null){
               System.out.println("Task " + task[0] + " " + task[1]);
               System.out.println("Send task to " + uuid);
