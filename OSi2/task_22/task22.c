@@ -6,43 +6,51 @@
 sem_t semA, semB, semC, semAB;
 
 void* createA(void* argv){
+  int i = 0;
   while(1){
     sleep(1);
-    sem_post(&semA);
-    printf("new A\n");
+    if(0 != sem_post(&semA)){
+      printf("Err\n");
+    }
+    printf("A#%d\n", i++);
   }
 }
 
 void* createB(void* argv){
+  int i = 0;
   while(1){
   	sleep(2);
-  	sem_post(&semB);
-  	printf("new B\n");
+    if(0 != sem_post(&semB)){
+      printf("Err\n");
+    }
+  	printf("B#%d\n", i++);
   }
 }
 
-void* createC (void* argv){
+void* createC(void* argv){
+  int i = 0;
   while(1){
     sleep(3);
-    sem_post(&semC);
-    printf("new C\n");
+    if(0 != sem_wait(&semA)){
+      printf("Err\n");
+    }
+    if(0 != sem_wait(&semB)){
+      printf("Err\n");
+    }
+    if(0 != sem_post(&semC)){
+      printf("Err\n");
+    }
+    printf("C#%d\n", i++);
   }
 }
 
-void* createAB (void* argv){
+void* createW(){
+  int i = 0;
   while(1){
-    sem_wait(&semA);
-    sem_wait(&semB);
-    sem_post(&semAB);
-    printf("new AB\n");
-  }
-}
-
-void* createWidget (){
-  while(1){
-    sem_wait(&semAB);
-    sem_wait(&semC);
-    printf("new BOLT\n");
+    if(0 != sem_wait(&semC)){
+      printf("Err\n");
+    }
+    printf("W#%d\n", i++);
   }
 }
 
@@ -50,18 +58,26 @@ int main(){
   pthread_t threadA;
   pthread_t threadB;
   pthread_t threadC;
-  pthread_t threadAB;
 
-  sem_init(&semA, 0, 0);
-  sem_init(&semB, 0, 0);
-  sem_init(&semC, 0, 0);
-  sem_init(&semAB, 0, 0);
-
-  pthread_create(&threadA, NULL, createA, NULL);
-  pthread_create(&threadB, NULL, createB, NULL);
-  pthread_create(&threadC, NULL, createC, NULL);
-  pthread_create(&threadAB, NULL, createAB, NULL);
-  createWidget();
+  if(0 != sem_init(&semA, 0, 0)){
+    printf("Err\n");
+  }
+  if(0 != sem_init(&semB, 0, 0)){
+    printf("Err\n");
+  }
+  if(0 != sem_init(&semC, 0, 0)){
+    printf("Err\n");
+  }
+  if(0 != pthread_create(&threadA, NULL, createA, NULL)){
+    printf("Err\n");
+  }
+  if(0 != pthread_create(&threadB, NULL, createB, NULL)){
+    printf("Err\n");
+  }
+  if(0 != pthread_create(&threadC, NULL, createC, NULL)){
+    printf("Err\n");
+  }
+  createW();
 
   return 0;
 }

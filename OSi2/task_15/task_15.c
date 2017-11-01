@@ -8,13 +8,13 @@ int main() {
 	sem_t *sem2;
 	pid_t child;
 
-	sem1 = sem_open("/1", O_CREAT | O_EXCL, 0600, 0);
+	sem1 = sem_open("/a", O_CREAT | O_EXCL, 0600, 0);
 
 	if (sem1 == SEM_FAILED){
 		printf("open error!\n");
 		return -1;
 	}
-	sem2 = sem_open("/2", O_CREAT | O_EXCL, 0600, 1);
+	sem2 = sem_open("/b", O_CREAT | O_EXCL, 0600, 1);
 
 	if(sem2 == SEM_FAILED){
 		printf("open error!\n");
@@ -46,10 +46,10 @@ int main() {
 				printf("post error!\n");
 			}
 		}
-		if(0 != sem_unlink("/1")){
+		if(0 != sem_unlink("/a")){
 			printf("unlink error!\n");
 		}
-		if(0 != sem_unlink("/2")){
+		if(0 != sem_unlink("/b")){
 			printf("unlink error!\n");
 		}
 	}
