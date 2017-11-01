@@ -25,10 +25,12 @@ int main() {
 		for(int i = 0; i < 10; i++){
 			if(0 != sem_wait(sem1)){
 				printf("wait error!\n");
+				return -1;
 			}
 			printf("Child\n");
 			if(0 != sem_post(sem2)){
 				printf("post error!\n");
+				return -1;
 			}
 		}
 	}
@@ -40,25 +42,31 @@ int main() {
 		for(int i = 0; i < 10; i++){
 			if(0 != sem_wait(sem2)){
 				printf("wait error!\n");
+				return -1;
 			}
 			printf("Parent\n");
 			if(0 != sem_post(sem1)){
 				printf("post error!\n");
+				return -1;
 			}
 		}
 		if(0 != sem_unlink("/a")){
 			printf("unlink error!\n");
+			return -1;
 		}
 		if(0 != sem_unlink("/b")){
 			printf("unlink error!\n");
+			return -1;
 		}
 	}
 
 	if(0 != sem_close(sem1)){
 		printf("close error!\n");
+		return -1;
 	}
 	if(0 != sem_close(sem2)){
 		printf("close error!\n");
+		return -1;
 	}
 
 	return 0;

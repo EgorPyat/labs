@@ -11,6 +11,7 @@ void* createA(void* argv){
     sleep(1);
     if(0 != sem_post(&semA)){
       printf("Err\n");
+      return -1;
     }
     printf("A#%d\n", i++);
   }
@@ -22,6 +23,7 @@ void* createB(void* argv){
   	sleep(2);
     if(0 != sem_post(&semB)){
       printf("Err\n");
+      return -1;
     }
   	printf("B#%d\n", i++);
   }
@@ -33,12 +35,15 @@ void* createC(void* argv){
     sleep(3);
     if(0 != sem_wait(&semA)){
       printf("Err\n");
+      return -1;
     }
     if(0 != sem_wait(&semB)){
       printf("Err\n");
+      return -1;
     }
     if(0 != sem_post(&semC)){
       printf("Err\n");
+      return -1;
     }
     printf("C#%d\n", i++);
   }
@@ -49,6 +54,7 @@ void* createW(){
   while(1){
     if(0 != sem_wait(&semC)){
       printf("Err\n");
+      return -1;
     }
     printf("W#%d\n", i++);
   }
@@ -61,21 +67,27 @@ int main(){
 
   if(0 != sem_init(&semA, 0, 0)){
     printf("Err\n");
+    return -1;
   }
   if(0 != sem_init(&semB, 0, 0)){
     printf("Err\n");
+    return -1;
   }
   if(0 != sem_init(&semC, 0, 0)){
     printf("Err\n");
+    return -1;
   }
   if(0 != pthread_create(&threadA, NULL, createA, NULL)){
     printf("Err\n");
+    return -1;
   }
   if(0 != pthread_create(&threadB, NULL, createB, NULL)){
     printf("Err\n");
+    return -1;
   }
   if(0 != pthread_create(&threadC, NULL, createC, NULL)){
     printf("Err\n");
+    return -1;
   }
   createW();
 
