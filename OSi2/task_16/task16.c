@@ -6,54 +6,57 @@
 
 #define STR_LEN 80
 
-pthread_mutex_t synchronzer;
-
 typedef struct list{
 	char* string;
 	struct list* next;
 } List;
 
-List* create_list(List* head){
-  head = (List*)malloc(sizeof(List));
-  head->string = NULL;
-  head->next = NULL;
+typedef struct headList{
+	pthread_mutex_t synchronzer;
+	List* list;
+} headList;
+
+headList* create_list(headList* head){
+  head = (headList*)malloc(sizeof(headList));
+	pthread_mutex_init(&head->synchronzer, NULL);
+  head->list = NULL;
+	return head;
 }
 
-void new_node(List* head, char* str){
+void new_node(headList* head, char* str){
 	if(head == NULL){
 		printf("%s\n", "Head isnt exist!");
 		return;
 	}
-  else if((head)->string == NULL){
-		pthread_mutex_lock(&synchronzer);
-    (head)->string = (char*)malloc(strlen(str) + 1);
-    strcpy((head)->string, str);
-		pthread_mutex_unlock(&synchronzer);
-  }
+	else if(head->list == NULL){
+		pthread_mutex_lock(&head->synchronzer);
+		head->list = (List*)malloc(sizeof(List));
+		head->list->string = (char*)malloc(strlen(str) + 1);
+		strcpy(head->list->string, str);
+		pthread_mutex_unlock(&head->synchronzer);
+	}
   else{
-		pthread_mutex_lock(&synchronzer);
-		List* tmp = head;
-		while(tmp->next != NULL){
-			tmp = tmp->next;
-		}
-		tmp->next = (List*)malloc(sizeof(List));
-    tmp->next->string = (char*)malloc(strlen(str) + 1);
-    strcpy(tmp->next->string, str);
-    tmp->next->next = NULL;
-		pthread_mutex_unlock(&synchronzer);
+		pthread_mutex_lock(&head->synchronzer);
+		List* tmp = (List*)malloc(sizeof(List));
+    tmp->string = (char*)malloc(strlen(str) + 1);
+    strcpy(tmp->string, str);
+    tmp->next = head->list;
+		head->list = tmp;
+		pthread_mutex_unlock(&head->synchronzer);
   }
 }
 
-void print_list(List *head){
-	pthread_mutex_lock(&synchronzer);
+void print_list(headList *head){
+	pthread_mutex_lock(&head->synchronzer);
   printf("\nList:\n");
-	List *t = NULL;
-	while(head != NULL){
-		printf("	%s\n", head->string);
-		t = head->next;
-		head = t;
+	List* t = NULL;
+	List* list = head->list;
+	while(list != NULL){
+		printf("	%s\n", list->string);
+		t = list->next;
+		list = t;
 	}
-	pthread_mutex_unlock(&synchronzer);
+	pthread_mutex_unlock(&head->synchronzer);
 }
 
 void swap(List* a, List* b){
@@ -63,26 +66,37 @@ void swap(List* a, List* b){
 }
 
 void* sort_list(void* head){
+	headList* headr = (headList*)head;
 	for(;;){
 		sleep(5);
-		if(((List*)head)->string == NULL){ continue; }
-		pthread_mutex_lock(&synchronzer);
-		for(List* i = (List*)head; i != NULL; i = i->next){
+		if(((headList*)head)->list == NULL){ continue; }
+		pthread_mutex_lock(&headr->synchronzer);
+		for(List* i = headr->list; i != NULL; i = i->next){
 			for(List* j = i->next; j != NULL; j = j->next){
 				if(strcmp(i->string, j->string) > 0){
 					swap(i, j);
 				}
 			}
 		}
-		pthread_mutex_unlock(&synchronzer);
+		pthread_mutex_unlock(&headr->synchronzer);
 	}
+}
+
+void freeList(headList* head){
+	pthread_mutex_destroy(&head->synchronzer);
+	List* list = head->list;
+	while(list != NULL){
+		List* tmp = list->next;
+		free(list);
+		list = tmp;
+	}
+	free(head);
 }
 
 int main(){
   char tmp[STR_LEN];
-	List *head = create_list(head);
+	headList *head = create_list(head);
 	pthread_t sorter;
-	pthread_mutex_init(&synchronzer, NULL);
 	pthread_create(&sorter, NULL, sort_list, (void*)head);
 
 	for(;;){
@@ -101,6 +115,8 @@ int main(){
 
 	pthread_cancel(sorter);
 	pthread_join(sorter, NULL);
+
+	freeList(head);
 
 	return 0;
 }
