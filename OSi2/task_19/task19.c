@@ -6,54 +6,57 @@
 
 #define STR_LEN 80
 
-pthread_rwlock_t synchronzer;
-
 typedef struct list{
 	char* string;
 	struct list* next;
 } List;
 
-List* create_list(List* head){
-  head = (List*)malloc(sizeof(List));
-  head->string = NULL;
-  head->next = NULL;
+typedef struct headList{
+	pthread_rwlock_t synchronzer;
+	List* list;
+} headList;
+
+headList* create_list(headList* head){
+  head = (headList*)malloc(sizeof(headList));
+	pthread_rwlock_init(&head->synchronzer, NULL);
+  head->list = NULL;
+	return head;
 }
 
-void new_node(List* head, char* str){
+void new_node(headList* head, char* str){
 	if(head == NULL){
 		printf("%s\n", "Head isnt exist!");
 		return;
 	}
-  else if((head)->string == NULL){
-		pthread_rwlock_wrlock(&synchronzer);
-    (head)->string = (char*)malloc(strlen(str) + 1);
-    strcpy((head)->string, str);
-		pthread_rwlock_unlock(&synchronzer);
-  }
+	else if(head->list == NULL){
+		pthread_rwlock_wrlock(&head->synchronzer);
+		head->list = (List*)malloc(sizeof(List));
+		head->list->string = (char*)malloc(strlen(str) + 1);
+		strcpy(head->list->string, str);
+		pthread_rwlock_unlock(&head->synchronzer);
+	}
   else{
-		pthread_rwlock_wrlock(&synchronzer);
-		List* tmp = head;
-		while(tmp->next != NULL){
-			tmp = tmp->next;
-		}
-		tmp->next = (List*)malloc(sizeof(List));
-    tmp->next->string = (char*)malloc(strlen(str) + 1);
-    strcpy(tmp->next->string, str);
-    tmp->next->next = NULL;
-		pthread_rwlock_unlock(&synchronzer);
+		pthread_rwlock_wrlock(&head->synchronzer);
+		List* tmp = (List*)malloc(sizeof(List));
+    tmp->string = (char*)malloc(strlen(str) + 1);
+    strcpy(tmp->string, str);
+    tmp->next = head->list;
+		head->list = tmp;
+		pthread_rwlock_unlock(&head->synchronzer);
   }
 }
 
-void print_list(List *head){
-	pthread_rwlock_rdlock(&synchronzer);
+void print_list(headList *head){
+	pthread_rwlock_rdlock(&head->synchronzer);
   printf("\nList:\n");
-	List *t = NULL;
-	while(head != NULL){
-		printf("	%s\n", head->string);
-		t = head->next;
-		head = t;
+	List* t = NULL;
+	List* list = head->list;
+	while(list != NULL){
+		printf("	%s\n", list->string);
+		t = list->next;
+		list = t;
 	}
-	pthread_rwlock_unlock(&synchronzer);
+	pthread_rwlock_unlock(&head->synchronzer);
 }
 
 void swap(List* a, List* b){
@@ -63,26 +66,37 @@ void swap(List* a, List* b){
 }
 
 void* sort_list(void* head){
+	headList* headr = (headList*)head;
 	for(;;){
 		sleep(5);
-		if(((List*)head)->string == NULL){ continue; }
-		pthread_rwlock_wrlock(&synchronzer);
-		for(List* i = (List*)head; i != NULL; i = i->next){
+		if(((headList*)head)->list == NULL){ continue; }
+		pthread_rwlock_wrlock(&headr->synchronzer);
+		for(List* i = headr->list; i != NULL; i = i->next){
 			for(List* j = i->next; j != NULL; j = j->next){
 				if(strcmp(i->string, j->string) > 0){
 					swap(i, j);
 				}
 			}
 		}
-		pthread_rwlock_unlock(&synchronzer);
+		pthread_rwlock_unlock(&headr->synchronzer);
 	}
+}
+
+void freeList(headList* head){
+	pthread_rwlock_destroy(&head->synchronzer);
+	List* list = head->list;
+	while(list != NULL){
+		List* tmp = list->next;
+		free(list);
+		list = tmp;
+	}
+	free(head);
 }
 
 int main(){
   char tmp[STR_LEN];
-	List *head = create_list(head);
+	headList *head = create_list(head);
 	pthread_t sorter;
-	pthread_rwlock_init(&synchronzer, NULL);
 	pthread_create(&sorter, NULL, sort_list, (void*)head);
 
 	for(;;){
@@ -92,7 +106,6 @@ int main(){
       print_list(head);
 		}
 		else if(tmp[0] == '.'){
-			new_node(head, tmp);
 			break;
 		}
 		else{
@@ -102,6 +115,8 @@ int main(){
 
 	pthread_cancel(sorter);
 	pthread_join(sorter, NULL);
+
+	freeList(head);
 
 	return 0;
 }
