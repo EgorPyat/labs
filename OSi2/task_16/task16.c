@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#define STR_LEN 80
+
 pthread_mutex_t synchronzer;
 
 typedef struct list{
@@ -77,22 +79,28 @@ void* sort_list(void* head){
 }
 
 int main(){
-  char tmp[64];
+  char tmp[STR_LEN];
 	List *head = create_list(head);
 	pthread_t sorter;
 	pthread_mutex_init(&synchronzer, NULL);
 	pthread_create(&sorter, NULL, sort_list, (void*)head);
 
 	for(;;){
-		fgets(tmp, 64, stdin);
+		fgets(tmp, STR_LEN, stdin);
     tmp[strlen(tmp) - 1] = '\0';
 		if(strcmp("", tmp) == 0){
       print_list(head);
+		}
+		else if(tmp[0] == '.'){
+			break;
 		}
 		else{
       new_node(head, tmp);
     }
   }
+
+	pthread_cancel(sorter);
+	pthread_join(sorter, NULL);
 
 	return 0;
 }
