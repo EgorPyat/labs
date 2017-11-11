@@ -3,26 +3,25 @@
 #include <time.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <string.h>
 // L1 / 2 = 256 * 128 = 32Kb
 // L2 / 2 = 512 * 256 = 128Kb
 // L3 / 2= 2048 * 1538 = 3072Kb
 // L3 * 10 = 8192 * 7690 = 61520Kb
+const int ITERS = 3;
 const int N = 12;
 const int M = 10;
 int* matrix = NULL;
 int* new = NULL;
-int thread_num = 12;
+int thread_num = 4;
 pthread_t threads[128][1];
-volatile int ids[13] = {0};
-void my_barrier(int id, int flag){
-  ids[id] = flag;
-  int left = (id == 0 ? (thread_num) : (id - 1));
+volatile int ids[5] = {0};
+void my_barrier(int id, int iter){
+  int left  = (id == 0 ? (thread_num) : (id - 1));
   int right = (id == (thread_num) ? 0 : (id + 1));
-  printf("id: %d left: %d right: %d\n", id, left, right);
-  while(ids[left] == (flag == 1 ? 0 : 1) || ids[right] == (flag == 1 ? 0 : 1)){
-    printf("%d | %d %d %d\n\n", id, ids[left], ids[id], ids[right]);
-    sleep(3);
-  }
+  // printf("id: %d left: %d right: %d\n", id, left, right);
+  ++ids[id];
+  while(ids[left] < iter || ids[right] < iter){}
 }
 void init_matrix(int* matrix){
   for(int i = 0; i < N + 2; i++){
@@ -80,10 +79,14 @@ void use_filter(int* matrix, int* new, int* filter, int id){
   }
 }
 void* thread_func(void* arg){
+  int id = *(int*)arg;
   int* filter = (int*)calloc(9, sizeof(int));
-  int flag = 1;
-  use_filter(matrix, new, filter, *(int*)arg);
-  my_barrier(*(int*)arg, flag);
+  int iter = 0;
+  for(int i = 0; i < ITERS; i++){
+    use_filter(matrix, new, filter, *(int*)arg);
+    my_barrier(*(int*)arg, ++iter);
+    memcpy(matrix + (((N + 1) / thread_num) * id + 1) * (M + 2), new + (((N + 1) / thread_num) * id + 1) * (M + 2), sizeof(int) * ((id + 1) * ((N + 1) / thread_num) + 1 - (((N + 1) / thread_num) * id + 1)) * (M + 2));
+  }
   free(filter);
 }
 int main(int argc, char* argv[]){
@@ -97,10 +100,13 @@ int main(int argc, char* argv[]){
     args[i] = i;
     if(0 != pthread_create(&threads[i][0], NULL, thread_func, (void*)(args + i))) printf("create error\n");
   }
-  int flag = 1;
-  my_barrier(12, flag);
+  int iter = 0;
+  for(int i = 0; i < ITERS; i++){
+    my_barrier(thread_num, ++iter);
+    print_matrix(matrix);
+  }
+
   if(0 != pthread_join(threads[0][0], NULL)) printf("join error\n");
-  print_matrix(new);
   free(matrix);
   free(new);
   return 0;
