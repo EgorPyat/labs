@@ -31,13 +31,13 @@ const int M = 128;
 int* matrix = NULL;
 int* new = NULL;
 int thread_num = 128;
-pthread_t threads[128][1];
-volatile int ids[129] = {0};
+pthread_t threads[128];
+volatile int ids[128][1] = {0};
 void my_barrier(int id, int iter){
-  int left  = (id == 0 ? (thread_num) : (id - 1));
-  int right = (id == (thread_num) ? 0 : (id + 1));
-  ++ids[id];
-  while(ids[left] < iter || ids[right] < iter){}
+  int left  = (id == 0 ? (thread_num - 1) : (id - 1));
+  int right = (id == (thread_num - 1) ? 0 : (id + 1));
+  ++ids[id][0];
+  while(ids[left][0] < iter || ids[right][0] < iter){}
 }
 void init_matrix(int* matrix){
   for(int i = 0; i < N + 2; i++){
@@ -101,6 +101,7 @@ void* thread_func(void* arg){
   double min = 10000000.0;
   double avg = 0.0;
   for(int i = 0; i < ITERS; i++){
+    my_barrier(*(int*)arg, ++iter);
     use_filter(matrix, new, filter, *(int*)arg);
     uint64_t start1, stop1;
     start1 = read_time();
@@ -112,7 +113,6 @@ void* thread_func(void* arg){
     set_min_avg(&min, &avg);
     memcpy(matrix + (((N + 1) / thread_num) * id + 1) * (M + 2), new + (((N + 1) / thread_num) * id + 1) * (M + 2), sizeof(int) * ((id + 1) * ((N + 1) / thread_num) + 1 - (((N + 1) / thread_num) * id + 1)) * (M + 2));
   }
-  printf("min: %0.10f\nagv: %f\n", min, avg / 3);
   free(filter);
 }
 int main(int argc, char* argv[]){
@@ -123,25 +123,11 @@ int main(int argc, char* argv[]){
   init_matrix(matrix);
   for(int i = 0; i < thread_num; i++){
     args[i] = i;
-    if(0 != pthread_create(&threads[i][0], NULL, thread_func, (void*)(args + i))) printf("create error\n");
+    if(0 != pthread_create(&threads[i], NULL, thread_func, (void*)(args + i))) printf("create error\n");
   }
-  int iter = 0;
-  double min = 10000000.0;
-  double avg = 0.0;
-  for(int i = 0; i < ITERS; i++){
-    uint64_t start1, stop1;
-    start1 = read_time();
-    my_barrier(thread_num, ++iter);
-    stop1 = read_time();
-    double t = (double)(stop1 - start1) / cpu_Hz;
-    avg += t;
-    if(t < min && t != 0.0) min = t;
-    set_min_avg(&min, &avg);
-  }
-  printf("min: %0.10f\nagv: %f\n", min, avg / (3 * 129));
 
   for(int i = 0; i < thread_num; i++){
-    if(0 != pthread_join(threads[i][0], NULL)) printf("join error\n");
+    if(0 != pthread_join(threads[i], NULL)) printf("join error\n");
   }
   printf("gmin: %0.10f\ngagv: %f\n", gmin, gavg / (3 * 129));
   free(matrix);
