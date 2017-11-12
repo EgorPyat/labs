@@ -17,6 +17,7 @@ static inline uint64_t read_time(void)
 }
 double cpu_Hz = 3100000000ULL;
 pthread_mutex_t m=PTHREAD_MUTEX_INITIALIZER;
+pthread_barrier_t barrier;
 double gmin = 100000000.0;
 double gavg = 0.0;
 void set_min_avg(double* mini, double* avgi){
@@ -32,7 +33,7 @@ int* matrix = NULL;
 int* new = NULL;
 int thread_num = 128;
 pthread_t threads[128];
-volatile int ids[128][1] = {0};
+volatile int ids[128][4096] = {0};
 void my_barrier(int id, int iter){
   int left  = (id == 0 ? (thread_num - 1) : (id - 1));
   int right = (id == (thread_num - 1) ? 0 : (id + 1));
@@ -105,7 +106,8 @@ void* thread_func(void* arg){
     use_filter(matrix, new, filter, *(int*)arg);
     uint64_t start1, stop1;
     start1 = read_time();
-    my_barrier(*(int*)arg, ++iter);
+    // my_barrier(*(int*)arg, ++iter);
+    pthread_barrier_wait(&barrier);
     stop1 = read_time();
     double t = (double)(stop1 - start1) / cpu_Hz;
     avg += t;
@@ -121,6 +123,7 @@ int main(int argc, char* argv[]){
   int* args = (int*)malloc(128 * sizeof(int));
   srand(time(NULL));
   init_matrix(matrix);
+  pthread_barrier_init(&barrier, NULL, thread_num);
   for(int i = 0; i < thread_num; i++){
     args[i] = i;
     if(0 != pthread_create(&threads[i], NULL, thread_func, (void*)(args + i))) printf("create error\n");
@@ -129,7 +132,7 @@ int main(int argc, char* argv[]){
   for(int i = 0; i < thread_num; i++){
     if(0 != pthread_join(threads[i], NULL)) printf("join error\n");
   }
-  printf("gmin: %0.10f\ngagv: %f\n", gmin, gavg / (3 * 129));
+  printf("gmin: %0.15f\ngagv: %0.15f\n", gmin, gavg / (3 * 129));
   free(matrix);
   free(new);
   return 0;
