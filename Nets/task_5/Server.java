@@ -4,23 +4,25 @@ import java.io.*;
 
 public class Server{
   private final int MAX_LENGTH = 8;
-  private Map<UUID, int[]> clients;
-  private List<int[]> tasks;
-  private Map<int[], Long> unconfirmedTasks;
+  private final int STEP = 1024;
+  private Map<UUID, long[]> clients;
+  private List<long[]> tasks;
+  private Map<long[], Long> unconfirmedTasks;
   private ServerSocket server;
   private int port;
   private String hash;
 
   public Server(int port){
     this.port = port;
-    this.tasks = Collections.synchronizedList(new ArrayList<int[]>());
-    this.unconfirmedTasks = Collections.synchronizedMap(new HashMap<int[], Long>());
-    this.clients = Collections.synchronizedMap(new HashMap<UUID, int[]>());
-    int sum = 0;
-    for(int i = 1; i <= MAX_LENGTH; i++){
-      tasks.add(new int[]{sum, sum + (int)Math.pow(4, i) - 1});
-      sum += Math.pow(4, i);
+    this.tasks = Collections.synchronizedList(new ArrayList<long[]>());
+    this.unconfirmedTasks = Collections.synchronizedMap(new HashMap<long[], Long>());
+    this.clients = Collections.synchronizedMap(new HashMap<UUID, long[]>());
+    long sum = 0;
+    for(; sum < Math.pow(4, MAX_LENGTH); sum += STEP){
+      tasks.add(new long[]{sum, sum + STEP - 1});
     }
+    // System.out.println(sum + " " +  Long.toString(tasks.get(63)[1], 4));
+    // System.exit(0);
   }
   public void decrypt(String hash){
     this.hash = hash;
@@ -31,7 +33,7 @@ public class Server{
           try{
             Thread.sleep(3000);
             System.out.println("resen");
-            for(int[] t : unconfirmedTasks.keySet()){
+            for(long[] t : unconfirmedTasks.keySet()){
               if(System.currentTimeMillis() - unconfirmedTasks.get(t) > 10000){
                 tasks.add(t);
                 unconfirmedTasks.remove(t);
@@ -90,7 +92,7 @@ public class Server{
         String state = in.readLine();
         switch(state){
           case "wait":
-            int[] task;
+            long[] task;
             // synchronized(tasks){
               if(tasks.size() != 0){ task = tasks.remove(0); }
               else{ task = null; }
@@ -120,7 +122,7 @@ public class Server{
             break;
           case "fault":
             unconfirmedTasks.remove(clients.get(uuid));
-            int [] t = clients.get(uuid);
+            long[] t = clients.get(uuid);
             System.out.println("Client#" + uuid + " fault: " + t[0] + " " + t[1]);
             break;
         }

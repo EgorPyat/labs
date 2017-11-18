@@ -12,14 +12,14 @@ public class Client{
   private int hostPort;
   private char[] DNA = {'A', 'C', 'G', 'T'};
   private int max_length;
-  private int task[];
-  private List<Task> tasks;
+  private long task[];
+  // private List<Task> tasks;
   private String state;
 
   public Client(){
     this.clientUUID = UUID.randomUUID();
-    this.tasks = new ArrayList<Task>();
-    this.task = new int[2];
+    // this.tasks = new ArrayList<Task>();
+    this.task = new long[2];
   }
 
   public void setServer(String host, int hostPort){
@@ -30,13 +30,36 @@ public class Client{
   public void doWork(){
     while(true){
       if(this.isTaskAvailable()){
-        this.createTasks(this.task[0], this.task[1]);
-        System.out.println(this.tasks.size());
-        for(Task t : this.tasks){
-          System.out.println(t.getStartSequenceNum() + " " + t.getFinalSequenceNum());
-          for (int num = t.getStartSequenceNum(), end = t.getFinalSequenceNum(); num <= end; num++){
-            String sequence = this.getSequence(t.getLength(), num);
-            System.out.println(sequence);
+        // this.createTasks(this.task[0], this.task[1]);
+        // System.out.println(this.tasks.size());
+        // for(Task t : this.tasks){
+        //   System.out.println(t.getStartSequenceNum() + " " + t.getFinalSequenceNum());
+        //   for (int num = t.getStartSequenceNum(), end = t.getFinalSequenceNum(); num <= end; num++){
+        //     String sequence = this.getSequence(t.getLength(), num);
+        //     System.out.println(sequence);
+        //     if(this.calcMD5(sequence).equals(hash)){
+        //       System.out.println("Found! Wanted sequence: " + sequence);
+        //       this.sendResults("found", sequence);
+        //       return;
+        //     }
+        //   }
+        // }
+        for(long i = this.task[0]; i <= this.task[1]; i++){
+          // System.out.println(t.getStartSequenceNum() + " " + t.getFinalSequenceNum());
+          // for (int num = t.getStartSequenceNum(), end = t.getFinalSequenceNum(); num <= end; num++){
+            // String sequence = this.getSequence(t.getLength(), num);
+            // System.out.println(sequence);
+          String sequence = Long.toString(i, 4);
+          sequence = sequence.replace('0', DNA[0]);
+          sequence = sequence.replace('1', DNA[1]);
+          sequence = sequence.replace('2', DNA[2]);
+          sequence = sequence.replace('3', DNA[3]);
+          System.out.println(sequence);
+          StringBuilder seqBuild = new StringBuilder(sequence).reverse();
+          for(int j = sequence.length(); j <= this.max_length; j++){
+            seqBuild.append('A');
+            sequence = seqBuild.reverse().toString();
+            // System.out.println(sequence);
             if(this.calcMD5(sequence).equals(hash)){
               System.out.println("Found! Wanted sequence: " + sequence);
               this.sendResults("found", sequence);
@@ -44,7 +67,7 @@ public class Client{
             }
           }
         }
-        this.tasks.clear();
+        // this.tasks.clear();
         this.sendResults("fault", null);
       }
       else{ return; }
@@ -88,13 +111,13 @@ public class Client{
         PrintWriter out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
         out.println(this.clientUUID.toString());
         out.println("wait");
-        try {
-
-          // Thread.sleep(30000);
-        }
-        catch (Exception e) {
-
-        }
+        // try {
+        //
+        //   // Thread.sleep(30000);
+        // }
+        // catch (Exception e) {
+        //
+        // }
         // this.state = in.readLine();
         // System.out.println("St");
         switch(in.readLine()){
@@ -105,8 +128,8 @@ public class Client{
           // System.out.println("Get task");
             this.hash = in.readLine();
             System.out.println("Get hash: " + this.hash);
-            this.task[0] = new Integer(in.readLine());
-            this.task[1] = new Integer(in.readLine());
+            this.task[0] = new Long(in.readLine());
+            this.task[1] = new Long(in.readLine());
             this.max_length = new Integer(in.readLine());
             break;
         }
@@ -131,30 +154,30 @@ public class Client{
     }
     return false;
   }
-  private void createTasks(int startSequenceNum, int finalSequenceNum){
-    int sum = 0;
-    for(int i = 1; i <= max_length; i++){
-      if(startSequenceNum >= sum && startSequenceNum < sum + Math.pow(4, i)){
-        if(finalSequenceNum >= sum && finalSequenceNum < sum + Math.pow(4, i)){
-          this.tasks.add(new Task(startSequenceNum - sum, finalSequenceNum - sum, i));
-          break;
-        }
-        else{
-          this.tasks.add(new Task(startSequenceNum - sum, (int)Math.pow(4, i) - 1, i));
-          startSequenceNum = sum + (int)Math.pow(4, i);
-        }
-      }
-      sum += Math.pow(4, i);
-    }
-  }
-  private String getSequence(int length, int sequenceNumber){
-    StringBuilder sequence = new StringBuilder();
-    for(int i = 0; i < length; i++){
-      sequence.append(DNA[sequenceNumber % 4]);
-      sequenceNumber /= 4;
-    }
-    return sequence.reverse().toString();
-  }
+  // private void createTasks(int startSequenceNum, int finalSequenceNum){
+  //   int sum = 0;
+  //   for(int i = 1; i <= max_length; i++){
+  //     if(startSequenceNum >= sum && startSequenceNum < sum + Math.pow(4, i)){
+  //       if(finalSequenceNum >= sum && finalSequenceNum < sum + Math.pow(4, i)){
+  //         this.tasks.add(new Task(startSequenceNum - sum, finalSequenceNum - sum, i));
+  //         break;
+  //       }
+  //       else{
+  //         this.tasks.add(new Task(startSequenceNum - sum, (int)Math.pow(4, i) - 1, i));
+  //         startSequenceNum = sum + (int)Math.pow(4, i);
+  //       }
+  //     }
+  //     sum += Math.pow(4, i);
+  //   }
+  // }
+  // private String getSequence(int length, int sequenceNumber){
+  //   StringBuilder sequence = new StringBuilder();
+  //   for(int i = 0; i < length; i++){
+  //     sequence.append(DNA[sequenceNumber % 4]);
+  //     sequenceNumber /= 4;
+  //   }
+  //   return sequence.reverse().toString();
+  // }
   private String calcMD5(String text){
     MessageDigest md5 = null;
     try{
@@ -166,25 +189,25 @@ public class Client{
     }
     return new BigInteger(1, md5.digest()).toString(16);
   }
-  private class Task{
-      int start;
-      int finish;
-      int length;
-      public Task(int start, int finish, int length){
-        this.start = start;
-        this.finish = finish;
-        this.length = length;
-      }
-      public int getStartSequenceNum(){
-        return this.start;
-      }
-      public int getFinalSequenceNum(){
-        return this.finish;
-      }
-      public int getLength(){
-        return this.length;
-      }
-  }
+  // private class Task{
+  //   int start;
+  //   int finish;
+  //   int length;
+  //   public Task(int start, int finish, int length){
+  //     this.start = start;
+  //     this.finish = finish;
+  //     this.length = length;
+  //   }
+  //   public int getStartSequenceNum(){
+  //     return this.start;
+  //   }
+  //   public int getFinalSequenceNum(){
+  //     return this.finish;
+  //   }
+  //   public int getLength(){
+  //     return this.length;
+  //   }
+  // }
   public static void main(String[] args){
     Client client = new Client();
     client.setServer(args[0], new Integer(args[1]));
