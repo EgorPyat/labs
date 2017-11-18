@@ -21,9 +21,8 @@ public class Server{
     for(; sum < Math.pow(4, MAX_LENGTH); sum += STEP){
       tasks.add(new long[]{sum, sum + STEP - 1});
     }
-    // System.out.println(sum + " " +  Long.toString(tasks.get(63)[1], 4));
-    // System.exit(0);
   }
+
   public void decrypt(String hash){
     this.hash = hash;
     Thread resender = new Thread(new Runnable(){
@@ -32,7 +31,6 @@ public class Server{
         while(!(tasks.isEmpty() && unconfirmedTasks.isEmpty())){
           try{
             Thread.sleep(3000);
-            System.out.println("resen");
             for(long[] t : unconfirmedTasks.keySet()){
               if(System.currentTimeMillis() - unconfirmedTasks.get(t) > 10000){
                 tasks.add(t);
@@ -43,9 +41,6 @@ public class Server{
           }
           catch(InterruptedException e){
             System.out.println(e.getMessage());
-          }
-          catch(NullPointerException e){
-
           }
         }
       }
@@ -62,7 +57,6 @@ public class Server{
           con.start();
         }
         catch(SocketTimeoutException e){
-          // System.out.println("d");
           continue;
         }
         catch(SocketException | EOFException e){
@@ -93,10 +87,8 @@ public class Server{
         switch(state){
           case "wait":
             long[] task;
-            // synchronized(tasks){
-              if(tasks.size() != 0){ task = tasks.remove(0); }
-              else{ task = null; }
-            // }
+            if(tasks.size() != 0){ task = tasks.remove(0); }
+            else{ task = null; }
             if(task != null){
               System.out.println("Task " + task[0] + " " + task[1]);
               System.out.println("Send task to " + uuid);
@@ -127,61 +119,13 @@ public class Server{
             break;
         }
         this.socket.close();
-
-        // System.out.println(1);
-        // if(!clients.containsKey(uuid)){
-        //   System.out.println(2);
-        //   if(tasks.size() == 0){
-        //     System.out.println("No tasks to send!");
-        //     out.println("stop");
-        //   }
-        //   else{
-        //     int[] task;
-        //     synchronized(tasks){
-        //       task = tasks.remove(0);
-        //     }
-        //     System.out.println("Task " + task[0] + " " + task[1]);
-        //     System.out.println("Send task to " + uuid);
-        //     out.println("work");
-        //     out.println(hash);
-        //     out.println(task[0]);
-        //     out.println(task[1]);
-        //     out.println(MAX_LENGTH);
-        //     clients.put(uuid, task);
-        //     unconfirmedTasks.put(task, System.currentTimeMillis());
-        //   }
-        // }
-        // else{
-        //   System.out.println(3);
-        //   int [] t = clients.get(uuid);
-        //   unconfirmedTasks.remove(clients.get(uuid));
-        //   // tasks.clear();
-        //   clients.remove(uuid);
-        //   // String state = in.readLine();
-        //   System.out.println("serv wait state");
-        //   switch(in.readLine()){
-        //     case "fault":
-        //     System.out.println(4);
-        //       System.out.println("Client#" + uuid + " fault: " + t[0] + " " + t[1]);
-        //       break;
-        //     case "found":
-        //       System.out.println(5);
-        //
-        //       tasks.clear();
-        //       String sequence = in.readLine();
-        //       System.out.println("Client#" + uuid + " found sequence: " + sequence);
-        //       break;
-        //   }
-        // }
-        // System.out.println("close");
       }
       catch (IOException e){
         System.err.println(e.getMessage());
       }
-      finally{
-      }
     }
   }
+
   public static void main(String[] args){
     Server server = new Server(new Integer(args[0]));
     server.decrypt(args[1]);
