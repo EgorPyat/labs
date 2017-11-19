@@ -43,11 +43,14 @@ public class MyServerSocket{
           while(true){
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
             socket.receive(packet);
-            if(!connections.containsKey(new InetSocketAddress(packet.getAddress(), packet.getPort()))){
+            InetSocketAddress address = new InetSocketAddress(packet.getAddress(), packet.getPort());
+            if(!connections.containsKey(address)){
+              System.out.println("accept " + new String(packet.getData(), 0, packet.getLength()));
               inBuffer.put(packet);
             }
             else{
-              connections.get(new InetSocketAddress(packet.getAddress(), packet.getPort())).getInBuffer().put(packet);
+              System.out.println("client " + new String(packet.getData(), 0, packet.getLength()));
+              connections.get(address).getInBuffer().put(packet);
             }
           }
         }
@@ -69,6 +72,7 @@ public class MyServerSocket{
     String[] data;
     DatagramPacket ack;
     long time;
+    MyClientSocket client = null;
     try{
       while(true){
         packet = this.inBuffer.take();
@@ -77,18 +81,21 @@ public class MyServerSocket{
         ack = new DatagramPacket("1:1:".getBytes(), "1:1:".getBytes().length, packet.getAddress(), packet.getPort());
         if(data[1].equals("0")){
           this.socket.send(ack);
+          client = new MyClientSocket(this.socket, address);
+          this.connections.put(address, client);
           time = System.currentTimeMillis();
           break;
         }
       }
       while(true){
-        packet = this.inBuffer.take();
+        packet = client.getInBuffer().take();
         data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
+
         if(data[1].equals("1") && address.equals(new InetSocketAddress(packet.getAddress(), packet.getPort()))){
           break;
         }
         else{
-          this.inBuffer.put(packet);
+          client.getInBuffer().put(packet);
         }
         if(System.currentTimeMillis() - time > 5000){
           this.socket.send(ack);
@@ -98,10 +105,10 @@ public class MyServerSocket{
     catch(Exception e){
       System.err.println(e.getMessage());
     }
-    MyClientSocket socket = new MyClientSocket(this.socket, address);
-    this.connections.put(address, socket);
-    System.out.println(address + " connected!");
-    return socket;
+    // System.out.println(address + " connected!");
+    // System.out.println(connections.size()+" sz");
+
+    return client;
   }
 
   public void close(){

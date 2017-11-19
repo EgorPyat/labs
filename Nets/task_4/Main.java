@@ -9,8 +9,9 @@ public class Main{
           try{
             Thread.sleep(5000);
             MyClientSocket s = new MyClientSocket();
-            System.out.println(1);
             s.connect(InetAddress.getByName("localhost"), 3000);
+            s.send("hello".getBytes());
+            s.recieve(new byte[1024]);
           }
           catch(Exception e){
             System.err.println(e.getMessage());
@@ -18,8 +19,9 @@ public class Main{
         }
       }).start();
       s.listen(0);
-      System.out.println(2);
       MyClientSocket c = s.accept();
+      c.recieve(new byte[1024]);
+      c.send("hi".getBytes());
     }
     catch(Exception e){
       System.err.println(e.getMessage());
