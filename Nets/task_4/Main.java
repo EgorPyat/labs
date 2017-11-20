@@ -12,6 +12,7 @@ public class Main{
             s.connect(InetAddress.getByName("localhost"), 3000);
             s.send("hello".getBytes());
             s.recieve(new byte[1024]);
+            s.close();
           }
           catch(Exception e){
             System.err.println(e.getMessage());
@@ -22,6 +23,7 @@ public class Main{
       MyClientSocket c = s.accept();
       c.recieve(new byte[1024]);
       c.send("hi".getBytes());
+      c.close();
     }
     catch(Exception e){
       System.err.println(e.getMessage());

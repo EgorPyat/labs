@@ -40,16 +40,14 @@ public class MyServerSocket{
       @Override
       public void run(){
         try{
-          while(true){
+          while(listen){
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
             socket.receive(packet);
             InetSocketAddress address = new InetSocketAddress(packet.getAddress(), packet.getPort());
             if(!connections.containsKey(address)){
-              System.out.println("accept " + new String(packet.getData(), 0, packet.getLength()));
               inBuffer.put(packet);
             }
             else{
-              System.out.println("client " + new String(packet.getData(), 0, packet.getLength()));
               connections.get(address).getInBuffer().put(packet);
             }
           }
@@ -105,13 +103,12 @@ public class MyServerSocket{
     catch(Exception e){
       System.err.println(e.getMessage());
     }
-    // System.out.println(address + " connected!");
-    // System.out.println(connections.size()+" sz");
 
     return client;
   }
 
   public void close(){
+    this.listen = false;
     this.socket.close();
   }
 }

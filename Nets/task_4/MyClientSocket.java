@@ -7,6 +7,7 @@ public class MyClientSocket{
   private DatagramSocket socket;
   private InetSocketAddress connectedSocket;
   private boolean independent;
+  private boolean work;
   private BlockingQueue<DatagramPacket> inBuffer;
   private BlockingQueue<DatagramPacket> outBuffer;
   public MyClientSocket(){
@@ -15,11 +16,12 @@ public class MyClientSocket{
       this.independent = true;
       this.inBuffer = new ArrayBlockingQueue<DatagramPacket>(32);
       this.outBuffer = new ArrayBlockingQueue<DatagramPacket>(32);
+      this.work = true;
       Thread reciever = new Thread(new Runnable(){
         @Override
         public void run(){
           try{
-            while(true){
+            while(work){
               DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
               socket.receive(packet);
               inBuffer.put(packet);
@@ -86,11 +88,10 @@ public class MyClientSocket{
   }
   public void send(byte[] buffer){
     try{
-      // DatagramPacket createMessagePacket(){}
-          byte[] header = "1:2:".getBytes();
-          byte[] mass = new byte[header.length + buffer.length];
-          System.arraycopy(header, 0, mass, 0, header.length);
-          System.arraycopy(buffer, 0, mass, header.length, buffer.length);
+      byte[] header = "1:2:".getBytes();
+      byte[] mass = new byte[header.length + buffer.length];
+      System.arraycopy(header, 0, mass, 0, header.length);
+      System.arraycopy(buffer, 0, mass, header.length, buffer.length);
       System.out.println(new String(mass, 0, mass.length));
       DatagramPacket msg = new DatagramPacket(mass, mass.length, this.connectedSocket.getAddress(), this.connectedSocket.getPort());
       this.socket.send(msg);
@@ -122,6 +123,7 @@ public class MyClientSocket{
     return this.inBuffer;
   }
   public void close(){
+    this.work = false;
     this.socket.close();
   }
 }
