@@ -89,6 +89,9 @@ public class Client{
         switch(in.readLine()){
           case "stop":
             System.out.println("No tasks to do!");
+            in.close();
+            out.close();
+            this.socket.close();
             return false;
           case "work":
             this.hash = in.readLine();
