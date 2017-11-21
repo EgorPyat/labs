@@ -106,15 +106,15 @@ void* thread_func(void* arg){
     use_filter(matrix, new, filter, *(int*)arg);
     uint64_t start1, stop1;
     start1 = read_time();
-    // my_barrier(*(int*)arg, ++iter);
-    pthread_barrier_wait(&barrier);
+    my_barrier(*(int*)arg, ++iter);
+    // pthread_barrier_wait(&barrier);
     stop1 = read_time();
     double t = (double)(stop1 - start1) / cpu_Hz;
     avg += t;
     if(t < min && t != 0.0) min = t;
-    set_min_avg(&min, &avg);
     memcpy(matrix + (((N + 1) / thread_num) * id + 1) * (M + 2), new + (((N + 1) / thread_num) * id + 1) * (M + 2), sizeof(int) * ((id + 1) * ((N + 1) / thread_num) + 1 - (((N + 1) / thread_num) * id + 1)) * (M + 2));
   }
+  set_min_avg(&min, &avg);
   free(filter);
 }
 int main(int argc, char* argv[]){
