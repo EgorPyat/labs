@@ -3,8 +3,8 @@ import java.net.*;
 import java.io.*;
 
 public class Server{
-  private final int MAX_LENGTH = 8;
-  private final int STEP = 1024;
+  private final int MAX_LENGTH = 11;
+  private final int STEP = 65536;
   private Map<UUID, long[]> clients;
   private List<long[]> tasks;
   private Map<long[], Long> unconfirmedTasks;
@@ -31,10 +31,13 @@ public class Server{
         while(!(tasks.isEmpty() && unconfirmedTasks.isEmpty())){
           try{
             Thread.sleep(3000);
-            for(long[] t : unconfirmedTasks.keySet()){
+            Set<long[]> unconf = unconfirmedTasks.keySet();
+            Iterator<long[]> i = unconf.iterator();
+            while(i.hasNext()){
+              long[] t = i.next();
               if(System.currentTimeMillis() - unconfirmedTasks.get(t) > 10000){
                 tasks.add(t);
-                unconfirmedTasks.remove(t);
+                i.remove();
                 System.out.println("Task returned!");
               }
             }
