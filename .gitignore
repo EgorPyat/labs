@@ -2,6 +2,7 @@
 *.out
 *.o
 *.odt
+*.odt#
 *.class
 OOP/C++/task_2/*
 OOP/Java/*/dist/*
