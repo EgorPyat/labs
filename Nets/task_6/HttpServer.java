@@ -141,16 +141,27 @@ public class HttpServer{
               case "login":
                 JSONObject obj = new JSONObject(content);
                 String username = obj.getString("username");
-                System.out.println(username);
-                if(HttpServer.this.usersNames.containsKey(username) && HttpServer.this.usersOnline.get(username)){}
-                int id = HttpServer.this.userID.incrementAndGet();
-                HttpServer.this.usersNames.put(username, id);
-                HttpServer.this.usersTokens.put(id, id);
-                HttpServer.this.usersOnline.put(username, true);
-                String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(id).endObject().toString();
-                this.out.println("HTTP/1.1 200 OK\n");
-                this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
-                this.out.println(cont);
+                if(HttpServer.this.usersNames.containsKey(username)){
+                  if(HttpServer.this.usersOnline.get(username)){
+                    this.out.println("HTTP/1.1 401 Unauthorized\n");
+                    this.out.println("WWW-Authenticate:Token realm='Username is already in use'\n");
+                  }
+                  else{
+                    System.out.println("User: " + username + " returned!");
+                    HttpServer.this.usersOnline.put(username, true);
+                  }
+                }
+                else{
+                  int id = HttpServer.this.userID.incrementAndGet();
+                  HttpServer.this.usersNames.put(username, id);
+                  HttpServer.this.usersTokens.put(id, id);
+                  HttpServer.this.usersOnline.put(username, true);
+                  String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(id).endObject().toString();
+                  this.out.println("HTTP/1.1 200 OK\n");
+                  this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
+                  this.out.println(cont);
+                  System.out.println("New user: " + username + "!");
+                }
                 break;
               case "messages":
                 break;
