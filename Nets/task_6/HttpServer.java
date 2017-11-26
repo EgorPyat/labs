@@ -1,18 +1,27 @@
 import java.util.*;
 import java.net.*;
 import java.io.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.json.*;
 
 public class HttpServer{
   private ServerSocket socket;
   private int port;
   private List<Connection> connections;
+  private AtomicInteger userID = new AtomicInteger(-1);
+  private AtomicInteger msgID = new AtomicInteger(-1);
+  private Map<String, Integer> usersNames;
+  private Map<Integer, Integer> usersTokens;
+  private Map<String, Boolean> usersOnline;
 
   public HttpServer(int port){
     try{
       this.port = port;
       this.socket = new ServerSocket(this.port);
       this.connections = Collections.synchronizedList(new ArrayList<Connection>());
+      this.usersNames = Collections.synchronizedMap(new HashMap<String, Integer>());
+      this.usersTokens = Collections.synchronizedMap(new HashMap<Integer, Integer>());
+      this.usersOnline = Collections.synchronizedMap(new HashMap<String, Boolean>());
     }
     catch(Exception e){
       System.err.println(e.getMessage());
@@ -64,6 +73,9 @@ public class HttpServer{
         }
         req = request.toString();
         header = req.split("_");
+        for(int i = 0; i < header.length; i++){
+          System.out.println(header[i]);
+        }
       }
       catch(Exception e){
         System.err.println(e.getMessage());
@@ -103,16 +115,20 @@ public class HttpServer{
 		public void run(){
 			try{
         String[] header = this.getHeader();
-        String content = this.getContent(new Integer((header[3].split(":"))[1].trim()));
+        String content = header.length == 3 ? null : this.getContent(new Integer((header[3].split(":"))[1].trim()));
         String query = getQuery(header);
         String[] method = getMethod(header);
         String methodType = method[0];
-        String methodArg = method[1] == null ? null : method[1];
+        String methodArg = method.length == 1 ? null : method[1];
 
         switch(query){
           case "GET":
             switch(methodType){
               case "logout":
+                String cont = new JSONStringer().object().key("message").value("bye").endObject().toString();
+                this.out.println("HTTP/1.1 200 OK\n");
+                this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
+                this.out.println(cont);
                 break;
               case "users":
                 break;
@@ -123,16 +139,24 @@ public class HttpServer{
           case "POST":
             switch(methodType){
               case "login":
+                JSONObject obj = new JSONObject(content);
+                String username = obj.getString("username");
+                System.out.println(username);
+                if(HttpServer.this.usersNames.containsKey(username) && HttpServer.this.usersOnline.get(username)){}
+                int id = HttpServer.this.userID.incrementAndGet();
+                HttpServer.this.usersNames.put(username, id);
+                HttpServer.this.usersTokens.put(id, id);
+                HttpServer.this.usersOnline.put(username, true);
+                String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(id).endObject().toString();
+                this.out.println("HTTP/1.1 200 OK\n");
+                this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
+                this.out.println(cont);
                 break;
               case "messages":
                 break;
             }
             break;
         }
-
-        this.out.println("HTTP/1.1 200 OK\n");
-        this.out.println("Content-Type:application/json\nContent-Length:8\n");
-        this.out.println("{\"id\":1}");
       }
       catch(Exception e){
         System.err.println(e.getMessage());
@@ -160,10 +184,5 @@ public class HttpServer{
     catch(Exception e){
       System.err.println(e.getMessage());
     }
-    // String json = "{\"name\":\"egor\",\"id\":1}";
-    // JSONObject obj = new JSONObject(json);
-    // String name = obj.getString("name");
-    // int id = obj.getInt("id");
-    // System.out.println(name + id);
   }
 }
