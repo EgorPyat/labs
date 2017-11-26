@@ -91,15 +91,45 @@ public class HttpServer{
       return request.toString();
     }
 
+    private String getQuery(String[] header){
+      return header[0].split(" ")[0];
+    }
+
+    private String[] getMethod(String[] header){
+      return header[0].split(" ")[1].replaceFirst("/", "").split("/");
+    }
+
     @Override
 		public void run(){
 			try{
         String[] header = this.getHeader();
-        for(int i = 0; i < header.length; i++){
-          System.out.println(header[i]);
-        }
         String content = this.getContent(new Integer((header[3].split(":"))[1].trim()));
-        System.out.println(content);
+        String query = getQuery(header);
+        String[] method = getMethod(header);
+        String methodType = method[0];
+        String methodArg = method[1] == null ? null : method[1];
+
+        switch(query){
+          case "GET":
+            switch(methodType){
+              case "logout":
+                break;
+              case "users":
+                break;
+              case "messages":
+                break;
+            }
+            break;
+          case "POST":
+            switch(methodType){
+              case "login":
+                break;
+              case "messages":
+                break;
+            }
+            break;
+        }
+
         this.out.println("HTTP/1.1 200 OK\n");
         this.out.println("Content-Type:application/json\nContent-Length:8\n");
         this.out.println("{\"id\":1}");
