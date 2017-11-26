@@ -4,41 +4,128 @@ import java.io.*;
 import org.json.*;
 
 public class HttpServer{
-  public static void main(String[] args){
+  private ServerSocket socket;
+  private int port;
+  private List<Connection> connections;
+
+  public HttpServer(int port){
     try{
-      ServerSocket ss = new ServerSocket(3000);
-        Socket cs = ss.accept();
-        System.out.println("Accept");
-        BufferedReader in  = new BufferedReader(new InputStreamReader(cs.getInputStream(), "UTF-8"));
-        PrintWriter out = new PrintWriter(new OutputStreamWriter(cs.getOutputStream(), "UTF-8"), true);
-        String req;
-        StringBuilder request = new StringBuilder();
+      this.port = port;
+      this.socket = new ServerSocket(this.port);
+      this.connections = Collections.synchronizedList(new ArrayList<Connection>());
+    }
+    catch(Exception e){
+      System.err.println(e.getMessage());
+    }
+  }
+
+  public void start(){
+    try{
+      while(true){
+        Socket client = this.socket.accept();
+        Connection con = new Connection(client);
+        this.connections.add(con);
+        con.start();
+      }
+    }
+    catch(Exception e){
+      System.err.println(e.getMessage());
+    }
+  }
+
+  private class Connection extends Thread{
+    private BufferedReader in;
+		private PrintWriter out;
+		private Socket socket;
+
+    public Connection(Socket socket){
+			this.socket = socket;
+
+			try{
+        this.in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+        this.out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
+			}
+      catch(IOException e){
+				e.printStackTrace();
+				this.close();
+			}
+		}
+
+    private String[] getHeader(){
+      String req;
+      StringBuilder request = new StringBuilder();
+      String[] header = null;
+      try{
         while(true){
           req = in.readLine();
           request.append(req);
           if(req.isEmpty()) break;
+          request.append("_");
         }
-        System.out.println(request.toString());
-        System.out.println("Read header!");
-        int sum = 0;
-        request = new StringBuilder();
-        char[] buffer = new char[64];
+        req = request.toString();
+        header = req.split("_");
+      }
+      catch(Exception e){
+        System.err.println(e.getMessage());
+      }
+
+      return header;
+    }
+
+    private String getContent(int contentLength){
+      int sum = 0;
+      StringBuilder request = new StringBuilder();
+      char[] buffer = new char[64];
+      try{
         while(true){
           int r = in.read(buffer, 0, 64);
           request.append(buffer);
           sum += r;
-          if(sum == 15) break;
+          if(sum == contentLength) break;
         }
-        System.out.println(request.toString());
+      }
+      catch(Exception e){
+        System.err.println(e.getMessage());
+      }
 
-        out.println("HTTP/1.1 200 OK\n");
-        out.println("Content-Type:application/json\nContent-Length:8\n");
-        out.println("{\"id\":1}");
+      return request.toString();
+    }
 
-      in.close();
-      out.close();
-      cs.close();
-      ss.close();
+    @Override
+		public void run(){
+			try{
+        String[] header = this.getHeader();
+        for(int i = 0; i < header.length; i++){
+          System.out.println(header[i]);
+        }
+        String content = this.getContent(new Integer((header[3].split(":"))[1].trim()));
+        System.out.println(content);
+        this.out.println("HTTP/1.1 200 OK\n");
+        this.out.println("Content-Type:application/json\nContent-Length:8\n");
+        this.out.println("{\"id\":1}");
+      }
+      catch(Exception e){
+        System.err.println(e.getMessage());
+        e.printStackTrace();
+      }
+    }
+
+    public void close(){
+      try{
+        this.in.close();
+        this.out.close();
+        this.socket.close();
+      }
+      catch(Exception e){
+        System.err.println(e.getMessage());
+      }
+    }
+  }
+
+  public static void main(String[] args){
+    try{
+      HttpServer s = new HttpServer(3000);
+      s.start();
     }
     catch(Exception e){
       System.err.println(e.getMessage());
