@@ -213,6 +213,8 @@ public class HttpServer{
         System.err.println(e.getMessage());
         e.printStackTrace();
       }
+
+      this.close();
     }
 
     public void close(){
