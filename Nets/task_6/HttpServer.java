@@ -10,17 +10,18 @@ public class HttpServer{
   private List<Connection> connections;
   private AtomicInteger userID = new AtomicInteger(-1);
   private AtomicInteger msgID = new AtomicInteger(-1);
-  private Map<String, Integer> usersNames;
-  private Map<Integer, Integer> usersTokens;
+  private Map<Integer, Integer> usersIDs;
+  private Map<Integer, String> usersNames;
   private Map<String, Boolean> usersOnline;
+  private List<String> messages;
 
   public HttpServer(int port){
     try{
       this.port = port;
       this.socket = new ServerSocket(this.port);
       this.connections = Collections.synchronizedList(new ArrayList<Connection>());
-      this.usersNames = Collections.synchronizedMap(new HashMap<String, Integer>());
-      this.usersTokens = Collections.synchronizedMap(new HashMap<Integer, Integer>());
+      this.usersIDs = Collections.synchronizedMap(new HashMap<Integer, Integer>());
+      this.usersNames = Collections.synchronizedMap(new HashMap<Integer, String>());
       this.usersOnline = Collections.synchronizedMap(new HashMap<String, Boolean>());
     }
     catch(Exception e){
@@ -125,13 +126,44 @@ public class HttpServer{
           case "GET":
             switch(methodType){
               case "logout":
-                String cont = new JSONStringer().object().key("message").value("bye").endObject().toString();
-                this.out.println("HTTP/1.1 200 OK\n");
-                this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
-                this.out.println(cont);
+                String token = header[2].split(":")[1].trim();
+
+                if(token.isEmpty()){
+                  this.out.println("HTTP/1.1 401 Unauthorized\n");
+                  this.out.println("WWW-Authenticate:Token realm='Token in the request is absent'\n");
+                }
+                else{
+                  int tok = new Integer(token);
+                  if(HttpServer.this.usersIDs.containsKey(tok)){
+                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)).equals(true)){
+                      String cont = new JSONStringer().object().key("message").value("bye").endObject().toString();
+                      this.out.println("HTTP/1.1 200 OK\n");
+                      this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
+                      this.out.println(cont);
+                      HttpServer.this.usersOnline.put(HttpServer.this.usersNames.get(tok), false);
+                    }
+                    else{
+                      this.out.println("HTTP/1.1 403 Forbidden\n");
+                      this.out.println("WWW-Authenticate:Token realm='Token is expired'\n");
+                    }
+                  }
+                  else{
+                    this.out.println("HTTP/1.1 403 Forbidden\n");
+                    this.out.println("WWW-Authenticate:Token realm='Token is unknown'\n");
+                  }
+                }
                 break;
               case "users":
-                break;
+                // String token = header[2].split(":")[1].trim();
+                //
+                // if(token.isEmpty()){
+                //   this.out.println("HTTP/1.1 401 Unauthorized\n");
+                //   this.out.println("WWW-Authenticate:Token realm='Token in the request is absent'\n");
+                // }
+                // else{
+                //
+                // }
+                // break;
               case "messages":
                 break;
             }
@@ -141,20 +173,28 @@ public class HttpServer{
               case "login":
                 JSONObject obj = new JSONObject(content);
                 String username = obj.getString("username");
-                if(HttpServer.this.usersNames.containsKey(username)){
-                  if(HttpServer.this.usersOnline.get(username)){
+
+                if(HttpServer.this.usersNames.containsValue(username)){
+                  if(HttpServer.this.usersOnline.get(username).equals(true)){
                     this.out.println("HTTP/1.1 401 Unauthorized\n");
                     this.out.println("WWW-Authenticate:Token realm='Username is already in use'\n");
                   }
                   else{
-                    System.out.println("User: " + username + " returned!");
+                    int id = HttpServer.this.userID.incrementAndGet();
+                    HttpServer.this.usersIDs.put(id, id);
+                    HttpServer.this.usersNames.put(id, username);
                     HttpServer.this.usersOnline.put(username, true);
+                    String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(id).endObject().toString();
+                    this.out.println("HTTP/1.1 200 OK\n");
+                    this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
+                    this.out.println(cont);
+                    System.out.println("New user: " + username + "!");
                   }
                 }
                 else{
                   int id = HttpServer.this.userID.incrementAndGet();
-                  HttpServer.this.usersNames.put(username, id);
-                  HttpServer.this.usersTokens.put(id, id);
+                  HttpServer.this.usersNames.put(id, username);
+                  HttpServer.this.usersIDs.put(id, id);
                   HttpServer.this.usersOnline.put(username, true);
                   String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(id).endObject().toString();
                   this.out.println("HTTP/1.1 200 OK\n");
@@ -184,6 +224,34 @@ public class HttpServer{
       catch(Exception e){
         System.err.println(e.getMessage());
       }
+    }
+  }
+
+  private class User{
+    private int id;
+    private String username;
+    private boolean status;
+
+    public User(int id, String username, boolean status){
+      this.id = id;
+      this.username = username;
+      this.status = status;
+    }
+
+    public int getID(){
+      return this.id;
+    }
+
+    public String getUsername(){
+      return this.username;
+    }
+
+    public boolean getStatus(){
+      return this.status;
+    }
+
+    public void setStatus(boolean status){
+      this.status = status;
     }
   }
 
