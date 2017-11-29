@@ -116,7 +116,7 @@ public class HttpServer{
 		public void run(){
 			try{
         String[] header = this.getHeader();
-        String content = header.length == 3 ? null : this.getContent(new Integer((header[3].split(":"))[1].trim()));
+        String content = header.length == 3 ? null : this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
         String query = getQuery(header);
         String[] method = getMethod(header);
         String methodType = method[0];
@@ -204,6 +204,35 @@ public class HttpServer{
                 }
                 break;
               case "messages":
+                String token = header[2].split(":")[1].trim();
+
+                if(token.isEmpty()){
+                  this.out.println("HTTP/1.1 401 Unauthorized\n");
+                  this.out.println("WWW-Authenticate:Token realm='Token in the request is absent'\n");
+                }
+                else{
+                  int tok = new Integer(token);
+
+                  if(HttpServer.this.usersIDs.containsKey(tok)){
+                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)).equals(true)){
+                      JSONObject msg = new JSONObject(content);
+                      String message = msg.getString("message");
+                      int id = HttpServer.this.msgID.incrementAndGet();
+                      String response = new JSONStringer().object().key("id").value(id).key("message").value(message).endObject().toString();
+                      this.out.println("HTTP/1.1 200 OK\n");
+                      this.out.println("Content-Type:application/json\nContent-Length:" + response.length() + "\n");
+                      this.out.println(response);
+                    }
+                    else{
+                      this.out.println("HTTP/1.1 403 Forbidden\n");
+                      this.out.println("WWW-Authenticate:Token realm='Token is expired'\n");
+                    }
+                  }
+                  else{
+                    this.out.println("HTTP/1.1 403 Forbidden\n");
+                    this.out.println("WWW-Authenticate:Token realm='Token is unknown'\n");
+                  }
+                }
                 break;
             }
             break;
