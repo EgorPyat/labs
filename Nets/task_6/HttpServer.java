@@ -23,6 +23,7 @@ public class HttpServer{
       this.usersIDs = Collections.synchronizedMap(new HashMap<Integer, Integer>());
       this.usersNames = Collections.synchronizedMap(new HashMap<Integer, String>());
       this.usersOnline = Collections.synchronizedMap(new HashMap<String, Boolean>());
+      this.messages = Collections.synchronizedList(new LinkedList<String>());
     }
     catch(Exception e){
       System.err.println(e.getMessage());
@@ -154,17 +155,66 @@ public class HttpServer{
                 }
                 break;
               case "users":
-                // String token = header[2].split(":")[1].trim();
-                //
-                // if(token.isEmpty()){
-                //   this.out.println("HTTP/1.1 401 Unauthorized\n");
-                //   this.out.println("WWW-Authenticate:Token realm='Token in the request is absent'\n");
-                // }
-                // else{
-                //
-                // }
-                // break;
+                String tokeh = header[2].split(":")[1].trim();
+
+                if(tokeh.isEmpty()){
+                  this.out.println("HTTP/1.1 401 Unauthorized\n");
+                  this.out.println("WWW-Authenticate:Token realm='Token in the request is absent'\n");
+                }
+                else{
+                  int tok = new Integer(tokeh);
+
+                  if(HttpServer.this.usersIDs.containsKey(tok)){
+                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)).equals(true)){
+                      String start = "{\"users\":[";
+                      String end = "]}";
+
+                      for(int i = 0; i < HttpServer.this.usersIDs.size(); i++){
+                        String name = HttpServer.this.usersNames.get(tok);
+                        start += "{" + "id:" + HttpServer.this.usersIDs.get(tok) + "," + "username:" + name + "status:" + HttpServer.this.usersOnline.get(name) + "}";
+                      }
+                      start += end;
+                    }
+                    else{
+                      this.out.println("HTTP/1.1 403 Forbidden\n");
+                      this.out.println("WWW-Authenticate:Token realm='Token is expired'\n");
+                    }
+                  }
+                  else{
+                    this.out.println("HTTP/1.1 403 Forbidden\n");
+                    this.out.println("WWW-Authenticate:Token realm='Token is unknown'\n");
+                  }
+                }
+                break;
               case "messages":
+                String toke = header[2].split(":")[1].trim();
+
+                if(toke.isEmpty()){
+                  this.out.println("HTTP/1.1 401 Unauthorized\n");
+                  this.out.println("WWW-Authenticate:Token realm='Token in the request is absent'\n");
+                }
+                else{
+                  int tok = new Integer(toke);
+
+                  if(HttpServer.this.usersIDs.containsKey(tok)){
+                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)).equals(true)){
+                      String start = "{\"messages\":[";
+                      String end = "]}";
+                      for(String msg : HttpServer.this.messages){
+                        start += msg + ",";
+                      }
+                      start += end;
+                    }
+                    else{
+                      this.out.println("HTTP/1.1 403 Forbidden\n");
+                      this.out.println("WWW-Authenticate:Token realm='Token is expired'\n");
+                    }
+                  }
+                  else{
+                    this.out.println("HTTP/1.1 403 Forbidden\n");
+                    this.out.println("WWW-Authenticate:Token realm='Token is unknown'\n");
+                  }
+                }
                 break;
             }
             break;
@@ -222,6 +272,8 @@ public class HttpServer{
                       this.out.println("HTTP/1.1 200 OK\n");
                       this.out.println("Content-Type:application/json\nContent-Length:" + response.length() + "\n");
                       this.out.println(response);
+                      response = new JSONStringer().object().key("id").value(id).key("message").value(message).key("author").value(HttpServer.this.usersIDs.get(tok)).endObject().toString();
+                      HttpServer.this.messages.add(response);
                     }
                     else{
                       this.out.println("HTTP/1.1 403 Forbidden\n");
