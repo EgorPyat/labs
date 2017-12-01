@@ -171,9 +171,14 @@ public class HttpServer{
 
                       for(int i = 0; i < HttpServer.this.usersIDs.size(); i++){
                         String name = HttpServer.this.usersNames.get(tok);
-                        start += "{" + "id:" + HttpServer.this.usersIDs.get(tok) + "," + "username:" + name + "status:" + HttpServer.this.usersOnline.get(name) + "}";
+                        start += "{\"id\":" + HttpServer.this.usersIDs.get(tok) + ",\"username\":\"" + name + "\",\"status\":" + HttpServer.this.usersOnline.get(name) + "},";
                       }
                       start += end;
+                      start = start.replace(",]", "]");
+
+                      this.out.println("HTTP/1.1 200 OK\n");
+                      this.out.println("Content-Type:application/json\nContent-Length:" + start.length() + "\n");
+                      this.out.println(start);
                     }
                     else{
                       this.out.println("HTTP/1.1 403 Forbidden\n");
@@ -204,6 +209,11 @@ public class HttpServer{
                         start += msg + ",";
                       }
                       start += end;
+                      start = start.replace(",]", "]");
+
+                      this.out.println("HTTP/1.1 200 OK\n");
+                      this.out.println("Content-Type:application/json\nContent-Length:" + start.length() + "\n");
+                      this.out.println(start);
                     }
                     else{
                       this.out.println("HTTP/1.1 403 Forbidden\n");
