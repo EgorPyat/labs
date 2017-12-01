@@ -136,12 +136,16 @@ public class HttpServer{
                 else{
                   int tok = new Integer(token);
                   if(HttpServer.this.usersIDs.containsKey(tok)){
-                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)).equals(true)){
+                    String name = HttpServer.this.usersNames.get(tok);
+                    if(HttpServer.this.usersOnline.get(name).equals(true)){
                       String cont = new JSONStringer().object().key("message").value("bye").endObject().toString();
                       this.out.println("HTTP/1.1 200 OK\n");
                       this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
                       this.out.println(cont);
-                      HttpServer.this.usersOnline.put(HttpServer.this.usersNames.get(tok), false);
+                      HttpServer.this.usersNames.remove(tok);
+                      HttpServer.this.usersOnline.remove(HttpServer.this.usersNames.get(tok));
+                      HttpServer.this.usersNames.put(tok, name + ":");
+                      HttpServer.this.usersOnline.put(name + ":", false);
                     }
                     else{
                       this.out.println("HTTP/1.1 403 Forbidden\n");
@@ -169,9 +173,9 @@ public class HttpServer{
                       String start = "{\"users\":[";
                       String end = "]}";
 
-                      for(int i = 0; i < HttpServer.this.usersIDs.size(); i++){
-                        String name = HttpServer.this.usersNames.get(tok);
-                        start += "{\"id\":" + HttpServer.this.usersIDs.get(tok) + ",\"username\":\"" + name + "\",\"status\":" + HttpServer.this.usersOnline.get(name) + "},";
+                      for(int t : HttpServer.this.usersIDs.keySet()){
+                        String name = HttpServer.this.usersNames.get(t);
+                        start += "{\"id\":" + HttpServer.this.usersIDs.get(t) + ",\"username\":\"" + name.split(":")[0] + "\",\"status\":" + HttpServer.this.usersOnline.get(name) + "},";
                       }
                       start += end;
                       start = start.replace(",]", "]");
