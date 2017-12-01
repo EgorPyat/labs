@@ -1,66 +1,125 @@
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.*;
+import java.net.*;
+import java.io.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.json.*;
 
 public class HttpClient{
+	private BufferedReader in;
+	private PrintWriter out;
+	private Socket socket;
+	private String address;
+	private int port;
 
-	private final String USER_AGENT = "Mozilla/5.0";
-
-	public static void main(String[] args) throws Exception {
-
-		// HttpClient http = new HttpClient();
-    //
-		// System.out.println("Testing 1 - Send Http GET request");
-		// http.sendGet();
-    String url = "localhost";
-
-		URL obj = new URL("http", url, 3000, "/xx");
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-		// optional default is GET
-		con.setRequestMethod("GET");
-
-		//add request header
-		con.setRequestProperty("User-Agent", "Mozilla/5.0");
-
-		int responseCode = con.getResponseCode();
-    System.out.println(responseCode);
+	public HttpClient(String address, int port){
+		this.address = address;
+		this.port = port;
 	}
 
-	// HTTP GET request
-	private void sendGet() throws Exception {
+	public void start(){
+		try{
+			while(true){
+				this.socket = new Socket(this.address, this.port);
+				this.in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+				this.out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
+				Scanner sc = new Scanner(System.in);
+				System.out.print("Enter your username: ");
+				String name = sc.nextLine();
 
-		String url = "http://www.google.com/search?q=mkyong";
+				String response = "{\"username\": \"" + name + "\"}";
 
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-		// optional default is GET
-		con.setRequestMethod("GET");
-
-		//add request header
-		con.setRequestProperty("User-Agent", USER_AGENT);
-
-		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + url);
-		System.out.println("Response Code : " + responseCode);
-
-		BufferedReader in = new BufferedReader(
-		        new InputStreamReader(con.getInputStream()));
-		String inputLine;
-		StringBuffer response = new StringBuffer();
-
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
+				this.out.println("POST /login HTTP/1.1\nHOST: localhost:3001\ncontent-type: application/json\ncontent-length: " + (response.length() + 1) + "\n\n" + response);
+				String[] header = this.getHeader();
+				if(header[0].split(" ")[1].equals("401")){
+					System.out.println("Take another name!");
+					this.close();
+					continue;
+				}
+				String content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
+				System.out.println(content);
+				break;
+			}
 		}
-		in.close();
+		catch(Exception e){
+			System.err.println("In start " + e.getMessage());
+		}
 
-		//print result
-		System.out.println(response.toString());
+		System.out.println("Connected!");
 
+		while(true){
+			Scanner sc = new Scanner(System.in);
+			String command = sc.nextLine();
+			System.out.println(command);
+
+			switch(command){
+				case "/logout":
+					break;
+				case "/list":
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	private String[] getHeader(){
+		String req;
+		StringBuilder request = new StringBuilder();
+		String[] header = null;
+		try{
+			while(true){
+				req = in.readLine();
+				request.append(req);
+				if(req.isEmpty()) break;
+				request.append("_");
+			}
+			req = request.toString();
+			header = req.split("_");
+			for(int i = 0; i < header.length; i++){
+				System.out.println(header[i]);
+			}
+		}
+		catch(Exception e){
+			System.err.println(e.getMessage());
+		}
+
+		return header;
+	}
+
+	private String getContent(int contentLength){
+		int sum = 0;
+		StringBuilder request = new StringBuilder();
+		char[] buffer = new char[64];
+		try{
+			while(true){
+				int r = in.read(buffer, 0, 64);
+				System.out.println(r+" " + contentLength);
+				request.append(buffer);
+				sum += r;
+				if(sum == contentLength) break;
+			}
+		}
+		catch(Exception e){
+			System.err.println(e.getMessage());
+		}
+
+		return request.toString();
+	}
+
+	public void close(){
+		try{
+			this.in.close();
+			this.out.close();
+			this.socket.close();
+		}
+		catch(Exception e){
+			System.err.println(e.getMessage());
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		HttpClient c = new HttpClient("localhost", 3001);
+		c.start();
 	}
 
 }

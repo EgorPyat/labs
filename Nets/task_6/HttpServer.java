@@ -240,7 +240,7 @@ public class HttpServer{
 
                 if(HttpServer.this.usersNames.containsValue(username)){
                   if(HttpServer.this.usersOnline.get(username).equals(true)){
-                    this.out.println("HTTP/1.1 401 Unauthorized\n");
+                    this.out.println("HTTP/1.1 401 Unauthorized");
                     this.out.println("WWW-Authenticate:Token realm='Username is already in use'\n");
                   }
                   else{
@@ -249,7 +249,7 @@ public class HttpServer{
                     HttpServer.this.usersNames.put(id, username);
                     HttpServer.this.usersOnline.put(username, true);
                     String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(id).endObject().toString();
-                    this.out.println("HTTP/1.1 200 OK\n");
+                    this.out.println("HTTP/1.1 200 OK");
                     this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
                     this.out.println(cont);
                     System.out.println("New user: " + username + "!");
@@ -261,8 +261,8 @@ public class HttpServer{
                   HttpServer.this.usersIDs.put(id, id);
                   HttpServer.this.usersOnline.put(username, true);
                   String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(id).endObject().toString();
-                  this.out.println("HTTP/1.1 200 OK\n");
-                  this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
+                  this.out.println("HTTP/1.1 200 OK");
+                  this.out.println("Content-Type:application/json\nContent-Length:" + (cont.length() + 1) + "\n");
                   this.out.println(cont);
                   System.out.println("New user: " + username + "!");
                 }
@@ -271,7 +271,7 @@ public class HttpServer{
                 String token = header[2].split(":")[1].trim();
 
                 if(token.isEmpty()){
-                  this.out.println("HTTP/1.1 401 Unauthorized\n");
+                  this.out.println("HTTP/1.1 401 Unauthorized");
                   this.out.println("WWW-Authenticate:Token realm='Token in the request is absent'\n");
                 }
                 else{
@@ -324,37 +324,9 @@ public class HttpServer{
     }
   }
 
-  private class User{
-    private int id;
-    private String username;
-    private boolean status;
-
-    public User(int id, String username, boolean status){
-      this.id = id;
-      this.username = username;
-      this.status = status;
-    }
-
-    public int getID(){
-      return this.id;
-    }
-
-    public String getUsername(){
-      return this.username;
-    }
-
-    public boolean getStatus(){
-      return this.status;
-    }
-
-    public void setStatus(boolean status){
-      this.status = status;
-    }
-  }
-
   public static void main(String[] args){
     try{
-      HttpServer s = new HttpServer(3000);
+      HttpServer s = new HttpServer(3001);
       s.start();
     }
     catch(Exception e){
