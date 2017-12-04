@@ -10,6 +10,7 @@ public class HttpClient{
 	private Socket socket;
 	private String address;
 	private int port;
+	private int token;
 
 	public HttpClient(String address, int port){
 		this.address = address;
@@ -36,29 +37,123 @@ public class HttpClient{
 					continue;
 				}
 				String content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
+				this.token = new JSONObject(content).getInt("token");
 				System.out.println(content);
+				this.close();
 				break;
+			}
+
+			System.out.println("Connected!");
+			boolean online = true;
+
+			this.socket = new Socket(this.address, this.port);
+			this.in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+			this.out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
+
+			this.out.println("GET /messages HTTP/1.1\nHOST: localhost:3001\nauthorization: " + this.token + "\n");
+			String[] header = this.getHeader();
+			if(header[0].split(" ")[1].equals("403")){
+				System.out.println("Bad token!");
+				this.close();
+				online = false;
+			}
+			String content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
+			System.out.println(content);
+			this.close();
+
+			Thread msgGetter = new Thread(new Runnable(){
+				@Override
+				public void run(){
+					long time = System.currentTimeMillis();
+					while(true){
+						try{
+							if(System.currentTimeMillis() - time > 2000){
+								socket = new Socket(address, port);
+								in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+								out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
+								out.println("GET /messages HTTP/1.1\nHOST: localhost:3001\nauthorization: " + token + "\n");
+								String[] header = getHeader();
+								if(header[0].split(" ")[1].equals("403")){
+									System.out.println("Bad token!");
+									in.close();
+									out.close();
+									socket.close();
+								}
+								String content = getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
+								System.out.println(content);
+								in.close();
+								out.close();
+								socket.close();
+								time = System.currentTimeMillis();
+							}
+							else{
+								Thread.sleep(2000);
+							}
+						}
+						catch(Exception e){
+							e.printStackTrace();
+							System.err.println("In getter " + e.getMessage());
+						}
+					}
+				}
+			});
+			msgGetter.setDaemon(true);
+			msgGetter.start();
+
+			Scanner sc = new Scanner(System.in);
+			while(online){
+				String command = sc.nextLine();
+				this.socket = new Socket(this.address, this.port);
+				this.in  = new BufferedReader(new InputStreamReader(this.socket.getInputStream(), "UTF-8"));
+				this.out = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream(), "UTF-8"), true);
+
+				switch(command){
+					case "/logout":
+						this.out.println("GET /logout HTTP/1.1\nHOST: localhost:3001\nauthorization: " + this.token + "\n");
+						header = this.getHeader();
+						if(header[0].split(" ")[1].equals("403")){
+							System.out.println("Bad token!");
+							this.close();
+							online = false;
+							break;
+						}
+						content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
+						System.out.println(content);
+
+						online = false;
+						this.close();
+						break;
+					case "/list":
+						this.out.println("GET /users HTTP/1.1\nHOST: localhost:3001\nauthorization: " + this.token + "\n");
+						header = this.getHeader();
+						if(header[0].split(" ")[1].equals("403")){
+							System.out.println("Bad token!");
+							this.close();
+							online = false;
+							break;
+						}
+						content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
+						System.out.println(content);
+						break;
+					default:
+						String response = "{\"message\": \"" + command + "\"}";
+						this.out.println("POST /messages HTTP/1.1\nHOST: localhost:3001\nauthorization: " + this.token + "\ncontent-type: application/json\ncontent-length: " + (response.length() + 1) + "\n\n" + response);
+						header = this.getHeader();
+						if(header[0].split(" ")[1].equals("403")){
+							System.out.println("Bad token!");
+							this.close();
+							online = false;
+							break;
+						}
+						content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
+						System.out.println(content);
+						break;
+				}
 			}
 		}
 		catch(Exception e){
+			e.printStackTrace();
 			System.err.println("In start " + e.getMessage());
-		}
-
-		System.out.println("Connected!");
-
-		while(true){
-			Scanner sc = new Scanner(System.in);
-			String command = sc.nextLine();
-			System.out.println(command);
-
-			switch(command){
-				case "/logout":
-					break;
-				case "/list":
-					break;
-				default:
-					break;
-			}
 		}
 	}
 
@@ -89,11 +184,11 @@ public class HttpClient{
 	private String getContent(int contentLength){
 		int sum = 0;
 		StringBuilder request = new StringBuilder();
-		char[] buffer = new char[64];
 		try{
 			while(true){
+				char[] buffer = new char[64];
 				int r = in.read(buffer, 0, 64);
-				System.out.println(r+" " + contentLength);
+				System.out.println(r + " " + contentLength);
 				request.append(buffer);
 				sum += r;
 				if(sum == contentLength) break;

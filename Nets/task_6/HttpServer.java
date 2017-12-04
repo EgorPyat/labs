@@ -127,6 +127,7 @@ public class HttpServer{
           case "GET":
             switch(methodType){
               case "logout":
+                System.out.println("logOut");
                 String token = header[2].split(":")[1].trim();
 
                 if(token.isEmpty()){
@@ -139,13 +140,14 @@ public class HttpServer{
                     String name = HttpServer.this.usersNames.get(tok);
                     if(HttpServer.this.usersOnline.get(name).equals(true)){
                       String cont = new JSONStringer().object().key("message").value("bye").endObject().toString();
-                      this.out.println("HTTP/1.1 200 OK\n");
-                      this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
+                      this.out.println("HTTP/1.1 200 OK");
+                      this.out.println("Content-Type:application/json\nContent-Length:" + (cont.length() + 1) + "\n");
                       this.out.println(cont);
                       HttpServer.this.usersNames.remove(tok);
                       HttpServer.this.usersOnline.remove(HttpServer.this.usersNames.get(tok));
                       HttpServer.this.usersNames.put(tok, name + ":");
                       HttpServer.this.usersOnline.put(name + ":", false);
+                      System.out.println(name + " logout!");
                     }
                     else{
                       this.out.println("HTTP/1.1 403 Forbidden\n");
@@ -180,8 +182,8 @@ public class HttpServer{
                       start += end;
                       start = start.replace(",]", "]");
 
-                      this.out.println("HTTP/1.1 200 OK\n");
-                      this.out.println("Content-Type:application/json\nContent-Length:" + start.length() + "\n");
+                      this.out.println("HTTP/1.1 200 OK");
+                      this.out.println("Content-Type: application/json\ncontent-length: " + (start.length() + 1) + "\n");
                       this.out.println(start);
                     }
                     else{
@@ -215,8 +217,8 @@ public class HttpServer{
                       start += end;
                       start = start.replace(",]", "]");
 
-                      this.out.println("HTTP/1.1 200 OK\n");
-                      this.out.println("Content-Type:application/json\nContent-Length:" + start.length() + "\n");
+                      this.out.println("HTTP/1.1 200 OK");
+                      this.out.println("Content-Type:application/json\nContent-Length:" + (start.length() + 1) + "\n");
                       this.out.println(start);
                     }
                     else{
@@ -283,8 +285,8 @@ public class HttpServer{
                       String message = msg.getString("message");
                       int id = HttpServer.this.msgID.incrementAndGet();
                       String response = new JSONStringer().object().key("id").value(id).key("message").value(message).endObject().toString();
-                      this.out.println("HTTP/1.1 200 OK\n");
-                      this.out.println("Content-Type:application/json\nContent-Length:" + response.length() + "\n");
+                      this.out.println("HTTP/1.1 200 OK");
+                      this.out.println("Content-Type:application/json\nContent-Length:" + (response.length() + 1) + "\n");
                       this.out.println(response);
                       response = new JSONStringer().object().key("id").value(id).key("message").value(message).key("author").value(HttpServer.this.usersIDs.get(tok)).endObject().toString();
                       HttpServer.this.messages.add(response);
