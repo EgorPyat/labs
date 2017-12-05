@@ -9,7 +9,6 @@ public class MyServerSocket{
   private boolean listen;
   private int backlog;
   private BlockingQueue<DatagramPacket> inBuffer;
-  private BlockingQueue<DatagramPacket> outBuffer;
   private Map<InetSocketAddress, MyClientSocket> connections;
 
   public MyServerSocket(int port){
@@ -19,7 +18,6 @@ public class MyServerSocket{
       this.listen = false;
       this.backlog = -1;
       this.inBuffer = new ArrayBlockingQueue<DatagramPacket>(32);
-      this.outBuffer = new ArrayBlockingQueue<DatagramPacket>(32);
       this.connections = Collections.synchronizedMap(new HashMap<InetSocketAddress, MyClientSocket>());
     }
     catch(SocketException e){
@@ -76,34 +74,39 @@ public class MyServerSocket{
         packet = this.inBuffer.take();
         address = new InetSocketAddress(packet.getAddress(), packet.getPort());
         data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
-        ack = new DatagramPacket("1:1:".getBytes(), "1:1:".getBytes().length, packet.getAddress(), packet.getPort());
         if(data[1].equals("0")){
-          this.socket.send(ack);
           client = new MyClientSocket(this.socket, address);
           this.connections.put(address, client);
+          ack = new DatagramPacket("1:1:0".getBytes(), "1:1:0".getBytes().length, packet.getAddress(), packet.getPort());
+          this.socket.send(ack);
           time = System.currentTimeMillis();
           break;
         }
       }
       while(true){
-        packet = client.getInBuffer().take();
-        data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
-
-        if(data[1].equals("1") && address.equals(new InetSocketAddress(packet.getAddress(), packet.getPort()))){
-          break;
-        }
-        else{
-          client.getInBuffer().put(packet);
-        }
-        if(System.currentTimeMillis() - time > 5000){
+        // packet = client.getInBuffer().take();
+        if((packet = client.getInBuffer().poll(1000, TimeUnit.MILLISECONDS)) == null){
           this.socket.send(ack);
         }
+        else{
+          data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
+
+          if(data[1].equals("1") && address.equals(new InetSocketAddress(packet.getAddress(), packet.getPort()))){
+            break;
+          }
+        }
+        // else{
+          // client.getInBuffer().put(packet);
+        // }
+        // if(System.currentTimeMillis() - time > 500){
+        //   this.socket.send(ack);
+        // }
       }
     }
     catch(Exception e){
       System.err.println(e.getMessage());
     }
-
+    System.out.println("accepted!");
     return client;
   }
 

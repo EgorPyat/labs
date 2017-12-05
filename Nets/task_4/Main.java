@@ -7,7 +7,7 @@ public class Main{
       new Thread(new Runnable(){
         public void run(){
           try{
-            Thread.sleep(5000);
+            Thread.sleep(500);
             MyClientSocket s = new MyClientSocket();
             s.connect(InetAddress.getByName("localhost"), 3000);
             s.send("hello".getBytes());

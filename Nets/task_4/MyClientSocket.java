@@ -50,21 +50,26 @@ public class MyClientSocket{
   }
   public void connect(InetAddress address, int port){
     try{
-      DatagramPacket syn = new DatagramPacket("1:0:".getBytes(), "1:0:".getBytes().length, address, port);
-      this.socket.send(syn);
+      DatagramPacket ack = new DatagramPacket("1:0:".getBytes(), "1:0:".getBytes().length, address, port);
+      this.socket.send(ack);
       long time = System.currentTimeMillis();
       while(true){
-        DatagramPacket packet = this.inBuffer.take();
-        String[] data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
-        if(data[1].equals("1") && new InetSocketAddress(address, port).equals(new InetSocketAddress(packet.getAddress(), packet.getPort()))){
-          this.connectedSocket = new InetSocketAddress(address, port);
-          syn = new DatagramPacket("1:1:0".getBytes(), "1:1:0".getBytes().length, packet.getAddress(), packet.getPort());
-          this.socket.send(syn);
-          break;
+        DatagramPacket packet = this.inBuffer.poll(1000, TimeUnit.MILLISECONDS);
+        if(packet == null){
+          this.socket.send(ack);
         }
-        if(System.currentTimeMillis() - time > 5000){
-          this.socket.send(syn);
+        else{
+          String[] data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
+          if(data[1].equals("1") && new InetSocketAddress(address, port).equals(new InetSocketAddress(packet.getAddress(), packet.getPort()))){
+            this.connectedSocket = new InetSocketAddress(address, port);
+            ack = new DatagramPacket("1:1:1".getBytes(), "1:1:1".getBytes().length, packet.getAddress(), packet.getPort());
+            this.socket.send(ack);
+            break;
+          }
         }
+        // if(System.currentTimeMillis() - time > 500){
+          // this.socket.send(ack);
+        // }
       }
     }
     catch(Exception e){
@@ -74,11 +79,15 @@ public class MyClientSocket{
   }
   public void recieve(byte[] buffer){
     try{
-      DatagramPacket packet = this.inBuffer.take();
-      String[] data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
-      System.out.println(data[2]);
-      packet = new DatagramPacket("1:1:".getBytes(), "1:1:".getBytes().length, connectedSocket.getAddress(), connectedSocket.getPort());
-      this.socket.send(packet);
+      while(true){
+        DatagramPacket packet = this.inBuffer.take();
+        String[] data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
+        System.out.println(data[2]);
+        packet = new DatagramPacket("1:1:".getBytes(), "1:1:".getBytes().length, connectedSocket.getAddress(), connectedSocket.getPort());
+        this.socket.send(packet);
+        break;
+        /* recieve пока не FIN */
+      }
     }
     catch(Exception e){
       System.out.println(e.getMessage());
@@ -99,19 +108,26 @@ public class MyClientSocket{
 
       long time = System.currentTimeMillis();
       while(true){
-        DatagramPacket packet = this.inBuffer.take();
-        String[] data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
-        if(data[1].equals("1") && this.connectedSocket.equals(new InetSocketAddress(packet.getAddress(), packet.getPort()))){
-          System.out.println("get ack");
-          break;
-        }
-        else{
-          this.inBuffer.put(packet);
-        }
-        if(System.currentTimeMillis() - time > 5000){
-          System.out.println("resend");
+        DatagramPacket packet = this.inBuffer.poll(1000, TimeUnit.MILLISECONDS);
+        if(packet == null){
           this.socket.send(msg);
         }
+        else{
+          String[] data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
+          if(data[1].equals("1") && this.connectedSocket.equals(new InetSocketAddress(packet.getAddress(), packet.getPort()))){
+            System.out.println("get ack");
+            break;
+          }
+          else{
+            this.inBuffer.put(packet);
+          }
+        }
+        /* send FIN*/
+        
+        // if(System.currentTimeMillis() - time > 500){
+        //   System.out.println("resend");
+        //   this.socket.send(msg);
+        // }
       }
     }
     catch(Exception e){
