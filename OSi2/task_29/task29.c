@@ -16,6 +16,12 @@
 #define TRUE  1
 #define FALSE 0
 #define ENTRIESNUM 10
+#define REQUESTSNUM 10
+
+typedef struct{
+  char* name;
+  char* buffer;
+} request;
 
 typedef struct{
   char* name;
@@ -35,6 +41,7 @@ int main(int argc, char *argv[]){
   int    nfds = 1, current_size = 0, i, j;
 
   proxy_entry* cache = (proxy_entry*)malloc(sizeof(proxy_entry) * ENTRIESNUM);
+  request* requests = (request*)malloc(sizeof(request) * REQUESTSNUM);
 
   listen_sd = socket(AF_INET, SOCK_STREAM, 0);
   if(listen_sd < 0){
@@ -101,12 +108,6 @@ int main(int argc, char *argv[]){
       if(fds[i].revents == 0)
         continue;
 
-      if(fds[i].revents != POLLIN){
-        printf("  Error! revents = %d\n", fds[i].revents);
-        end_server = TRUE;
-        break;
-      }
-
       if(fds[i].fd == listen_sd){
         printf("  Listening socket is readable\n");
 
@@ -135,7 +136,7 @@ int main(int argc, char *argv[]){
         }
         while(new_sd != -1);
       }
-      else{
+      else if(fds[i].revents == POLLIN){
         printf("  Descriptor %d is readable\n", fds[i].fd);
         close_conn = FALSE;
         int sum = 0;
@@ -147,6 +148,10 @@ int main(int argc, char *argv[]){
               close_conn = TRUE;
             }
             else if(errno == EWOULDBLOCK){
+              char* end = strstr(buffer, "\r\n\r\n");
+              if(end == NULL){
+                break;
+              }
               printf("%s\n", "would block");
               char* request_body = strchr(buffer, '\n');
               if(request_body != NULL){
@@ -212,8 +217,10 @@ int main(int argc, char *argv[]){
 
                 fds[nfds].fd = destnation;
                 fds[nfds].events = POLLOUT;
+                // requests[nfds].socket = fds[nfds].fd;
+                requests[nfds].buffer = (char*)malloc(sum);
+                memcpy(requests[nfds].buffer, buffer, sum);
                 nfds++;
-
                 printf("connected to destnation point\n");
 
                 free(request_head);
@@ -238,6 +245,10 @@ int main(int argc, char *argv[]){
           fds[i].fd = -1;
           compress_array = TRUE;
         }
+      }
+      else if(fds[i].revents == POLLOUT){
+        // send(fds[i].fd, requests[i].buffer, sum);
+
       }
     }
 
