@@ -8,6 +8,8 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 
 #define SERVER_PORT  3001
 
@@ -120,7 +122,7 @@ int main(int argc, char *argv[]){
           }
           rc = ioctl(new_sd, FIONBIO, (char *)&on);
           if(rc < 0){
-            perror("ioctl() failed");
+            perror("  ioctl() failed");
             close(new_sd);
             // exit(-1);
           }
@@ -154,6 +156,13 @@ int main(int argc, char *argv[]){
                 request_head[length] = '\0';
 
                 char *method = strtok(request_head, " ");
+
+                if(strcmp(method, "HEAD") == 0){
+                  printf("Method not implemented!\n");
+                  close_conn = TRUE;
+                  break;
+                }
+
 								char *url = strtok(NULL, " ");
 								char *version = strtok(NULL, "\n\0");
                 char *name = strstr(url, "://");
@@ -175,7 +184,37 @@ int main(int argc, char *argv[]){
                 printf("\nMETHOD: %s\n", method);
 								printf("URL: %s\n", url);
 								printf("VERSION: %s\n", version);
-                printf("SITENAME: %s\n\n", host_name);
+                printf("HOSTNAME: %s\n\n", host_name);
+
+                struct hostent * host_info = gethostbyname(host_name);
+
+                if(host_info == NULL){
+									printf("   gethostbyname() failed\n");
+                  break;
+								}
+
+								struct sockaddr_in destinationAddress;
+
+								destinationAddress.sin_family = AF_INET;
+								destinationAddress.sin_port = htons(80);
+								memcpy(&destinationAddress.sin_addr, host_info->h_addr, host_info->h_length);
+
+								int destnation = socket(AF_INET, SOCK_STREAM, 0);
+                if(destnation < 0){
+									perror(" socket() failed");
+                  break;
+								}
+
+								if(connect(destnation, (struct sockaddr *)&destinationAddress, sizeof(destinationAddress)) < 0){
+									perror("  connect() failed");
+                  break;
+								}
+
+                fds[nfds].fd = destnation;
+                fds[nfds].events = POLLOUT;
+                nfds++;
+
+                printf("connected to destnation point\n");
 
                 free(request_head);
                 free(host_name);
@@ -193,13 +232,6 @@ int main(int argc, char *argv[]){
           sum += rc;
         }
         while(TRUE);
-
-        // for(int i = 0; i < sum; i++) {
-        //   printf("%c", buffer[i]);
-        // }
-        /*GET*/
-        /*Cache*/
-        /*Send*/
 
         if(close_conn){
           close(fds[i].fd);
