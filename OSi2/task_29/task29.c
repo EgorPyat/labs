@@ -13,17 +13,26 @@
 
 #define TRUE  1
 #define FALSE 0
+#define ENTRIESNUM 10
+
+typedef struct{
+  char* name;
+  char* content;
+} proxy_entry;
 
 int main(int argc, char *argv[]){
   int    len, rc, on = 1;
+  int    cache_entry_num = 0;
   int    listen_sd = -1, new_sd = -1;
   int    desc_ready, end_server = FALSE, compress_array = FALSE;
   int    close_conn;
-  char   buffer[80];
+  char   buffer[4096];
   struct sockaddr_in   addr;
   int    timeout;
   struct pollfd fds[200];
   int    nfds = 1, current_size = 0, i, j;
+
+  proxy_entry* cache = (proxy_entry*)malloc(sizeof(proxy_entry) * ENTRIESNUM);
 
   listen_sd = socket(AF_INET, SOCK_STREAM, 0);
   if(listen_sd < 0){
@@ -106,27 +115,71 @@ int main(int argc, char *argv[]){
               perror("  accept() failed");
               end_server = TRUE;
             }
+            errno = 0;
             break;
           }
-
-          printf("  New incoming connection - %d\n", new_sd);
-          fds[nfds].fd = new_sd;
-          fds[nfds].events = POLLIN;
-          nfds++;
+          rc = ioctl(new_sd, FIONBIO, (char *)&on);
+          if(rc < 0){
+            perror("ioctl() failed");
+            close(new_sd);
+            // exit(-1);
+          }
+          else{
+            printf("  New incoming connection - %d\n", new_sd);
+            fds[nfds].fd = new_sd;
+            fds[nfds].events = POLLIN;
+            nfds++;
+          }
         }
         while(new_sd != -1);
       }
-
       else{
         printf("  Descriptor %d is readable\n", fds[i].fd);
         close_conn = FALSE;
-
+        int sum = 0;
         do{
-          rc = recv(fds[i].fd, buffer, sizeof(buffer), 0);
+          rc = recv(fds[i].fd, buffer + sum, sizeof(buffer) - sum, 0);
           if(rc < 0){
             if(errno != EWOULDBLOCK){
               perror("  recv() failed");
               close_conn = TRUE;
+            }
+            else if(errno == EWOULDBLOCK){
+              printf("%s\n", "would block");
+              char* request_body = strchr(buffer, '\n');
+              if(request_body != NULL){
+                int length = request_body - buffer;
+                char* request_head = (char*)malloc(length + 1);
+                strncpy(request_head, buffer, length);
+                request_head[length] = '\0';
+
+                char *method = strtok(request_head, " ");
+								char *url = strtok(NULL, " ");
+								char *version = strtok(NULL, "\n\0");
+                char *name = strstr(url, "://");
+                char *name_end = strchr(name + 3, '/');
+
+								length = 0;
+
+								if (name_end == NULL){
+									length = strlen(name + 3);
+								}
+								else{
+									length = name_end - (name + 3);
+								}
+
+								char * host_name = (char*)malloc(length + 1);
+								strncpy(host_name, name + 3, length);
+								host_name[length] = '\0';
+                printf("%lu\n", strlen(host_name));
+                printf("\nMETHOD: %s\n", method);
+								printf("URL: %s\n", url);
+								printf("VERSION: %s\n", version);
+                printf("SITENAME: %s\n\n", host_name);
+
+                free(request_head);
+                free(host_name);
+              }
             }
             break;
           }
@@ -137,20 +190,16 @@ int main(int argc, char *argv[]){
             break;
           }
 
-          len = rc;
-          printf("  %d bytes received\n", len);
-          for (int i = 0; i < sizeof(buffer); i++) {
-            printf("%c", buffer[i]);
-          }
-          printf("\n");
-          // rc = send(fds[i].fd, buffer, len, 0);
-          if(rc < 0){
-            perror("  send() failed");
-            close_conn = TRUE;
-            break;
-          }
+          sum += rc;
         }
         while(TRUE);
+
+        // for(int i = 0; i < sum; i++) {
+        //   printf("%c", buffer[i]);
+        // }
+        /*GET*/
+        /*Cache*/
+        /*Send*/
 
         if(close_conn){
           close(fds[i].fd);
