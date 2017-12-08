@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <signal.h>
 
 #define SERVER_PORT  3001
 
@@ -27,6 +28,7 @@ typedef struct{
 typedef struct{
   char* name;
   char* content;
+  int size;
 } proxy_entry;
 
 int create_server(){
@@ -104,11 +106,17 @@ void accept_connections(int* listen_sd, struct pollfd * fds, int* nfds, int* end
   while(new_sd != -1);
 }
 
+int end_server = FALSE;
+
+void sighandler(int signum){
+  end_server = TRUE;
+}
+
 int main(int argc, char *argv[]){
   int    len, rc, on = 1;
   int    cache_entry_num = 0;
   int    listen_sd = -1, new_sd = -1;
-  int    desc_ready, end_server = FALSE, compress_array = FALSE;
+  int    desc_ready, compress_array = FALSE;
   int    close_conn;
   char   buffer[16384];
   struct sockaddr_in   addr;
@@ -118,6 +126,8 @@ int main(int argc, char *argv[]){
 
   proxy_entry* cache = (proxy_entry*)malloc(sizeof(proxy_entry) * ENTRIESNUM);
   request* requests = (request*)malloc(sizeof(request) * REQUESTSNUM);
+
+  signal(SIGINT, sighandler);
 
   listen_sd = create_server();
 
@@ -129,7 +139,7 @@ int main(int argc, char *argv[]){
   timeout = (3 * 60 * 1000);
 
   do{
-    printf("Waiting on poll()...\n");
+    printf("Waiting on poll()...%d\n", nfds);
     rc = poll(fds, nfds, timeout);
 
     if(rc < 0){
@@ -152,14 +162,16 @@ int main(int argc, char *argv[]){
 
         accept_connections(&listen_sd, fds, &nfds, &end_server);
       }
-/*_________________________POLLIN_________________________*/
       else if(fds[i].revents == POLLIN){
         printf("  Descriptor %d is readable\n", fds[i].fd);
         close_conn = FALSE;
         int sum = 0;
         do{
           rc = recv(fds[i].fd, buffer + sum, sizeof(buffer) - sum, 0);
+          sum += rc;
+
           if(rc < 0){
+            sum += 1;
             if(errno != EWOULDBLOCK){
               perror("  recv() failed");
               close_conn = TRUE;
@@ -167,6 +179,7 @@ int main(int argc, char *argv[]){
             else if(errno == EWOULDBLOCK){
               char* end = strstr(buffer, "\r\n\r\n");
               if(end == NULL){
+                printf("%d not ended\n", sum);
                 break;
               }
               printf("%s\n", "would block");
@@ -180,10 +193,6 @@ int main(int argc, char *argv[]){
                 char *method = strtok(request_head, " ");
 
                 if(strcmp(method, "GET") == 0){
-                  // printf("Method not implemented!\n");
-                  // close_conn = TRUE;
-                  // free(request_head);
-                  // break;
                   char *url = strtok(NULL, " ");
                   char *version = strtok(NULL, "\n\0");
                   char *name = strstr(url, "://");
@@ -279,16 +288,99 @@ int main(int argc, char *argv[]){
                   requests[i].fd = -1;
                   free(requests[i].buffer);
                   requests[i].size = -1;
-                  close_conn = TRUE;
+                  // close_conn = TRUE;
                   break;
                 }
                 else{
                   printf("Method not implemented!\n");
-                  close_conn = TRUE;
-                  free(request_head);
-                  break;
-                }
-
+                  // close_conn = TRUE;
+                  // free(request_head);
+                  // break;
+                //   char *url = strtok(NULL, " ");
+                //   char *version = strtok(NULL, "\n\0");
+                //   char *name = strstr(url, "://");
+                //   char *name_end = strchr(name + 3, '/');
+                //
+                //   length = 0;
+                //
+                //   if (name_end == NULL){
+                //     length = strlen(name + 3);
+                //   }
+                //   else{
+                //     length = name_end - (name + 3);
+                //   }
+                //
+                //   char * host_name = (char*)malloc(length + 1);
+                //   strncpy(host_name, name + 3, length);
+                //   host_name[length] = '\0';
+                //   printf("%lu\n", strlen(host_name));
+                //   printf("\nMETHOD: %s\n", method);
+                //   printf("URL: %s\n", url);
+                //   printf("VERSION: %s\n", version);
+                //   printf("HOSTNAME: %s\n\n", host_name);
+                //   getchar();
+                //   struct hostent * host_info = gethostbyname(host_name);
+                //
+                //   free(request_head);
+                //   free(host_name);
+                //
+                //   if(host_info == NULL){
+                //     printf("  gethostbyname() failed\n");
+                //     break;
+                //   }
+                //
+                //   struct sockaddr_in destinationAddress;
+                //
+                //   destinationAddress.sin_family = AF_INET;
+                //   destinationAddress.sin_port = htons(80);
+                //   memcpy(&destinationAddress.sin_addr, host_info->h_addr, host_info->h_length);
+                //
+                //   int destnation = socket(AF_INET, SOCK_STREAM, 0);
+                //   if(destnation < 0){
+                //     perror(" socket() failed");
+                //     close_conn = TRUE;
+                //     break;
+                //   }
+                //
+                //   rc = ioctl(destnation, FIONBIO, (char *)&on);
+                //   if(rc < 0){
+                //     perror("ioctl() failed");
+                //     close(destnation);
+                //     close_conn = TRUE;
+                //     break;
+                //   }
+                //
+                //   int con = connect(destnation, (struct sockaddr *)&destinationAddress, sizeof(destinationAddress));
+                //
+                //   if(con < 0){
+                //     if(errno != EINPROGRESS){
+                //       perror("  connect() failed");
+                //       close(destnation);
+                //       close_conn = TRUE;
+                //       break;
+                //     }
+                //     else{
+                //       fds[nfds].fd = destnation;
+                //       fds[nfds].events = POLLOUT | POLLIN;
+                //       requests[nfds].fd = i;
+                //       requests[nfds].buffer = (char*)malloc(strlen("HTTP/1.1 501 Not Implemented\r\n\r\n"));
+                //       requests[nfds].size = strlen("HTTP/1.1 501 Not Implemented\r\n\r\n");
+                //       memcpy(requests[nfds].buffer, "HTTP/1.1 501 Not Implemented\n", requests[nfds].size);
+                //       nfds++;
+                //       printf("Connection in progress\n");
+                //     }
+                //   }
+                //   else{
+                //     fds[nfds].fd = destnation;
+                //     fds[nfds].events = POLLOUT;
+                //     requests[nfds].fd = i;
+                //     requests[nfds].buffer = (char*)malloc(strlen("HTTP/1.1 501 Not Implemented\n"));
+                //     requests[nfds].size = strlen("HTTP/1.1 501 Not Implemented\n");
+                //     memcpy(requests[nfds].buffer, "HTTP/1.1 501 Not Implemented\n", requests[nfds].size);
+                //     nfds++;
+                //     printf("connected to destnation point\n");
+                //   }
+                // }
               }
             }
             break;
@@ -299,39 +391,56 @@ int main(int argc, char *argv[]){
             close_conn = TRUE;
             break;
           }
-
-          sum += rc;
         }
         while(TRUE);
 
         if(close_conn){
           close(fds[i].fd);
           fds[i].fd = -1;
+          fds[i].events = 0;
           compress_array = TRUE;
         }
       }
-      /*________________________________________________________*/
       else if(fds[i].revents == POLLOUT){
+        printf("  Descriptor %d is writable\n", fds[i].fd);
+        close_conn = FALSE;
         printf("gonna send\n");
         rc = send(fds[i].fd, requests[i].buffer, requests[i].size, 0);
+        printf("%d / %d\n", rc, requests[i].size);
+        // getchar();
         if(rc < 0){
           perror("  send() failed");
           close_conn = TRUE;
         }
         else{
           if(requests[i].fd == -1){
-            close_conn = TRUE;
+            printf("SEND RESPONSE!\n");
+            free(requests[i].buffer);
+            requests[i].size = -1;
+            fds[i].events = POLLIN;
           }
           else{
+            printf("SEND REQUEST!\n");
             fds[i].events = POLLIN;
           }
         }
         if(close_conn){
           close(fds[i].fd);
           fds[i].fd == -1;
+          fds[i].events = 0;
           compress_array = TRUE;
         }
-        getchar();
+      }
+      else{
+        printf("Not supported event!  ");
+        perror(NULL);
+        close_conn = TRUE;
+        if(close_conn){
+          close(fds[i].fd);
+          fds[i].fd == -1;
+          fds[i].events = 0;
+          compress_array = TRUE;
+        }
       }
     }
 
@@ -341,6 +450,7 @@ int main(int argc, char *argv[]){
         if(fds[i].fd == -1){
           for(j = i; j < nfds; j++){
             fds[j].fd = fds[j+1].fd;
+            fds[j + 1].fd = -1;
           }
           nfds--;
         }
@@ -354,4 +464,8 @@ int main(int argc, char *argv[]){
     if(fds[i].fd >= 0)
       close(fds[i].fd);
   }
+
+  printf("%s\n", "Server ended!\n");
+
+  return 0;
 }
