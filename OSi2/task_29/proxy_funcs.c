@@ -270,6 +270,7 @@ int create_connection(proxy_server* server, char* hostname, int fd_num){
   server->messages[fd_num].size = 0;
   server->nfds += 1;
 
+  printf("%d\n", server->messages[server->nfds - 1].size);
   for(int i = 0; i < server->messages[server->nfds - 1].size; i++){
     printf("%c", server->messages[server->nfds - 1].buffer[i]);
   }
@@ -278,5 +279,39 @@ int create_connection(proxy_server* server, char* hostname, int fd_num){
 }
 
 int get_response(message* response, int fd){
+  int rc;
+  do{
+    rc = recv(fd, response->buffer + response->size, 1024, 0);
+
+    response->size += rc;
+
+    if(response->size + 1 >= response->max_size){
+      response->max_size *= 2;
+      response->buffer = (char*)realloc(response->buffer, response->max_size);
+    }
+
+    if(rc < 0){
+      response->size += 1;
+      if(errno != EWOULDBLOCK){
+        perror("  recv() failed");
+        return -1;
+      }
+      else if(errno == EWOULDBLOCK){
+        printf("not ended %d %d\n", response->size, fd);
+        return 1;
+      }
+    }
+    else if(rc == 0){
+      printf("  Connection closed\n");
+      for(int i = 0; i < response->size; i++){
+        printf("%c", response->buffer[i]);
+      }
+      return 0;
+    }
+  }
+  while(TRUE);
+}
+
+int transfer_response(proxy_server* server, int fd_num){
   return 0;
 }

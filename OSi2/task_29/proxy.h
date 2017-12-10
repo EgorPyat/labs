@@ -62,11 +62,12 @@ typedef struct{
 int create_server(proxy_server*);
 int close_server(proxy_server*);
 int accept_connections(proxy_server*);
-int close_connection(proxy_server*, int num);
+int close_connection(proxy_server*, int);
 void compress_array(proxy_server*);
 int get_request(message*, int);
 int get_response(message*, int);
 int parse_request(message*, char*, char*, char*);
 int create_connection(proxy_server*, char*, int);
+int transfer_response(proxy_server*, int);
 
 #endif

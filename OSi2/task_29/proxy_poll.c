@@ -40,6 +40,7 @@ int main(){
 
       for(int i = 0; i < server.current_size; i++){
         close_con = FALSE;
+
         if(server.fds[i].revents == 0){
           continue;
         }
@@ -75,7 +76,7 @@ int main(){
 
                 getchar();
 
-                char* hostname = (char*)malloc(20);
+                char* hostname = (char*)malloc(1024);
                 char* method = (char*)malloc(20);
                 char* version = (char*)malloc(20);
 
@@ -93,7 +94,7 @@ int main(){
                     close_con = TRUE;
                   }
                   getchar();
-                  
+
                   free(hostname);
                   free(method);
                   free(version);
@@ -103,9 +104,18 @@ int main(){
 
               break;
             case RESPONSE:
-              if(get_response(&server.messages[i], server.fds[i].fd) == -1){
+              status = get_response(&server.messages[i], server.fds[i].fd);
+              if(status == -1){
                 perror("\tget_response() failed");
                 close_con = TRUE;
+              }
+              else if(status == 0){
+                getchar();
+                close_con = TRUE;
+                transfer_response(&server, i);
+              }
+              else if(status == 1){
+                continue;
               }
               break;
           }
@@ -119,6 +129,26 @@ int main(){
           }
         }
         else if(server.fds[i].revents == POLLOUT){
+          printf("\tDescriptor %d is writable\n", server.fds[i].fd);
+
+          status = send(server.fds[i].fd, server.messages[i].buffer, server.messages[i].size, 0);
+          printf("%d / %d\n", status, server.messages[i].size);
+          if(status < 0){
+            perror("\tsend() failed");
+            close_con = TRUE;
+          }
+          else{
+            if(server.messages[i].request_fd == -1){
+              printf("SEND RESPONSE! %d\n", server.fds[i].fd);
+            }
+            else{
+              printf("SEND REQUEST! %d\n", server.fds[i].fd);
+
+            }
+            server.fds[i].events = POLLIN;
+            memset(server.messages[i].buffer, 0, server.messages[i].size);
+            server.messages[i].size = 0;
+          }
 
           if(close_con){
             close_con = FALSE;
