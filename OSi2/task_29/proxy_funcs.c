@@ -152,7 +152,8 @@ int get_request(message* request, int fd){
 
     if(request->size + 1 >= request->max_size){
       request->max_size *= 2;
-      request->buffer = (char*)realloc(request->buffer, request->max_size);
+      printf("%d\n", request->max_size);
+      request->buffer = (char*)realloc(request->buffer, request->max_size * sizeof(char));
     }
 
     if(rc < 0){
@@ -167,9 +168,13 @@ int get_request(message* request, int fd){
           printf("not ended %d %d\n", request->size, fd);
           return 1;
         }
+        char* status_line_end = strchr(request->buffer, '\n');
+        int len = status_line_end - request->buffer;
+        request->buffer[len - 2] = '0';
         for(int i = 0; i < request->size; i++){
           printf("%c", request->buffer[i]);
         }
+        getchar();
         return 2;
       }
     }
@@ -265,8 +270,8 @@ int create_connection(proxy_server* server, char* hostname, int fd_num){
   server->messages[server->nfds].size = server->messages[fd_num].size;
   server->messages[server->nfds].max_size = server->messages[fd_num].max_size;
   server->messages[server->nfds].type = RESPONSE;
-  memcpy(server->messages[server->nfds].buffer, server->messages[fd_num].buffer, server->messages[fd_num].size);
-  memset(server->messages[fd_num].buffer, 0, server->messages[fd_num].size);
+  memcpy(server->messages[server->nfds].buffer, server->messages[fd_num].buffer, server->messages[fd_num].size * sizeof(char));
+  memset(server->messages[fd_num].buffer, 0, server->messages[fd_num].size * sizeof(char));
   server->messages[fd_num].size = 0;
   server->nfds += 1;
 
@@ -287,7 +292,10 @@ int get_response(message* response, int fd){
 
     if(response->size + 1 >= response->max_size){
       response->max_size *= 2;
-      response->buffer = (char*)realloc(response->buffer, response->max_size);
+      printf("%d\n", response->max_size);
+
+      char* new = (char*)realloc(response->buffer, response->max_size * sizeof(char));
+      response->buffer = new;
     }
 
     if(rc < 0){
@@ -313,5 +321,19 @@ int get_response(message* response, int fd){
 }
 
 int transfer_response(proxy_server* server, int fd_num){
+  printf("transfer_response\n");
+
+  server->messages[server->messages[fd_num].request_fd].request_fd = -1;
+  // requests[requests[i].fd].buffer = (char*)calloc(STARTBF, 1);
+  server->messages[server->messages[fd_num].request_fd].size = server->messages[fd_num].size;
+  server->messages[server->messages[fd_num].request_fd].max_size = server->messages[fd_num].max_size;
+  server->messages[server->messages[fd_num].request_fd].type = RESPONSE;
+  memcpy(server->messages[server->messages[fd_num].request_fd].buffer, server->messages[fd_num].buffer, server->messages[fd_num].size * sizeof(char));
+  server->fds[server->messages[fd_num].request_fd].events = POLLOUT;
+  // requests[i].fd = -1;
+  // memset(server->messages[fd_num].buffer, 0, server->messages[fd_num].size);
+  // server->messages[fd_num].size = 0;
+  // free(requests[i].buffer);
+  // close_conn = TRUE;
   return 0;
 }

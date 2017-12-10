@@ -74,7 +74,7 @@ int main(){
               else if(status == 2){
                 printf("REQUEST GOTTEN\n");
 
-                getchar();
+                // getchar();
 
                 char* hostname = (char*)malloc(1024);
                 char* method = (char*)malloc(20);
@@ -93,7 +93,7 @@ int main(){
                     perror("\tcreate connection() failed");
                     close_con = TRUE;
                   }
-                  getchar();
+                  // getchar();
 
                   free(hostname);
                   free(method);
@@ -110,7 +110,7 @@ int main(){
                 close_con = TRUE;
               }
               else if(status == 0){
-                getchar();
+                // getchar();
                 close_con = TRUE;
                 transfer_response(&server, i);
               }

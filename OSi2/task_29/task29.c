@@ -12,18 +12,19 @@
 #include <arpa/inet.h>
 #include <signal.h>
 
-#define SERVER_PORT  3004
+#define SERVER_PORT  3005
 
 #define TRUE  1
 #define FALSE 0
 #define ENTRIESNUM 10
 #define REQUESTSNUM 100
-#define BUFFERSIZE 16384
+#define STARTBF 16384
 
 typedef struct{
   int fd;
   char* buffer;
   int size;
+  int max_size;
 } request;
 
 typedef struct{
@@ -102,8 +103,9 @@ void accept_connections(int* listen_sd, struct pollfd * fds, int* nfds, int* end
       fds[*nfds].fd = new_sd;
       fds[*nfds].events = POLLIN;
       requests[*nfds].fd = -1;
-      requests[*nfds].buffer = (char*)calloc(BUFFERSIZE, 1);
+      requests[*nfds].buffer = (char*)calloc(STARTBF, sizeof(char));
       requests[*nfds].size = 0;
+      requests[*nfds].max_size = STARTBF;
       (*nfds)++;
     }
   }
@@ -128,7 +130,7 @@ int main(int argc, char *argv[]){
   struct pollfd fds[200];
   int    nfds = 1, current_size = 0, i, j;
 
-  proxy_entry* cache = (proxy_entry*)malloc(sizeof(proxy_entry) * ENTRIESNUM);
+  // proxy_entry* cache = (proxy_entry*)malloc(sizeof(proxy_entry) * ENTRIESNUM);
   request* requests = (request*)malloc(sizeof(request) * REQUESTSNUM);
 
   signal(SIGINT, sighandler);
@@ -158,9 +160,9 @@ int main(int argc, char *argv[]){
     current_size = nfds;
 
     for(i = 0; i < current_size; i++){
-      if(fds[i].revents == 0)
+      if(fds[i].revents == 0){
         continue;
-
+      }
       if(fds[i].fd == listen_sd){
         printf("  Listening socket is readable\n");
 
@@ -172,8 +174,9 @@ int main(int argc, char *argv[]){
         do{
           rc = recv(fds[i].fd, requests[i].buffer + requests[i].size, 1024, 0);
           requests[i].size += rc;
-          if(requests[i].size + 1 > BUFFERSIZE){
-            requests[i].buffer = (char*)realloc(requests[i].buffer, BUFFERSIZE * 2);
+          if(requests[i].size + 1 >= requests[i].max_size){
+            requests[i].max_size *= 2;
+            requests[i].buffer = (char*)realloc(requests[i].buffer, requests[i].max_size);
           }
           if(rc < 0){
             requests[i].size += 1;
@@ -184,9 +187,14 @@ int main(int argc, char *argv[]){
             else if(errno == EWOULDBLOCK){
               char* end = strstr(requests[i].buffer, "\r\n\r\n");
               if(end == NULL){
-                printf("not ended %d\n", requests[i].size);
+                printf("not ended %d %d\n", requests[i].size, fds[i].fd);
                 break;
               }
+              printf("\t\t\tHeader gotten!\n");
+              for(int i = 0; i < requests[i].size; i++){
+                printf("%c", requests[i].buffer[i]);
+              }
+              // getchar();
               printf("%s\n", "would block");
               char* request_body = strchr(requests[i].buffer, '\n');
               if(request_body != NULL){
@@ -265,7 +273,7 @@ int main(int argc, char *argv[]){
                       fds[nfds].fd = destnation;
                       fds[nfds].events = POLLOUT | POLLIN;
                       requests[nfds].fd = i;
-                      requests[nfds].buffer = (char*)calloc(BUFFERSIZE, 1);
+                      requests[nfds].buffer = (char*)calloc(STARTBF, 1);
                       requests[nfds].size = requests[i].size;
                       memcpy(requests[nfds].buffer, requests[i].buffer, requests[i].size);
                       memset(requests[i].buffer, 0, requests[i].size);
@@ -278,7 +286,7 @@ int main(int argc, char *argv[]){
                     fds[nfds].fd = destnation;
                     fds[nfds].events = POLLOUT;
                     requests[nfds].fd = i;
-                    requests[nfds].buffer = (char*)calloc(BUFFERSIZE, 1);
+                    requests[nfds].buffer = (char*)calloc(STARTBF, 1);
                     requests[nfds].size = requests[i].size;
                     memcpy(requests[nfds].buffer, requests[i].buffer, requests[i].size);
                     memset(requests[i].buffer, 0, requests[i].size);
@@ -290,19 +298,19 @@ int main(int argc, char *argv[]){
                 else if(strstr(method, "HTTP") != NULL){
                   printf("get response\n");
                   requests[requests[i].fd].fd = -1;
-                  // requests[requests[i].fd].buffer = (char*)calloc(BUFFERSIZE, 1);
+                  // requests[requests[i].fd].buffer = (char*)calloc(STARTBF, 1);
                   requests[requests[i].fd].size = requests[i].size;
                   memcpy(requests[requests[i].fd].buffer, requests[i].buffer, requests[i].size);
                   fds[requests[i].fd].events = POLLOUT;
-                  requests[i].fd = -1;
-                  memset(requests[i].buffer, 0, requests[i].size);
+                  // requests[i].fd = -1;
+                  memset(requests[i].buffer, 0, requests[i].size * sizeof(char));
                   requests[i].size = 0;
                   // free(requests[i].buffer);
                   // close_conn = TRUE;
                   break;
                 }
                 else{
-                  printf("Method not implemented!\n");
+                  printf("Method not implemented: %s\n", method);
                   close_conn = TRUE;
                   free(request_head);
                   break;
@@ -392,6 +400,17 @@ int main(int argc, char *argv[]){
                   //   }
                 }
               }
+              else{
+              printf("get response after response\n");
+              //   requests[requests[i].fd].fd = -1;
+              //   // requests[requests[i].fd].buffer = (char*)calloc(STARTBF, 1);
+              //   requests[requests[i].fd].size = requests[i].size;
+              //   memcpy(requests[requests[i].fd].buffer, requests[i].buffer, requests[i].size);
+              //   fds[requests[i].fd].events = POLLOUT;
+              //   // requests[i].fd = -1;
+              //   memset(requests[i].buffer, 0, requests[i].size);
+              //   requests[i].size = 0;
+              }
             }
             break;
           }
@@ -426,13 +445,13 @@ int main(int argc, char *argv[]){
         }
         else{
           if(requests[i].fd == -1){
-            printf("SEND RESPONSE!\n");
+            printf("SEND RESPONSE! %d\n", fds[i].fd);
             fds[i].events = POLLIN;
             memset(requests[i].buffer, 0, requests[i].size);
             requests[i].size = 0;
           }
           else{
-            printf("SEND REQUEST!\n");
+            printf("SEND REQUEST! %d\n", fds[i].fd);
             fds[i].events = POLLIN;
             memset(requests[i].buffer, 0, requests[i].size);
             requests[i].size = 0;

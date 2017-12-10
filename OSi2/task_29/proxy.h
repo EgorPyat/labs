@@ -28,7 +28,7 @@
 #define CONNECTIONS     100
 #define ENTRIESNUM      100
 #define MESSAGESNUM     CONNECTIONS
-#define STARTBUFFERSIZE 16384
+#define STARTBUFFERSIZE 30000
 
 /*app data types*/
 
