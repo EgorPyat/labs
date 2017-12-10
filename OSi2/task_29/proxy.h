@@ -24,7 +24,7 @@
 
 #define REQUEST         2
 #define RESPONSE        3
-#define SERVER_PORT     3000
+#define SERVER_PORT     3001
 #define CONNECTIONS     100
 #define ENTRIESNUM      100
 #define MESSAGESNUM     CONNECTIONS
@@ -37,6 +37,7 @@ typedef struct{
   char* buffer;
   int   size;
   int   max_size;
+  int   type;
 } message;
 
 typedef struct{
@@ -63,4 +64,9 @@ int close_server(proxy_server*);
 int accept_connections(proxy_server*);
 int close_connection(proxy_server*, int num);
 void compress_array(proxy_server*);
+int get_request(message*, int);
+int get_response(message*, int);
+int parse_request(message*, char*, char*, char*);
+int create_connection(proxy_server*, char*, int);
+
 #endif

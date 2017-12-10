@@ -102,6 +102,7 @@ int accept_connections(proxy_server* server){
       server->messages[server->nfds].buffer = (char*)calloc(STARTBUFFERSIZE, sizeof(char));
       server->messages[server->nfds].size = 0;
       server->messages[server->nfds].max_size = STARTBUFFERSIZE;
+      server->messages[server->nfds].type = REQUEST;
       server->nfds += 1;
     }
   }
@@ -117,9 +118,10 @@ int close_connection(proxy_server* server, int num){
     status = -1;
   }
 
-  server->fds[num].fd == -1;
+  server->fds[num].fd = -1;
   server->fds[num].events = 0;
   free(server->messages[num].buffer);
+  server->messages[num].buffer = NULL;
 
   return status;
 }
@@ -139,4 +141,142 @@ void compress_array(proxy_server* server){
       server->nfds -= 1;
     }
   }
+}
+
+int get_request(message* request, int fd){
+  int rc;
+  do{
+    rc = recv(fd, request->buffer + request->size, 1024, 0);
+
+    request->size += rc;
+
+    if(request->size + 1 >= request->max_size){
+      request->max_size *= 2;
+      request->buffer = (char*)realloc(request->buffer, request->max_size);
+    }
+
+    if(rc < 0){
+      request->size += 1;
+      if(errno != EWOULDBLOCK){
+        perror("  recv() failed");
+        return -1;
+      }
+      else if(errno == EWOULDBLOCK){
+        char* end = strstr(request->buffer, "\r\n\r\n");
+        if(end == NULL){
+          printf("not ended %d %d\n", request->size, fd);
+          return 1;
+        }
+        for(int i = 0; i < request->size; i++){
+          printf("%c", request->buffer[i]);
+        }
+        return 2;
+      }
+    }
+    else if(rc == 0){
+      printf("  Connection closed\n");
+      return 0;
+    }
+  }
+  while(TRUE);
+}
+
+int parse_request(message* request, char* hostname, char* method, char* version){
+  char* request_body = strchr(request->buffer, '\n');
+
+  if(request_body != NULL){
+    int length = request_body - request->buffer;
+    char* request_head = (char*)malloc(length + 1);
+    strncpy(request_head, request->buffer, length);
+    request_head[length] = '\0';
+
+    char *meth = strtok(request_head, " ");
+    meth[strlen(meth)] = '\0';
+    strncpy(method, meth, strlen(meth));
+    char *url = strtok(NULL, " ");
+    char *vers = strtok(NULL, "\n\0");
+    vers[strlen(vers) - 1] = '\0';
+    strncpy(version, vers, strlen(vers));
+
+    char *name = strstr(url, "://");
+    char *name_end = strchr(name + 3, '/');
+
+    length = 0;
+
+    if(name_end == NULL){
+      length = strlen(name + 3);
+    }
+    else{
+      length = name_end - (name + 3);
+    }
+
+    strncpy(hostname, name + 3, length);
+    hostname[length] = '\0';
+
+    free(request_head);
+  }
+  else{
+    return -1;
+  }
+
+  return 0;
+}
+
+int create_connection(proxy_server* server, char* hostname, int fd_num){
+  int rc;
+  int on = 1;
+
+  struct hostent * host_info = gethostbyname(hostname);
+
+  if(host_info == NULL){
+    printf("  gethostbyname() failed\n");
+    return -1;
+  }
+
+  struct sockaddr_in destinationAddress;
+
+  destinationAddress.sin_family = AF_INET;
+  destinationAddress.sin_port = htons(80);
+  memcpy(&destinationAddress.sin_addr, host_info->h_addr, host_info->h_length);
+
+  int destnation = socket(AF_INET, SOCK_STREAM, 0);
+  if(destnation < 0){
+    return -1;
+  }
+
+  rc = ioctl(destnation, FIONBIO, (char *)&on);
+  if(rc < 0){
+    close(destnation);
+    return -1;
+  }
+
+  int con = connect(destnation, (struct sockaddr *)&destinationAddress, sizeof(destinationAddress));
+
+  if(con < 0){
+    if(errno != EINPROGRESS){
+      close(destnation);
+      return -1;
+    }
+  }
+  server->fds[server->nfds].fd = destnation;
+  server->fds[server->nfds].events = POLLOUT;
+  server->messages[server->nfds].request_fd = fd_num;
+  server->messages[server->nfds].buffer = (char*)calloc(STARTBUFFERSIZE, sizeof(char));
+  server->messages[server->nfds].size = server->messages[fd_num].size;
+  server->messages[server->nfds].max_size = server->messages[fd_num].max_size;
+  server->messages[server->nfds].type = RESPONSE;
+  memcpy(server->messages[server->nfds].buffer, server->messages[fd_num].buffer, server->messages[fd_num].size);
+  memset(server->messages[fd_num].buffer, 0, server->messages[fd_num].size);
+  server->messages[fd_num].size = 0;
+  server->nfds += 1;
+
+  for(int i = 0; i < server->messages[server->nfds - 1].size; i++){
+    printf("%c", server->messages[server->nfds - 1].buffer[i]);
+  }
+
+  return 0;
+}
+
+int get_response(message* response, int fd){
+  return 0;
 }
