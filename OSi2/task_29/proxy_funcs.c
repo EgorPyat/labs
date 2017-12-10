@@ -171,6 +171,20 @@ int get_request(message* request, int fd){
         char* status_line_end = strchr(request->buffer, '\n');
         int len = status_line_end - request->buffer;
         request->buffer[len - 2] = '0';
+        char* con = strstr(request->buffer, "Connection: ");
+        if(con != NULL){
+          con += 12;
+          con[0] = 'c';
+          con[1] = 'l';
+          con[2] = 'o';
+          con[3] = 's';
+          con[4] = 'e';
+          con += 5;
+          for(int i = con - request->buffer; i < request->size; i++){
+            request->buffer[i] = request->buffer[i + 5];
+          }
+          request->size -= 5;
+        }
         for(int i = 0; i < request->size; i++){
           printf("%c", request->buffer[i]);
         }
