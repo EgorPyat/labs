@@ -140,14 +140,14 @@ int main(){
           else{
             if(server.messages[i].request_fd == -1){
               printf("SEND RESPONSE! %d\n", server.fds[i].fd);
+              close_con = TRUE;
             }
             else{
               printf("SEND REQUEST! %d\n", server.fds[i].fd);
-
+              server.fds[i].events = POLLIN;
+              memset(server.messages[i].buffer, 0, server.messages[i].size);
+              server.messages[i].size = 0;
             }
-            server.fds[i].events = POLLIN;
-            memset(server.messages[i].buffer, 0, server.messages[i].size);
-            server.messages[i].size = 0;
           }
 
           if(close_con){

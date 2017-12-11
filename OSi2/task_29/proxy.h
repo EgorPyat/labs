@@ -17,6 +17,7 @@
 
 /*auxiliary constants*/
 
+#define NONE           -1
 #define FALSE           0
 #define TRUE            1
 
@@ -28,7 +29,7 @@
 #define CONNECTIONS     100
 #define ENTRIESNUM      100
 #define MESSAGESNUM     CONNECTIONS
-#define STARTBUFFERSIZE 30000
+#define STARTBUFFERSIZE 1048576
 
 /*app data types*/
 

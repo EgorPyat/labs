@@ -136,7 +136,9 @@ void compress_array(proxy_server* server){
         if(i < server->messages[j].request_fd){
           server->messages[j].request_fd -= 1;
         }
-        server->fds[j].fd = server->fds[j+1].fd;
+        server->fds[j].fd = server->fds[j + 1].fd;
+        server->fds[j].events = server->fds[j + 1].events;
+        server->messages[j] = server->messages[j + 1];
       }
       server->nfds -= 1;
     }
@@ -188,12 +190,15 @@ int get_request(message* request, int fd){
         for(int i = 0; i < request->size; i++){
           printf("%c", request->buffer[i]);
         }
-        getchar();
+        // getchar();
+        request->type = NONE;
+
         return 2;
       }
     }
     else if(rc == 0){
       printf("  Connection closed\n");
+      request->type = NONE;
       return 0;
     }
   }
@@ -287,6 +292,7 @@ int create_connection(proxy_server* server, char* hostname, int fd_num){
   memcpy(server->messages[server->nfds].buffer, server->messages[fd_num].buffer, server->messages[fd_num].size * sizeof(char));
   memset(server->messages[fd_num].buffer, 0, server->messages[fd_num].size * sizeof(char));
   server->messages[fd_num].size = 0;
+  server->fds[fd_num].events = 0;
   server->nfds += 1;
 
   printf("%d\n", server->messages[server->nfds - 1].size);
@@ -308,8 +314,7 @@ int get_response(message* response, int fd){
       response->max_size *= 2;
       printf("%d\n", response->max_size);
 
-      char* new = (char*)realloc(response->buffer, response->max_size * sizeof(char));
-      response->buffer = new;
+      response->buffer = (char*)realloc(response->buffer, response->max_size * sizeof(char));
     }
 
     if(rc < 0){
@@ -325,9 +330,16 @@ int get_response(message* response, int fd){
     }
     else if(rc == 0){
       printf("  Connection closed\n");
-      for(int i = 0; i < response->size; i++){
-        printf("%c", response->buffer[i]);
-      }
+      response->buffer[7] = '0';
+      // for(int i = 0; i < response->size; i++){
+      //   printf("%c", response->buffer[i]);
+      // }
+      // printf("\n");
+      // for(int i = 0; i < 10; i++){
+      //   printf("%c", response->buffer[i]);
+      // }
+      // printf("\n");
+      // getchar();
       return 0;
     }
   }
