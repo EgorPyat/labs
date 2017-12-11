@@ -212,6 +212,7 @@ int parse_request(message* request, char* hostname, char* method, char* version)
     char* request_head = (char*)malloc(length + 1);
     strncpy(request_head, request->buffer, length);
     request_head[length] = '\0';
+    printf("%s\n", request_head);
 
     char *meth = strtok(request_head, " ");
     meth[strlen(meth)] = '\0';
