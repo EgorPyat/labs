@@ -26,8 +26,8 @@
 #define REQUEST         2
 #define RESPONSE        3
 #define SERVER_PORT     3001
-#define CONNECTIONS     100
-#define ENTRIESNUM      100
+#define CONNECTIONS     1024
+#define ENTRIESNUM      1024
 #define MESSAGESNUM     CONNECTIONS
 #define STARTBUFFERSIZE 1048576
 

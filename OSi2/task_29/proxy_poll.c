@@ -6,9 +6,9 @@ void sighandler(int signum){
   end_server = TRUE;
 }
 
-int timeout;
 int main(){
   proxy_server server;
+  int timeout;
   int compress  = FALSE;
   int close_con = FALSE;
   int status;
@@ -48,15 +48,14 @@ int main(){
           printf("  Listening socket is readable\n");
 
           if(accept_connections(&server) == -1){
-            perror(NULL);
+            perror("\taccept_connections() failed");
             end_server = TRUE;
             break;
           }
           continue;
         }
         if(server.fds[i].revents == POLLIN){
-          printf("  Descriptor %d is readable\n", server.fds[i].fd);
-          printf("%d\n", server.messages[i].type);
+          printf("  Descriptor %d is readable %d\n", server.fds[i].fd, server.messages[i].type);
 
           switch(server.messages[i].type){
             case REQUEST:
@@ -74,8 +73,6 @@ int main(){
               else if(status == 2){
                 printf("REQUEST GOTTEN\n");
 
-                // getchar();
-
                 char* hostname = (char*)malloc(1024);
                 char* method = (char*)malloc(20);
                 char* version = (char*)malloc(20);
@@ -85,15 +82,14 @@ int main(){
                   close_con = TRUE;
                 }
                 else{
-                  printf("\nHOSTNAME: %s %lu\n", hostname, strlen(hostname));
-                  printf("METHOD: %s %lu\n", method, strlen(method));
-                  printf("VERSION: %s %lu\n\n", version, strlen(version));
+                  // printf("\nHOSTNAME: %s %lu\n", hostname, strlen(hostname));
+                  // printf("METHOD: %s %lu\n", method, strlen(method));
+                  // printf("VERSION: %s %lu\n\n", version, strlen(version));
 
                   if(create_connection(&server, hostname, i) == -1){
                     perror("\tcreate connection() failed");
                     close_con = TRUE;
                   }
-                  // getchar();
 
                   free(hostname);
                   free(method);
@@ -110,9 +106,10 @@ int main(){
                 close_con = TRUE;
               }
               else if(status == 0){
-                // getchar();
                 close_con = TRUE;
                 transfer_response(&server, i);
+                printf("transfer_response%d\n", server.fds[i].fd);
+
               }
               else if(status == 1){
                 continue;
@@ -122,6 +119,7 @@ int main(){
 
           if(close_con){
             close_con = FALSE;
+            printf("Close connection %d\n", server.fds[i].fd);
             if(close_connection(&server, i) == -1){
               perror("\tclose connection() failed");
             }
@@ -152,6 +150,8 @@ int main(){
 
           if(close_con){
             close_con = FALSE;
+
+            printf("Close connection %d\n", server.fds[i].fd);
             if(close_connection(&server, i) == -1){
               perror("\tclose connection() failed");
             }

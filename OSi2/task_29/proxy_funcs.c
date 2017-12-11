@@ -133,12 +133,11 @@ void compress_array(proxy_server* server){
   for(i = 0; i < server->nfds; i++){
     if(server->fds[i].fd == -1){
       for(j = i; j < server->nfds; j++){
+        server->fds[j] = server->fds[j+1];
+        server->messages[j] = server->messages[j + 1];
         if(i < server->messages[j].request_fd){
           server->messages[j].request_fd -= 1;
         }
-        server->fds[j].fd = server->fds[j + 1].fd;
-        server->fds[j].events = server->fds[j + 1].events;
-        server->messages[j] = server->messages[j + 1];
       }
       server->nfds -= 1;
     }
@@ -182,14 +181,14 @@ int get_request(message* request, int fd){
           con[3] = 's';
           con[4] = 'e';
           con += 5;
-          for(int i = con - request->buffer; i < request->size; i++){
+          for(int i = con - request->buffer; i < request->size - 5; i++){
             request->buffer[i] = request->buffer[i + 5];
           }
           request->size -= 5;
         }
-        for(int i = 0; i < request->size; i++){
-          printf("%c", request->buffer[i]);
-        }
+        // for(int i = 0; i < request->size; i++){
+        //   printf("%c", request->buffer[i]);
+        // }
         // getchar();
         request->type = NONE;
 
@@ -285,7 +284,7 @@ int create_connection(proxy_server* server, char* hostname, int fd_num){
   server->fds[server->nfds].fd = destnation;
   server->fds[server->nfds].events = POLLOUT;
   server->messages[server->nfds].request_fd = fd_num;
-  server->messages[server->nfds].buffer = (char*)calloc(STARTBUFFERSIZE, sizeof(char));
+  server->messages[server->nfds].buffer = (char*)calloc(server->messages[fd_num].max_size, sizeof(char));
   server->messages[server->nfds].size = server->messages[fd_num].size;
   server->messages[server->nfds].max_size = server->messages[fd_num].max_size;
   server->messages[server->nfds].type = RESPONSE;
@@ -295,10 +294,10 @@ int create_connection(proxy_server* server, char* hostname, int fd_num){
   server->fds[fd_num].events = 0;
   server->nfds += 1;
 
-  printf("%d\n", server->messages[server->nfds - 1].size);
-  for(int i = 0; i < server->messages[server->nfds - 1].size; i++){
-    printf("%c", server->messages[server->nfds - 1].buffer[i]);
-  }
+  // printf("%d\n", server->messages[server->nfds - 1].size);
+  // for(int i = 0; i < server->messages[server->nfds - 1].size; i++){
+  //   printf("%c", server->messages[server->nfds - 1].buffer[i]);
+  // }
 
   return 0;
 }
@@ -352,6 +351,9 @@ int transfer_response(proxy_server* server, int fd_num){
   server->messages[server->messages[fd_num].request_fd].request_fd = -1;
   // requests[requests[i].fd].buffer = (char*)calloc(STARTBF, 1);
   server->messages[server->messages[fd_num].request_fd].size = server->messages[fd_num].size;
+  if(server->messages[server->messages[fd_num].request_fd].max_size < server->messages[fd_num].max_size){
+    server->messages[server->messages[fd_num].request_fd].buffer = (char*)realloc(server->messages[server->messages[fd_num].request_fd].buffer, server->messages[fd_num].max_size);
+  }
   server->messages[server->messages[fd_num].request_fd].max_size = server->messages[fd_num].max_size;
   server->messages[server->messages[fd_num].request_fd].type = RESPONSE;
   memcpy(server->messages[server->messages[fd_num].request_fd].buffer, server->messages[fd_num].buffer, server->messages[fd_num].size * sizeof(char));
