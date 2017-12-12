@@ -186,10 +186,7 @@ int get_request(message* request, int fd){
           }
           request->size -= 5;
         }
-        // for(int i = 0; i < request->size; i++){
-        //   printf("%c", request->buffer[i]);
-        // }
-        // getchar();
+
         request->type = NONE;
 
         return 2;
@@ -223,19 +220,25 @@ int parse_request(message* request, char* hostname, char* method, char* version)
     strncpy(version, vers, strlen(vers));
 
     char *name = strstr(url, "://");
-    char *name_end = strchr(name + 3, '/');
 
-    length = 0;
-
-    if(name_end == NULL){
-      length = strlen(name + 3);
+    if(name == NULL){
+      length = vers - url;
+      strncpy(hostname, url, length);
+      hostname[length] = '\0';
     }
     else{
-      length = name_end - (name + 3);
-    }
+      char *name_end = strchr(name + 3, '/');
 
-    strncpy(hostname, name + 3, length);
-    hostname[length] = '\0';
+      if(name_end == NULL){
+        length = strlen(name + 3);
+      }
+      else{
+        length = name_end - (name + 3);
+      }
+
+      strncpy(hostname, name + 3, length);
+      hostname[length] = '\0';
+    }
 
     free(request_head);
   }
@@ -295,11 +298,6 @@ int create_connection(proxy_server* server, char* hostname, int fd_num){
   server->fds[fd_num].events = 0;
   server->nfds += 1;
 
-  // printf("%d\n", server->messages[server->nfds - 1].size);
-  // for(int i = 0; i < server->messages[server->nfds - 1].size; i++){
-  //   printf("%c", server->messages[server->nfds - 1].buffer[i]);
-  // }
-
   return 0;
 }
 
@@ -331,15 +329,7 @@ int get_response(message* response, int fd){
     else if(rc == 0){
       printf("  Connection closed\n");
       response->buffer[7] = '0';
-      // for(int i = 0; i < response->size; i++){
-      //   printf("%c", response->buffer[i]);
-      // }
-      // printf("\n");
-      // for(int i = 0; i < 10; i++){
-      //   printf("%c", response->buffer[i]);
-      // }
-      // printf("\n");
-      // getchar();
+
       return 0;
     }
   }
@@ -350,7 +340,6 @@ int transfer_response(proxy_server* server, int fd_num){
   printf("transfer_response\n");
 
   server->messages[server->messages[fd_num].request_fd].request_fd = -1;
-  // requests[requests[i].fd].buffer = (char*)calloc(STARTBF, 1);
   server->messages[server->messages[fd_num].request_fd].size = server->messages[fd_num].size;
   if(server->messages[server->messages[fd_num].request_fd].max_size < server->messages[fd_num].max_size){
     server->messages[server->messages[fd_num].request_fd].buffer = (char*)realloc(server->messages[server->messages[fd_num].request_fd].buffer, server->messages[fd_num].max_size);
@@ -359,10 +348,6 @@ int transfer_response(proxy_server* server, int fd_num){
   server->messages[server->messages[fd_num].request_fd].type = RESPONSE;
   memcpy(server->messages[server->messages[fd_num].request_fd].buffer, server->messages[fd_num].buffer, server->messages[fd_num].size * sizeof(char));
   server->fds[server->messages[fd_num].request_fd].events = POLLOUT;
-  // requests[i].fd = -1;
-  // memset(server->messages[fd_num].buffer, 0, server->messages[fd_num].size);
-  // server->messages[fd_num].size = 0;
-  // free(requests[i].buffer);
-  // close_conn = TRUE;
+
   return 0;
 }
