@@ -74,33 +74,36 @@ int main(){
                 printf("REQUEST GOTTEN\n");
 
                 char* hostname = (char*)malloc(1024);
-                char* method = (char*)malloc(20);
-                char* version = (char*)malloc(20);
+                char* request_head = (char*)malloc(1024);
 
-                if(parse_request(&server.messages[i], hostname, method, version) == -1){
+                if(parse_request(&server.messages[i], hostname, request_head) == -1){
                   printf("Wrong request format!\n");
                   close_con = TRUE;
                 }
                 else{
-                  // printf("\nHOSTNAME: %s %lu\n", hostname, strlen(hostname));
-                  // printf("METHOD: %s %lu\n", method, strlen(method));
-                  // printf("VERSION: %s %lu\n\n", version, strlen(version));
-
-                  if(create_connection(&server, hostname, i) == -1){
-                    perror("\tcreate connection() failed");
-                    close_con = TRUE;
+                  // printf("\t\t\t\t%lu\n", strlen(request_head));
+                  status = find_in_cache(request_head, strlen(request_head), &server);
+                  if(status >= 0 && is_complete_entry(status, &server) == 1){
+                    get_from_cache(status, i, &server);
                   }
-
-                  free(hostname);
-                  free(method);
-                  free(version);
+                  else{
+                    if(status == -1){
+                      cache_entry_name(request_head, strlen(request_head), &server, i);
+                    }
+                    if(create_connection(&server, hostname, i) == -1){
+                      perror("\tcreate connection() failed");
+                      close_con = TRUE;
+                    }
+                  }
                 }
 
+                free(hostname);
+                free(request_head);
               }
 
               break;
             case RESPONSE:
-              status = get_response(&server.messages[i], server.fds[i].fd);
+              status = get_response(&server.messages[i], server.fds[i].fd, &server);
               if(status == -1){
                 perror("\tget_response() failed");
                 close_con = TRUE;

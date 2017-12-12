@@ -47,7 +47,7 @@ int create_server(proxy_server* server){
   server->fds[0].events = POLLIN;
   server->nfds          = 1;
   server->entries       = (proxy_entry*)malloc(sizeof(proxy_entry) * ENTRIESNUM);
-  server->nentries      = ENTRIESNUM;
+  server->nentries      = 0;
   server->messages      = (message*)malloc(sizeof(message) * MESSAGESNUM);
   server->nmsg          = MESSAGESNUM;
 
@@ -201,23 +201,25 @@ int get_request(message* request, int fd){
   while(TRUE);
 }
 
-int parse_request(message* request, char* hostname, char* method, char* version){
+int parse_request(message* request, char* hostname, char* request_head){
   char* request_body = strchr(request->buffer, '\n');
 
   if(request_body != NULL){
     int length = request_body - request->buffer;
-    char* request_head = (char*)malloc(length + 1);
+    char* requesth = (char*)malloc(length + 1);
     strncpy(request_head, request->buffer, length);
-    request_head[length] = '\0';
-    printf("%s\n", request_head);
+    strncpy(requesth, request->buffer, length);
 
-    char *meth = strtok(request_head, " ");
-    meth[strlen(meth)] = '\0';
-    strncpy(method, meth, strlen(meth));
+    request_head[length] = '\0';
+    requesth[length] = '\0';
+
+    char *meth = strtok(requesth, " ");
+    // meth[strlen(meth)] = '\0';
+    // strncpy(method, meth, strlen(meth));
     char *url = strtok(NULL, " ");
     char *vers = strtok(NULL, "\n\0");
-    vers[strlen(vers) - 1] = '\0';
-    strncpy(version, vers, strlen(vers));
+    // vers[strlen(vers) - 1] = '\0';
+    // strncpy(version, vers, strlen(vers));
 
     char *name = strstr(url, "://");
 
@@ -240,7 +242,8 @@ int parse_request(message* request, char* hostname, char* method, char* version)
       hostname[length] = '\0';
     }
 
-    free(request_head);
+    printf("%s\n %lu", request_head, strlen(request_head));
+    free(requesth);
   }
   else{
     return -1;
@@ -296,12 +299,13 @@ int create_connection(proxy_server* server, char* hostname, int fd_num){
   memset(server->messages[fd_num].buffer, 0, server->messages[fd_num].size * sizeof(char));
   server->messages[fd_num].size = 0;
   server->fds[fd_num].events = 0;
+  server->messages[server->nfds].entry_num = server->messages[fd_num].entry_num;
   server->nfds += 1;
 
   return 0;
 }
 
-int get_response(message* response, int fd){
+int get_response(message* response, int fd, proxy_server* server){
   int rc;
   do{
     rc = recv(fd, response->buffer + response->size, 1024, 0);
@@ -313,6 +317,16 @@ int get_response(message* response, int fd){
       printf("%d\n", response->max_size);
 
       response->buffer = (char*)realloc(response->buffer, response->max_size * sizeof(char));
+    }
+
+    int len = response->size - server->entries[response->entry_num].content_size;
+    if(len > 0){
+      if(response->size > server->entries[response->entry_num].max_size){
+        server->entries[response->entry_num].max_size *= 2;
+        server->entries[response->entry_num].content = (char*)realloc(server->entries[response->entry_num].content, server->entries[response->entry_num].max_size);
+      }
+      memcpy(server->entries[response->entry_num].content + server->entries[response->entry_num].content_size, response->buffer + response->size - len, len);
+      server->entries[response->entry_num].content_size = response->size;
     }
 
     if(rc < 0){
@@ -328,8 +342,16 @@ int get_response(message* response, int fd){
     }
     else if(rc == 0){
       printf("  Connection closed\n");
-      response->buffer[7] = '0';
-
+      printf("%d %d\n", response->size, server->entries[response->entry_num].content_size);
+      if(is_complete_entry(response->entry_num, server) == 0){
+        response->buffer[7] = '0';
+        server->entries[response->entry_num].content[7] = '0';
+        server->entries[response->entry_num].complete = 1;
+      }
+      for(int i = 0; i < server->entries[response->entry_num].content_size; i++){
+        printf("%c", server->entries[response->entry_num].content[i]);
+      }
+      printf("\n");
       return 0;
     }
   }
@@ -348,6 +370,64 @@ int transfer_response(proxy_server* server, int fd_num){
   server->messages[server->messages[fd_num].request_fd].type = RESPONSE;
   memcpy(server->messages[server->messages[fd_num].request_fd].buffer, server->messages[fd_num].buffer, server->messages[fd_num].size * sizeof(char));
   server->fds[server->messages[fd_num].request_fd].events = POLLOUT;
+
+  return 0;
+}
+
+int find_in_cache(char* name, int size, proxy_server* server){
+  printf("\t\tfind_in_cache()\n");
+  int i;
+  int find = 0;
+
+  for(i = 0; i < server->nentries; i++){
+    printf("\t%s\n\t\t%s\n", name, server->entries[i].hostname);
+    if(strncmp(name, server->entries[i].hostname, size) == 0){
+      find = 1;
+      break;
+    }
+  }
+  if(find == 1){
+    return i;
+  }
+
+  return -1;
+}
+
+int is_complete_entry(int entry_num, proxy_server* server){
+  if(server->entries[entry_num].complete == 1){
+    return 1;
+  }
+  else{
+    return 0;
+  }
+}
+
+int get_from_cache(int entry_num, int fd_num, proxy_server* server){
+  printf("\t\tget_from_cache()\n");
+
+  memset(server->messages[fd_num].buffer, 0, server->messages[fd_num].max_size);
+  if(server->messages[fd_num].max_size < server->entries[entry_num].content_size){
+    server->messages[fd_num].buffer = (char*)realloc(server->messages[fd_num].buffer, server->entries[entry_num].content_size);
+  }
+  memcpy(server->messages[fd_num].buffer, server->entries[entry_num].content, server->entries[entry_num].content_size);
+  server->messages[fd_num].size = server->entries[entry_num].content_size;
+  server->fds[fd_num].events = POLLOUT;
+
+  return 0;
+}
+
+int cache_entry_name(char* name, int size, proxy_server* server, int fd_num){
+  printf("\t\tcache_entry_name()\n");
+
+  server->entries[server->nentries].hostname = (char*)malloc(size);
+  server->entries[server->nentries].hostname_size = size;
+  server->entries[server->nentries].content = (char*)malloc(STARTBUFFERSIZE);
+  server->entries[server->nentries].content_size = 0;
+  server->entries[server->nentries].complete = 0;
+  server->entries[server->nentries].max_size = STARTBUFFERSIZE;
+  memcpy(server->entries[server->nentries].hostname, name, size);
+  server->messages[fd_num].entry_num = server->nentries;
+  server->nentries += 1;
 
   return 0;
 }

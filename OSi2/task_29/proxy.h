@@ -25,6 +25,7 @@
 
 #define REQUEST         2
 #define RESPONSE        3
+#define WAITCACHE       4
 #define SERVER_PORT     3001
 #define CONNECTIONS     1024
 #define ENTRIESNUM      1024
@@ -39,12 +40,16 @@ typedef struct{
   int   size;
   int   max_size;
   int   type;
+  int   entry_num;
 } message;
 
 typedef struct{
   char* hostname;
+  int   hostname_size;
   char* content;
-  int   size;
+  int   content_size;
+  int   complete;
+  int   max_size;
 } proxy_entry;
 
 typedef struct{
@@ -60,15 +65,19 @@ typedef struct{
 
 /*app functions*/
 
-int create_server(proxy_server*);
-int close_server(proxy_server*);
-int accept_connections(proxy_server*);
-int close_connection(proxy_server*, int);
+int  create_server(proxy_server*);
+int  close_server(proxy_server*);
+int  accept_connections(proxy_server*);
+int  close_connection(proxy_server*, int);
 void compress_array(proxy_server*);
-int get_request(message*, int);
-int get_response(message*, int);
-int parse_request(message*, char*, char*, char*);
-int create_connection(proxy_server*, char*, int);
-int transfer_response(proxy_server*, int);
+int  get_request(message*, int);
+int  get_response(message*, int, proxy_server*);
+int  parse_request(message*, char*, char*);
+int  create_connection(proxy_server*, char*, int);
+int  transfer_response(proxy_server*, int);
+int  find_in_cache(char*, int, proxy_server*);
+int  is_complete_entry(int, proxy_server*);
+int  get_from_cache(int, int, proxy_server*);
+int  cache_entry_name(char*, int, proxy_server*, int);
 
 #endif
