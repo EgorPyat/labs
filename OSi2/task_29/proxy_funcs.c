@@ -112,6 +112,7 @@ int accept_connections(proxy_server* server){
 }
 
 int close_connection(proxy_server* server, int num){
+  printf("close_connection()\n");
   int status = 0;
 
   if(close(server->fds[num].fd) == -1){
@@ -153,7 +154,9 @@ int get_request(message* request, int fd){
 
     if(request->size + 1 >= request->max_size){
       request->max_size *= 2;
-      printf("%d\n", request->max_size);
+      // printf("%d\n", request->max_size);
+      printf("realloc get request buffer %d\n", request->max_size);
+
       request->buffer = (char*)realloc(request->buffer, request->max_size * sizeof(char));
     }
 
@@ -242,7 +245,7 @@ int parse_request(message* request, char* hostname, char* request_head){
       hostname[length] = '\0';
     }
 
-    printf("%s\n %lu", request_head, strlen(request_head));
+    // printf("%s\n %lu", request_head, strlen(request_head));
     free(requesth);
   }
   else{
@@ -312,9 +315,9 @@ int get_response(message* response, int fd, proxy_server* server){
 
     response->size += rc;
 
-    if(response->size + 1 >= response->max_size){
+    if(response->size + 1024 >= response->max_size){
+      printf("realloc response buffer %d %d\n", response->size, response->max_size);
       response->max_size *= 2;
-      printf("%d\n", response->max_size);
 
       response->buffer = (char*)realloc(response->buffer, response->max_size * sizeof(char));
     }
@@ -323,6 +326,8 @@ int get_response(message* response, int fd, proxy_server* server){
     if(len > 0){
       if(response->size > server->entries[response->entry_num].max_size){
         server->entries[response->entry_num].max_size *= 2;
+        printf("realloc entry buffer %d\n", server->entries[response->entry_num].max_size);
+
         server->entries[response->entry_num].content = (char*)realloc(server->entries[response->entry_num].content, server->entries[response->entry_num].max_size);
       }
       memcpy(server->entries[response->entry_num].content + server->entries[response->entry_num].content_size, response->buffer + response->size - len, len);
@@ -348,10 +353,10 @@ int get_response(message* response, int fd, proxy_server* server){
         server->entries[response->entry_num].content[7] = '0';
         server->entries[response->entry_num].complete = 1;
       }
-      for(int i = 0; i < server->entries[response->entry_num].content_size; i++){
-        printf("%c", server->entries[response->entry_num].content[i]);
-      }
-      printf("\n");
+      // for(int i = 0; i < server->entries[response->entry_num].content_size; i++){
+      //   printf("%c", server->entries[response->entry_num].content[i]);
+      // }
+      // printf("\n");
       return 0;
     }
   }
@@ -364,6 +369,8 @@ int transfer_response(proxy_server* server, int fd_num){
   server->messages[server->messages[fd_num].request_fd].request_fd = -1;
   server->messages[server->messages[fd_num].request_fd].size = server->messages[fd_num].size;
   if(server->messages[server->messages[fd_num].request_fd].max_size < server->messages[fd_num].max_size){
+    printf("realloc request buffer %d\n", server->messages[server->messages[fd_num].request_fd].max_size);
+
     server->messages[server->messages[fd_num].request_fd].buffer = (char*)realloc(server->messages[server->messages[fd_num].request_fd].buffer, server->messages[fd_num].max_size);
   }
   server->messages[server->messages[fd_num].request_fd].max_size = server->messages[fd_num].max_size;
@@ -380,7 +387,7 @@ int find_in_cache(char* name, int size, proxy_server* server){
   int find = 0;
 
   for(i = 0; i < server->nentries; i++){
-    printf("\t%s\n\t\t%s\n", name, server->entries[i].hostname);
+    // printf("\t%s\n\t\t%s\n", name, server->entries[i].hostname);
     if(strncmp(name, server->entries[i].hostname, size) == 0){
       find = 1;
       break;
@@ -407,6 +414,8 @@ int get_from_cache(int entry_num, int fd_num, proxy_server* server){
 
   memset(server->messages[fd_num].buffer, 0, server->messages[fd_num].max_size);
   if(server->messages[fd_num].max_size < server->entries[entry_num].content_size){
+    printf("realloc req in cache buffer %d\n", server->messages[fd_num].max_size);
+
     server->messages[fd_num].buffer = (char*)realloc(server->messages[fd_num].buffer, server->entries[entry_num].content_size);
   }
   memcpy(server->messages[fd_num].buffer, server->entries[entry_num].content, server->entries[entry_num].content_size);

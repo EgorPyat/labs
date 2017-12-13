@@ -73,8 +73,8 @@ int main(){
               else if(status == 2){
                 printf("REQUEST GOTTEN\n");
 
-                char* hostname = (char*)malloc(1024);
-                char* request_head = (char*)malloc(1024);
+                char* hostname = (char*)malloc(4096);
+                char* request_head = (char*)malloc(4096);
 
                 if(parse_request(&server.messages[i], hostname, request_head) == -1){
                   printf("Wrong request format!\n");
@@ -94,6 +94,7 @@ int main(){
                       perror("\tcreate connection() failed");
                       close_con = TRUE;
                     }
+                    printf("created!\n");
                   }
                 }
 
