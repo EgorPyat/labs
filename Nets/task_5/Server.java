@@ -49,15 +49,17 @@ public class Server{
       }
     });
     resender.start();
+    double time = System.currentTimeMillis();
     try{
       this.server = new ServerSocket(this.port);
       this.server.setSoTimeout(1000);
-      while(!(tasks.isEmpty() && unconfirmedTasks.isEmpty())){
+      while(!(tasks.isEmpty() && unconfirmedTasks.isEmpty()) || (clients.size() > 0 && (System.currentTimeMillis() - time < 10000))){
         try{
           Socket socket = this.server.accept();
           System.out.println("wait");
           Connection con = new Connection(socket);
           con.start();
+          time = System.currentTimeMillis();
         }
         catch(SocketTimeoutException e){
           continue;
@@ -118,6 +120,7 @@ public class Server{
           case "fault":
             unconfirmedTasks.remove(clients.get(uuid));
             long[] t = clients.get(uuid);
+            clients.remove(uuid);
             System.out.println("Client#" + uuid + " fault: " + t[0] + " " + t[1]);
             break;
         }
