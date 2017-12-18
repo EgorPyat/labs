@@ -13,6 +13,7 @@ public class HttpServer{
   private Map<Integer, Integer> usersIDs;
   private Map<Integer, String> usersNames;
   private Map<String, Boolean> usersOnline;
+  private Map<Integer, Integer> usersMessages;
   private List<String> messages;
 
   public HttpServer(int port){
@@ -22,6 +23,7 @@ public class HttpServer{
       this.connections = Collections.synchronizedList(new ArrayList<Connection>());
       this.usersIDs = Collections.synchronizedMap(new HashMap<Integer, Integer>());
       this.usersNames = Collections.synchronizedMap(new HashMap<Integer, String>());
+      this.usersMessages = Collections.synchronizedMap(new HashMap<Integer, Integer>());
       this.usersOnline = Collections.synchronizedMap(new HashMap<String, Boolean>());
       this.messages = Collections.synchronizedList(new LinkedList<String>());
     }
@@ -211,11 +213,14 @@ public class HttpServer{
                     if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)).equals(true)){
                       String start = "{\"messages\":[";
                       String end = "]}";
-                      for(String msg : HttpServer.this.messages){
+                      int last = HttpServer.this.messages.size();
+                      for(int i = HttpServer.this.usersMessages.get(tok); i < last; i++){
+                        String msg = HttpServer.this.messages.get(i);
                         start += msg + ",";
                       }
                       start += end;
                       start = start.replace(",]", "]");
+                      HttpServer.this.usersMessages.put(tok, last);
 
                       this.out.println("HTTP/1.1 200 OK");
                       this.out.println("Content-Type:application/json\nContent-Length:" + (start.length() + 1) + "\n");
@@ -247,10 +252,12 @@ public class HttpServer{
                   }
                   else{
                     int id = HttpServer.this.userID.incrementAndGet();
-                    HttpServer.this.usersIDs.put(id, id);
-                    HttpServer.this.usersNames.put(id, username);
+                    int tok = 0 + (int)(Math.random() * 100000000);
+                    HttpServer.this.usersIDs.put(tok, id);
+                    HttpServer.this.usersNames.put(tok, username);
                     HttpServer.this.usersOnline.put(username, true);
-                    String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(id).endObject().toString();
+                    HttpServer.this.usersMessages.put(tok, 0);
+                    String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(tok).endObject().toString();
                     this.out.println("HTTP/1.1 200 OK");
                     this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
                     this.out.println(cont);
@@ -259,10 +266,12 @@ public class HttpServer{
                 }
                 else{
                   int id = HttpServer.this.userID.incrementAndGet();
-                  HttpServer.this.usersNames.put(id, username);
-                  HttpServer.this.usersIDs.put(id, id);
+                  int tok = 0 + (int)(Math.random() * 100000000);
+                  HttpServer.this.usersIDs.put(tok, id);
+                  HttpServer.this.usersNames.put(tok, username);
                   HttpServer.this.usersOnline.put(username, true);
-                  String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(id).endObject().toString();
+                  HttpServer.this.usersMessages.put(tok, 0);
+                  String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(tok).endObject().toString();
                   this.out.println("HTTP/1.1 200 OK");
                   this.out.println("Content-Type:application/json\nContent-Length:" + (cont.length() + 1) + "\n");
                   this.out.println(cont);
@@ -336,3 +345,10 @@ public class HttpServer{
     }
   }
 }
+
+/*
+ * rand tokens              +
+ * better messages response +
+ * better messages look     -
+ * preventive user logout   -
+ */
