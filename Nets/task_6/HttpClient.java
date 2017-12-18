@@ -56,6 +56,7 @@ public class HttpClient{
 				System.out.println("Bad token!");
 				this.close();
 				online = false;
+				return;
 			}
 			String content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
 			System.out.println(content);
@@ -67,7 +68,7 @@ public class HttpClient{
 					long time = System.currentTimeMillis();
 					while(true){
 						try{
-							if(System.currentTimeMillis() - time > 2000){
+							if(System.currentTimeMillis() - time > 1000){
 								socket = new Socket(address, port);
 								in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 								out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"), true);
@@ -78,6 +79,8 @@ public class HttpClient{
 									in.close();
 									out.close();
 									socket.close();
+									// continue;
+									System.exit(1);
 								}
 								String content = getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
 								System.out.println(content);
@@ -87,7 +90,7 @@ public class HttpClient{
 								time = System.currentTimeMillis();
 							}
 							else{
-								Thread.sleep(2000);
+								Thread.sleep(1000);
 							}
 						}
 						catch(Exception e){
@@ -115,7 +118,8 @@ public class HttpClient{
 							System.out.println("Bad token!");
 							this.close();
 							online = false;
-							break;
+							// break;
+							return;
 						}
 						content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
 						System.out.println(content);
@@ -130,7 +134,8 @@ public class HttpClient{
 							System.out.println("Bad token!");
 							this.close();
 							online = false;
-							break;
+							// break;
+							return;
 						}
 						content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
 						System.out.println(content);
@@ -143,7 +148,8 @@ public class HttpClient{
 							System.out.println("Bad token!");
 							this.close();
 							online = false;
-							break;
+							// break;
+							return;
 						}
 						content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
 						System.out.println(content);

@@ -12,7 +12,7 @@ public class HttpServer{
   private AtomicInteger msgID = new AtomicInteger(-1);
   private Map<Integer, Integer> usersIDs;
   private Map<Integer, String> usersNames;
-  private Map<String, Boolean> usersOnline;
+  private Map<String, Long> usersOnline;
   private Map<Integer, Integer> usersMessages;
   private List<String> messages;
 
@@ -24,8 +24,40 @@ public class HttpServer{
       this.usersIDs = Collections.synchronizedMap(new HashMap<Integer, Integer>());
       this.usersNames = Collections.synchronizedMap(new HashMap<Integer, String>());
       this.usersMessages = Collections.synchronizedMap(new HashMap<Integer, Integer>());
-      this.usersOnline = Collections.synchronizedMap(new HashMap<String, Boolean>());
+      this.usersOnline = Collections.synchronizedMap(new HashMap<String, Long>());
       this.messages = Collections.synchronizedList(new LinkedList<String>());
+
+      new Thread(new Runnable(){
+        @Override
+        public void run(){
+          int tok = 0;
+          while(true){
+            // System.out.println("12");
+            for(String name : usersOnline.keySet()){
+              long time = usersOnline.get(name);
+              // System.out.println(name + " " + time);
+              if(time > 0){
+                if(System.currentTimeMillis() - time > 3000){
+                  for(int t : usersNames.keySet()){
+                    if(usersNames.get(t).equals(name)){
+                      tok = t;
+                      break;
+                    }
+                  }
+                  HttpServer.this.usersNames.remove(tok);
+                  HttpServer.this.usersOnline.remove(HttpServer.this.usersNames.get(tok));
+                  HttpServer.this.usersNames.put(tok, name + ":");
+                  HttpServer.this.usersOnline.put(name + ":", -1L);
+                  // System.out.println("Hard logout! " + name + " " + tok);
+                }
+              }
+              // else{
+              //   System.out.println("minus");
+              // }
+            }
+          }
+        }
+      }, "Logouter").start();
     }
     catch(Exception e){
       System.err.println(e.getMessage());
@@ -140,7 +172,7 @@ public class HttpServer{
                   int tok = new Integer(token);
                   if(HttpServer.this.usersIDs.containsKey(tok)){
                     String name = HttpServer.this.usersNames.get(tok);
-                    if(HttpServer.this.usersOnline.get(name).equals(true)){
+                    if(HttpServer.this.usersOnline.get(name) > 0){
                       String cont = new JSONStringer().object().key("message").value("bye").endObject().toString();
                       this.out.println("HTTP/1.1 200 OK");
                       this.out.println("Content-Type:application/json\nContent-Length:" + (cont.length() + 1) + "\n");
@@ -148,7 +180,7 @@ public class HttpServer{
                       HttpServer.this.usersNames.remove(tok);
                       HttpServer.this.usersOnline.remove(HttpServer.this.usersNames.get(tok));
                       HttpServer.this.usersNames.put(tok, name + ":");
-                      HttpServer.this.usersOnline.put(name + ":", false);
+                      HttpServer.this.usersOnline.put(name + ":", 0L);
                       System.out.println(name + " logout!");
                     }
                     else{
@@ -173,16 +205,28 @@ public class HttpServer{
                   int tok = new Integer(tokeh);
 
                   if(HttpServer.this.usersIDs.containsKey(tok)){
-                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)).equals(true)){
+                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)) > 0){
                       String start = "{\"users\":[";
                       String end = "]}";
 
                       for(int t : HttpServer.this.usersIDs.keySet()){
                         String name = HttpServer.this.usersNames.get(t);
-                        start += "{\"id\":" + HttpServer.this.usersIDs.get(t) + ",\"username\":\"" + name.split(":")[0] + "\",\"status\":" + HttpServer.this.usersOnline.get(name) + "},";
+                        String status;
+                        if(HttpServer.this.usersOnline.get(name) > 0){
+                          status = "true";
+                        }
+                        else if(HttpServer.this.usersOnline.get(name) == 0){
+                          status = "false";
+                        }
+                        else{
+                          status = "null";
+                        }
+                        start += "{\"id\":" + HttpServer.this.usersIDs.get(t) + ",\"username\":\"" + name.split(":")[0] + "\",\"status\":\"" + status + "\"},";
                       }
                       start += end;
                       start = start.replace(",]", "]");
+
+                      HttpServer.this.usersOnline.put(HttpServer.this.usersNames.get(tok), System.currentTimeMillis());
 
                       this.out.println("HTTP/1.1 200 OK");
                       this.out.println("Content-Type: application/json\ncontent-length: " + (start.length() + 1) + "\n");
@@ -210,7 +254,7 @@ public class HttpServer{
                   int tok = new Integer(toke);
 
                   if(HttpServer.this.usersIDs.containsKey(tok)){
-                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)).equals(true)){
+                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)) > 0){
                       String start = "{\"messages\":[";
                       String end = "]}";
                       int last = HttpServer.this.messages.size();
@@ -221,6 +265,8 @@ public class HttpServer{
                       start += end;
                       start = start.replace(",]", "]");
                       HttpServer.this.usersMessages.put(tok, last);
+
+                      HttpServer.this.usersOnline.put(HttpServer.this.usersNames.get(tok), System.currentTimeMillis());
 
                       this.out.println("HTTP/1.1 200 OK");
                       this.out.println("Content-Type:application/json\nContent-Length:" + (start.length() + 1) + "\n");
@@ -246,7 +292,7 @@ public class HttpServer{
                 String username = obj.getString("username");
 
                 if(HttpServer.this.usersNames.containsValue(username)){
-                  if(HttpServer.this.usersOnline.get(username).equals(true)){
+                  if(HttpServer.this.usersOnline.get(username) > 0){
                     this.out.println("HTTP/1.1 401 Unauthorized");
                     this.out.println("WWW-Authenticate:Token realm='Username is already in use'\n");
                   }
@@ -255,9 +301,9 @@ public class HttpServer{
                     int tok = 0 + (int)(Math.random() * 100000000);
                     HttpServer.this.usersIDs.put(tok, id);
                     HttpServer.this.usersNames.put(tok, username);
-                    HttpServer.this.usersOnline.put(username, true);
+                    HttpServer.this.usersOnline.put(username, System.currentTimeMillis());
                     HttpServer.this.usersMessages.put(tok, 0);
-                    String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(tok).endObject().toString();
+                    String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value("true").key("token").value(tok).endObject().toString();
                     this.out.println("HTTP/1.1 200 OK");
                     this.out.println("Content-Type:application/json\nContent-Length:" + cont.length() + "\n");
                     this.out.println(cont);
@@ -269,9 +315,9 @@ public class HttpServer{
                   int tok = 0 + (int)(Math.random() * 100000000);
                   HttpServer.this.usersIDs.put(tok, id);
                   HttpServer.this.usersNames.put(tok, username);
-                  HttpServer.this.usersOnline.put(username, true);
+                  HttpServer.this.usersOnline.put(username, System.currentTimeMillis());
                   HttpServer.this.usersMessages.put(tok, 0);
-                  String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value(true).key("token").value(tok).endObject().toString();
+                  String cont = new JSONStringer().object().key("id").value(id).key("username").value(username).key("online").value("true").key("token").value(tok).endObject().toString();
                   this.out.println("HTTP/1.1 200 OK");
                   this.out.println("Content-Type:application/json\nContent-Length:" + (cont.length() + 1) + "\n");
                   this.out.println(cont);
@@ -289,11 +335,14 @@ public class HttpServer{
                   int tok = new Integer(token);
 
                   if(HttpServer.this.usersIDs.containsKey(tok)){
-                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)).equals(true)){
+                    if(HttpServer.this.usersOnline.get(HttpServer.this.usersNames.get(tok)) > 0){
                       JSONObject msg = new JSONObject(content);
                       String message = msg.getString("message");
                       int id = HttpServer.this.msgID.incrementAndGet();
                       String response = new JSONStringer().object().key("id").value(id).key("message").value(message).endObject().toString();
+
+                      HttpServer.this.usersOnline.put(HttpServer.this.usersNames.get(tok), System.currentTimeMillis());
+
                       this.out.println("HTTP/1.1 200 OK");
                       this.out.println("Content-Type:application/json\nContent-Length:" + (response.length() + 1) + "\n");
                       this.out.println(response);
