@@ -29,6 +29,8 @@ public class MyClientSocket{
           }
           catch(Exception e){
             System.err.println(e.getMessage());
+            e.printStackTrace();
+
           }
         }
       }, "Reciever");
@@ -36,9 +38,13 @@ public class MyClientSocket{
     }
     catch(SocketException e){
       System.err.println(e.getMessage());
+      e.printStackTrace();
+
     }
     catch(Exception e){
       System.err.println(e.getMessage());
+      e.printStackTrace();
+
     }
   }
   public MyClientSocket(DatagramSocket socket, InetSocketAddress address){
@@ -123,7 +129,7 @@ public class MyClientSocket{
           }
         }
         /* send FIN*/
-        
+
         // if(System.currentTimeMillis() - time > 500){
         //   System.out.println("resend");
         //   this.socket.send(msg);

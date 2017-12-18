@@ -105,6 +105,8 @@ public class MyServerSocket{
     }
     catch(Exception e){
       System.err.println(e.getMessage());
+      e.printStackTrace();
+
     }
     System.out.println("accepted!");
     return client;

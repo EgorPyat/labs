@@ -15,7 +15,8 @@ public class Main{
             s.close();
           }
           catch(Exception e){
-            System.err.println(e.getMessage());
+            // System.err.println(e.getMessage());
+            e.printStackTrace();
           }
         }
       }).start();
@@ -26,8 +27,8 @@ public class Main{
       c.close();
     }
     catch(Exception e){
-      System.err.println(e.getMessage());
-      // e.printStackTrace();
+      // System.err.println(e.getMessage());
+      e.printStackTrace();
     }
   }
 }
