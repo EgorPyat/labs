@@ -37,7 +37,7 @@ public class HttpServer{
               long time = usersOnline.get(name);
               // System.out.println(name + " " + time);
               if(time > 0){
-                if(System.currentTimeMillis() - time > 3000){
+                if(System.currentTimeMillis() - time > 10000){
                   for(int t : usersNames.keySet()){
                     if(usersNames.get(t).equals(name)){
                       tok = t;
@@ -398,6 +398,6 @@ public class HttpServer{
 /*
  * rand tokens              +
  * better messages response +
- * better messages look     -
- * preventive user logout   -
+ * better messages look     +
+ * preventive user logout   +
  */

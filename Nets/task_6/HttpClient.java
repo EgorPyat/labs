@@ -38,7 +38,7 @@ public class HttpClient{
 				}
 				String content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
 				this.token = new JSONObject(content).getInt("token");
-				System.out.println(content);
+				// System.out.println(content);
 				this.close();
 				break;
 			}
@@ -59,7 +59,13 @@ public class HttpClient{
 				return;
 			}
 			String content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
-			System.out.println(content);
+			JSONObject obj = new JSONObject(content);
+			JSONArray arr = obj.getJSONArray("messages");
+			for(int i = 0; i < arr.length(); i++){
+				JSONObject o = arr.getJSONObject(i);
+				System.out.println(">>> " + o.getString("message"));
+			}
+			// System.out.println(content);
 			this.close();
 
 			Thread msgGetter = new Thread(new Runnable(){
@@ -83,7 +89,13 @@ public class HttpClient{
 									System.exit(1);
 								}
 								String content = getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
-								System.out.println(content);
+								JSONObject obj = new JSONObject(content);
+								JSONArray arr = obj.getJSONArray("messages");
+								for(int i = 0; i < arr.length(); i++){
+									JSONObject o = arr.getJSONObject(i);
+									System.out.println(">>> " + o.getString("message"));
+								}
+								// System.out.println(content);
 								in.close();
 								out.close();
 								socket.close();
@@ -122,7 +134,7 @@ public class HttpClient{
 							return;
 						}
 						content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
-						System.out.println(content);
+						// System.out.println(content);
 
 						online = false;
 						this.close();
@@ -138,7 +150,13 @@ public class HttpClient{
 							return;
 						}
 						content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
-						System.out.println(content);
+						JSONObject ob = new JSONObject(content);
+						JSONArray ar = ob.getJSONArray("users");
+						for(int i = 0; i < ar.length(); i++){
+							JSONObject o = ar.getJSONObject(i);
+							System.out.println("### " + o.getString("username") + " : " + o.getString("status"));
+						}
+						// System.out.println(content);
 						break;
 					default:
 						String response = "{\"message\": \"" + command + "\"}";
@@ -152,7 +170,7 @@ public class HttpClient{
 							return;
 						}
 						content = this.getContent(new Integer((header[header.length - 1].split(":"))[1].trim()));
-						System.out.println(content);
+						// System.out.println(content);
 						break;
 				}
 			}
@@ -176,9 +194,9 @@ public class HttpClient{
 			}
 			req = request.toString();
 			header = req.split("_");
-			for(int i = 0; i < header.length; i++){
-				System.out.println(header[i]);
-			}
+			// for(int i = 0; i < header.length; i++){
+			// 	System.out.println(header[i]);
+			// }
 		}
 		catch(Exception e){
 			System.err.println(e.getMessage());
@@ -194,7 +212,7 @@ public class HttpClient{
 			while(true){
 				char[] buffer = new char[64];
 				int r = in.read(buffer, 0, 64);
-				System.out.println(r + " " + contentLength);
+				// System.out.println(r + " " + contentLength);
 				request.append(buffer);
 				sum += r;
 				if(sum == contentLength) break;
