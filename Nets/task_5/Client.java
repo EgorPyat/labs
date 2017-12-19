@@ -139,5 +139,6 @@ public class Client{
     Client client = new Client();
     client.setServer(args[0], new Integer(args[1]));
     client.doWork();
+    // System.out.println(client.calcMD5("TCGTTAACTA"));
   }
 }

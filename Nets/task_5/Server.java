@@ -112,7 +112,7 @@ public class Server{
             break;
           case "found":
             tasks.clear();
-            unconfirmedTasks.remove(clients.get(uuid));
+            unconfirmedTasks.clear();
             clients.remove(uuid);
             String sequence = in.readLine();
             System.out.println("Client#" + uuid + " found sequence: " + sequence);
@@ -120,6 +120,7 @@ public class Server{
           case "fault":
             unconfirmedTasks.remove(clients.get(uuid));
             long[] t = clients.get(uuid);
+            if(t == null) System.out.println("\t\t\t NULLLLL");
             clients.remove(uuid);
             System.out.println("Client#" + uuid + " fault: " + t[0] + " " + t[1]);
             break;
