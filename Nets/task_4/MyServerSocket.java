@@ -51,7 +51,8 @@ public class MyServerSocket{
           }
         }
         catch(Exception e){
-          System.err.println(e.getMessage());
+          // System.err.println(e.getMessage());
+          // e.printStackTrace();
         }
       }
     }, "Reciever");
@@ -73,7 +74,7 @@ public class MyServerSocket{
       while(true){
         packet = this.inBuffer.take();
         address = new InetSocketAddress(packet.getAddress(), packet.getPort());
-        data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
+        data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":", 3);
         if(data[1].equals("0")){
           client = new MyClientSocket(this.socket, address);
           this.connections.put(address, client);
@@ -84,23 +85,16 @@ public class MyServerSocket{
         }
       }
       while(true){
-        // packet = client.getInBuffer().take();
         if((packet = client.getInBuffer().poll(1000, TimeUnit.MILLISECONDS)) == null){
           this.socket.send(ack);
         }
         else{
-          data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":");
+          data = new String(packet.getData(), packet.getOffset(), packet.getLength()).split(":", 3);
 
           if(data[1].equals("1") && address.equals(new InetSocketAddress(packet.getAddress(), packet.getPort()))){
             break;
           }
         }
-        // else{
-          // client.getInBuffer().put(packet);
-        // }
-        // if(System.currentTimeMillis() - time > 500){
-        //   this.socket.send(ack);
-        // }
       }
     }
     catch(Exception e){
