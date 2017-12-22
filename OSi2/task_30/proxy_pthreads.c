@@ -123,7 +123,7 @@ int main(){
     return -1;
   }
 
-  while(end_server){
+  while(end_server == FALSE){
     int* client;
     *client = accept_connection(&server);
     if(*client == -1){
