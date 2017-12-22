@@ -152,7 +152,7 @@ int get_request(message* request, int fd){
 
     request->size += rc;
 
-    if(request->size + 1 >= request->max_size){
+    if(request->size + 1024 >= request->max_size){
       request->max_size *= 2;
       // printf("%d\n", request->max_size);
       printf("realloc get request buffer %d\n", request->max_size);

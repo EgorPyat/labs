@@ -110,11 +110,11 @@ int get_request(message* request, int fd){
 
     if(rc < 0){
       request->size += 1;
-      if(errno != EWOULDBLOCK){
-        perror("  recv() failed");
+      if(errno != EWOULDBLOCK || errno != EAGAIN || request->size == 0){
+        if(request->size != 0) perror("req  recv() failed");
         return -1;
       }
-      else if(errno == EWOULDBLOCK){
+      else if(errno == EWOULDBLOCK || errno == EAGAIN){
         char* end = strstr(request->buffer, "\r\n\r\n");
         if(end == NULL){
           printf("not ended %d %d\n", request->size, fd);
@@ -185,7 +185,8 @@ int parse_request(message* request, char* hostname, char* request_head){
       hostname[length] = '\0';
     }
 
-    // printf("%s\n %lu", request_head, strlen(request_head));
+    printf("%s\n %lu", request_head, strlen(request_head));
+    // getchar();
     free(requesth);
   }
   else{
@@ -198,7 +199,7 @@ int parse_request(message* request, char* hostname, char* request_head){
 int create_connection(char* hostname){
   int rc;
   int on = 1;
-
+  printf("%s\n", hostname);
   struct hostent * host_info = gethostbyname(hostname);
 
   if(host_info == NULL){
@@ -217,11 +218,11 @@ int create_connection(char* hostname){
     return -1;
   }
 
-  rc = ioctl(destnation, FIONBIO, (char *)&on);
-  if(rc < 0){
-    close(destnation);
-    return -1;
-  }
+  // rc = ioctl(destnation, FIONBIO, (char *)&on);
+  // if(rc < 0){
+  //   close(destnation);
+  //   return -1;
+  // }
 
   int con = connect(destnation, (struct sockaddr *)&destinationAddress, sizeof(destinationAddress));
 
@@ -232,7 +233,7 @@ int create_connection(char* hostname){
     }
   }
 
-  return con;
+  return destnation;
 }
 
 int get_response(message* response, int fd, proxy_server* server){
@@ -263,11 +264,11 @@ int get_response(message* response, int fd, proxy_server* server){
 
     if(rc < 0){
       response->size += 1;
-      if(errno != EWOULDBLOCK){
+      if(errno != EWOULDBLOCK || errno != EAGAIN){
         perror("  recv() failed");
         return -1;
       }
-      else if(errno == EWOULDBLOCK){
+      else if(errno == EWOULDBLOCK || errno == EAGAIN){
         printf("not ended %d %d\n", response->size, fd);
         return 1;
       }
