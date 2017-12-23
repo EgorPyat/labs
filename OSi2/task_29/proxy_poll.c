@@ -133,6 +133,14 @@ int main(){
         else if(server.fds[i].revents == POLLOUT){
           printf("\tDescriptor %d is writable\n", server.fds[i].fd);
 
+          if(server.messages[i].request_fd == -1){
+            int on = 0;
+            status = ioctl(server.fds[i].fd, FIONBIO, (char *)&on);
+            if(status < 0){
+              close(server.fds[i].fd);
+              return -1;
+            }
+          }
           status = send(server.fds[i].fd, server.messages[i].buffer, server.messages[i].size, 0);
           printf("%d / %d\n", status, server.messages[i].size);
           if(status < 0){

@@ -103,6 +103,7 @@ void* connection(void* arg){
     resmsg.buffer = (char*)calloc(STARTBUFFERSIZE, sizeof(char));
     resmsg.size = 0;
     resmsg.max_size = STARTBUFFERSIZE;
+    resmsg.entry_num = reqmsg.entry_num;
 
     while(TRUE){
       status = get_response(&resmsg, conn, &server);

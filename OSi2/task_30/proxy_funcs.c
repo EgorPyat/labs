@@ -110,14 +110,14 @@ int get_request(message* request, int fd){
 
     if(rc < 0){
       request->size += 1;
-      if(errno != EWOULDBLOCK || errno != EAGAIN || request->size == 0){
+      if(errno != EWOULDBLOCK || errno != EAGAIN/* || request->size == 0*/){
         if(request->size != 0) perror("req  recv() failed");
         return -1;
       }
       else if(errno == EWOULDBLOCK || errno == EAGAIN){
         char* end = strstr(request->buffer, "\r\n\r\n");
         if(end == NULL){
-          printf("not ended %d %d\n", request->size, fd);
+          // printf("not ended %d %d\n", request->size, fd);
           return 1;
         }
         char* status_line_end = strchr(request->buffer, '\n');
@@ -311,10 +311,13 @@ int find_in_cache(char* name, int size, proxy_server* server){
   printf("\t\tfind_in_cache()\n");
   int i;
   int find = 0;
+  int status;
 
   for(i = 0; i < server->nentries; i++){
-    // printf("\t%s\n\t\t%s\n", name, server->entries[i].hostname);
-    if(strncmp(name, server->entries[i].hostname, size) == 0){
+    printf("\t%s\n\t\t%s\n", name, server->entries[i].hostname);
+    status = strncmp(name, server->entries[i].hostname, size);
+    printf("status %d\n", status);
+    if(status == 0){
       find = 1;
       break;
     }
@@ -328,9 +331,11 @@ int find_in_cache(char* name, int size, proxy_server* server){
 
 int is_complete_entry(int entry_num, proxy_server* server){
   if(server->entries[entry_num].complete == 1){
+    printf("complete\n");
     return 1;
   }
   else{
+    printf("not complete\n");
     return 0;
   }
 }
