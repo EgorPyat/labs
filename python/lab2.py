@@ -6,8 +6,6 @@ def is_simple(number):
         if number % div == 0:
             return False
     return True
+
 if(len(sys.argv) > 1):
-    st = time.clock()
     print(is_simple(int(sys.argv[1])))
-    fn = time.clock()
-    print((fn - st), " seconds")

@@ -4,7 +4,7 @@ from bitarray import bitarray
 
 def list_sieve(number):
     s = list(range(2, number))
-    print(sys.getsizeof(s) / 1024 / 1024, "MBs")
+    # print(sys.getsizeof(s) / 1024 / 1024, "MBs")
     for i in range(2, int(math.sqrt(number)) + 1):
         if s[i - 2] != 0:
             for j in range(2 * i, number, i):
@@ -13,7 +13,7 @@ def list_sieve(number):
 
 def set_sieve(number):
     s = set(range(2, number))
-    print(sys.getsizeof(s) / 1024 / 1024, "Mbs")
+    # print(sys.getsizeof(s) / 1024 / 1024, "Mbs")
     for i in range(2, int(math.sqrt(number)) + 1):
         if i in s:
             s -= set(range(2 * i, number, i))
@@ -21,7 +21,7 @@ def set_sieve(number):
 
 def bitarray_sieve(number):
     s = bitarray(range(2, number))
-    print(sys.getsizeof(s), "Bytes")
+    # print(sys.getsizeof(s), "Bytes")
     for i in range(2, int(math.sqrt(number)) + 1):
         if s[i - 2] is True:
             for j in range(2 * i, number, i):
