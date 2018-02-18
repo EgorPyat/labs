@@ -1,3 +1,4 @@
+// https://coderanch.com/t/507314/java/Scrolling-BufferedImage
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
