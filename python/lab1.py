@@ -7,7 +7,7 @@ def factorize(number):
     while(number > 1):
         pow = 0;
         while(number % div == 0):
-            number //= div
+            number /= div
             pow += 1
         if(pow > 0): list.append([div, pow])
         div += 1
