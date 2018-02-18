@@ -11,7 +11,6 @@ public class ScalingImage extends JFrame{
 
     public ScalingImage(){
       super("Life - The game.");
-
       JMenuBar menu = new JMenuBar();
       JMenu mFile = new JMenu("File");
       JMenu mAbout = new JMenu("About");
@@ -47,7 +46,7 @@ class MainPanel extends JPanel {
       img = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
 
       Graphics g = img.createGraphics();
-      //
+
       g.setColor(Color.black);
       // g2d.fill(new Ellipse2D.Float(0, 0, 200, 100));
       // g2d.dispose();
@@ -105,14 +104,14 @@ class ImagePanel extends JPanel {
       addMouseListener(new MouseListener() {
         @Override
         public void mouseClicked(MouseEvent mouseEvent) {
-          System.out.println("Mouse x: " + mouseEvent.getX());
-          System.out.println("Mouse y: " + mouseEvent.getY());
+          // System.out.println("Mouse x: " + mouseEvent.getX());
+          // System.out.println("Mouse y: " + mouseEvent.getY());
         }
 
         @Override
         public void mousePressed(MouseEvent mouseEvent) {
-          System.out.println("Mouse x: " + mouseEvent.getX());
-          System.out.println("Mouse y: " + mouseEvent.getY());
+          // System.out.println("Mouse x: " + mouseEvent.getX());
+          // System.out.println("Mouse y: " + mouseEvent.getY());
         }
 
         @Override
@@ -133,20 +132,21 @@ class ImagePanel extends JPanel {
       addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
-              System.out.println("Mouse x: " + e.getX());
-              System.out.println("Mouse y: " + e.getY());
+              // System.out.println("Mouse x: " + e.getX());
+              // System.out.println("Mouse y: " + e.getY());
             }
 
             @Override
             public void mouseMoved(MouseEvent e) {
-              System.out.println("Mouse x: " + e.getX());
-              System.out.println("Mouse y: " + e.getY());
+              // System.out.println("Mouse x: " + e.getX());
+              // System.out.println("Mouse y: " + e.getY());
             }
         });
    }
 
    @Override
    public void paint(Graphics g) {
+      super.paint(g);
       // super.paintComponent(g);
       // Graphics2D bi = image.createGraphics();
       //
