@@ -9,7 +9,7 @@ import java.net.URL;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
-public class ScalingImage {
+public class LearningExample {
 
    private static void createAndShowUI() {
       MainPanel mainPanel = new MainPanel();
@@ -33,8 +33,7 @@ public class ScalingImage {
 
 @SuppressWarnings("serial")
 class MainPanel extends JPanel {
-   private static final String URL_PATH = "http://duke.kenai.com/"
-            + "guitar/DukeAsKeith-daylightSmall.png";
+   private static final String URL_PATH = "https://pbs.twimg.com/profile_images/378800000816597593/1ce8aa5156422b5fe07ce122c3aa4f31_400x400.png";
    protected static final double SCALE_FACTOR = 1.01;
    private static final int TIMER_DELAY = 200;
    private JScrollPane scrollpane;

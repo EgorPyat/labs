@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionListener;
 
 public class ScalingImage extends JFrame{
@@ -41,7 +42,7 @@ class MainPanel extends JPanel {
    private JScrollPane scrollpane;
    private ImagePanel imagePanel;
 
-   void drawHexahedron(Graphics g, int x, int y, int r){
+   private void drawHexahedron(Graphics g, int x, int y, int r){
      int R = r;
      double a, b, z = 0;
      int i = 0;
@@ -52,7 +53,6 @@ class MainPanel extends JPanel {
      int[] yc = new int[6];
      a = Math.sqrt(3)/2;
      int yl = (int)(a * R);
-     System.out.println(y + " " + yl);
      int xl = R / 2;
      xc[0] = X + R;  yc[0] = Y;
      xc[1] = X + xl; yc[1] = Y - yl;
@@ -61,15 +61,6 @@ class MainPanel extends JPanel {
      xc[4] = X - xl; yc[4] = Y + yl;
      xc[5] = X + xl; yc[5] = Y + yl;
 
-     while(i < 6){
-      //  a = Math.cos(z / 180 * Math.PI);
-      //  b = Math.sin(z / 180 * Math.PI);
-      //  xc[i] = X + (int)(a * R);
-      //  yc[i] = Y - (int)(b * R);
-       System.out.println("x: " + xc[i] + " y: " + yc[i]);
-      //  z = z + angle;
-       i++;
-     }
      int x1, x2, y1, y2;
      int j = 5;
      while(j >= 0){
@@ -88,56 +79,46 @@ class MainPanel extends JPanel {
      }
    }
 
+   public void drawHexahedronGrid(Graphics g, int height, int width, int radius){
+     g.setColor(Color.black);
+     int R = radius % 2 == 0 ? radius : radius + 1;
+     int X = R + 20;
+     int tx = X;
+     int Y = (int)(R * Math.sqrt(3)/2) - 1 + 20;
+     int ty = Y;
+     int xl = R + R / 2;
+     int yl = (int)(R * Math.sqrt(3)/2);
+     for(int i = 0; i < height; i++){
+       for(int j = 0; j < width; j++){
+         drawHexahedron(g, X, Y, R);
+         X += xl;
+         Y = j % 2 == 0 ? Y + yl : Y - yl;
+       }
+       X = tx;
+       Y = ty + yl * 2;
+       ty = Y;
+     }
+   }
+
    public MainPanel() {
       BufferedImage img = null;
-      img = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
+      int N = 10;
+      int M = 10;
+      int R = 50;
+      int width = 20 + R * N + 25;
+      int height = 20 + (int)(R * Math.sqrt(3)/2) * M + 20;
+      System.out.println(width + " " + height);
+
+      img = new BufferedImage(width * 3 / 2, height * 2, BufferedImage.TYPE_INT_ARGB);
 
       Graphics g = img.createGraphics();
 
-      g.setColor(Color.black);
-      // g2d.fill(new Ellipse2D.Float(0, 0, 200, 100));
-      // g2d.dispose();
-      // int n = 6;
-      int R = 50;
-      // double a, b,  z = 0 ;  int i = 0; double angle = 360.0 / n ;
-  		// //цикл создающий массив из точек
-      int X = R + 20; int Y = (int)(R * Math.sqrt(3)/2) - 1 + 20;
-      drawHexahedron(g, X, Y, R);
-      drawHexahedron(g, X + 75, Y + (int)(R * Math.sqrt(3)/2), R);
-      drawHexahedron(g, X + 150, Y, R);
-      drawHexahedron(g, X + 225, Y + (int)(R * Math.sqrt(3)/2), R);
+      drawHexahedronGrid(g, N, M, R);
 
-      // int[] x = new int[n];
-      // int[] y = new int[n];
-  		// while(i < n){
-  		// 	a = Math.cos( z/180*Math.PI);
-  		// 	b = Math.sin( z/180*Math.PI);
-  		// 	x[i] = X + (int)(a * R);
-  		// 	y[i] = Y - (int)(b * R);
-  		// 	z = z + angle;
-  		// 	i++;
-  		// }
-      //
-  		// int x1, x2, y1, y2;
-      //
-  		// int j = n - 1;
-  		// while(j >= 0){
-  		// 	if(j > 0){
-  		// 		x1 = x[j]; x2 = x[j-1];
-  		// 		y1 = y[j]; y2 = y[j-1];
-  		// 		g.drawLine(x1, y1, x2, y2);
-  		// 		j--;
-  		// 	}
-  		// 	else{
-  		// 		x1 = x[j]; x2 = x[n-1];
-  		// 		y1 = y[j]; y2 = y[n-1];
-  		// 		g.drawLine(x1, y1, x2, y2);
-  		// 		j--;
-  		// 	}
-  		// }
       imagePanel = new ImagePanel(img);
       scrollpane = new JScrollPane(imagePanel);
       setLayout(new BorderLayout());
+      setPreferredSize(new Dimension(800, 600));
       add(scrollpane, BorderLayout .CENTER);
    }
 }
@@ -152,32 +133,11 @@ class ImagePanel extends JPanel {
       initWidth = image.getWidth();
       initHeight = image.getHeight();
       setPreferredSize(new Dimension(initWidth, initHeight));
-      addMouseListener(new MouseListener() {
+      addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent mouseEvent) {
           // System.out.println("Mouse x: " + mouseEvent.getX());
           // System.out.println("Mouse y: " + mouseEvent.getY());
-        }
-
-        @Override
-        public void mousePressed(MouseEvent mouseEvent) {
-          // System.out.println("Mouse x: " + mouseEvent.getX());
-          // System.out.println("Mouse y: " + mouseEvent.getY());
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent mouseEvent) {
-          pressed = false;
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent mouseEvent) {
-
-        }
-
-        @Override
-        public void mouseExited(MouseEvent mouseEvent) {
-
         }
       });
       addMouseMotionListener(new MouseMotionListener() {
@@ -198,19 +158,6 @@ class ImagePanel extends JPanel {
    @Override
    public void paint(Graphics g) {
       super.paint(g);
-      // super.paintComponent(g);
-      // Graphics2D bi = image.createGraphics();
-      //
-      // bi.setColor(Color.red);
-      // bi.fill(new Ellipse2D.Float(0, 0, 200, 100));
-      // // g2d.dispose();
-      // Graphics2D g2d = (Graphics2D)g;
-      // g2d.setColor(Color.black);
-      // g2d.fillRect(0,0, getWidth()/2, getHeight()/2);
-      // // g2d.setFont(new Font("Dialog", Font.BOLD, 24));
-      // g2d.setColor(Color.white);
-      // g2d.drawString("Java 2D is great!", 10, 80);
-      // g2d.drawImage(image, 0, 0, null);
       if(image != null) {
         g.drawImage(image, 0, 0, null);
       }
