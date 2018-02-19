@@ -7,6 +7,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionListener;
+import java.awt.Point;
+import java.util.LinkedList;
 
 public class ScalingImage extends JFrame{
 
@@ -41,6 +43,87 @@ public class ScalingImage extends JFrame{
 class MainPanel extends JPanel {
    private JScrollPane scrollpane;
    private ImagePanel imagePanel;
+
+   public MainPanel() {
+      BufferedImage img = null;
+      int N = 11;
+      int M = 10;
+      int R = 50;
+      int width = 20 + R * M + 25;
+      int height = 20 + (int)(R * Math.sqrt(3)/2) * N + 20;
+      System.out.println(width + " " + height);
+
+      img = new BufferedImage(width * 3 / 2, height * 2, BufferedImage.TYPE_INT_ARGB);
+
+      // Graphics g = img.createGraphics();
+
+      // drawHexahedronGrid(g, N, M, R);
+
+      imagePanel = new ImagePanel(img);
+      scrollpane = new JScrollPane(imagePanel);
+      setLayout(new BorderLayout());
+      setPreferredSize(new Dimension(800, 600));
+      add(scrollpane, BorderLayout .CENTER);
+   }
+}
+
+class ImagePanel extends JPanel {
+   private BufferedImage image;
+   private int initWidth, initHeight;
+   static boolean pressed = false;
+
+   public void spanFilling(BufferedImage img, int x, int y, Color newColor){
+     int oldRGB = img.getRGB(x, y);
+     LinkedList<Point> spans = new LinkedList<>();
+     int tempRGB;
+     if(oldRGB == Color.GREEN.getRGB() || oldRGB == Color.BLACK.getRGB()){
+       return;
+     }
+     spans.add(new Point(x, y));
+     int i = 4;
+     while(!spans.isEmpty()){
+       boolean upAdded = false;
+       boolean downAdded = false;
+       Point span = spans.poll();
+
+       x = (int)span.getX();
+       y = (int)span.getY();
+
+       int tx = x;
+       int step = 1;
+
+       while(true){
+         tempRGB = img.getRGB(x, y);
+         if(tempRGB != Color.BLACK.getRGB()){
+           if(!upAdded){
+             int t = img.getRGB(x, y + 1);
+             if(t == oldRGB){
+               spans.add(new Point(x, y + 1));
+               upAdded = true;
+             }
+           }
+           if(!downAdded){
+             int t = img.getRGB(x, y - 1);
+             if(t == oldRGB){
+               spans.add(new Point(x, y - 1));
+               downAdded = true;
+             }
+           }
+           img.setRGB(x, y, Color.GREEN.getRGB());
+           x += step;
+         }
+         else if(step == 1){
+           x = tx;
+           step = -1;
+         }
+         else break;
+
+       }
+
+     }
+    //  repaint();
+
+   }
 
    private void drawHexahedron(Graphics g, int x, int y, int r){
      int R = r;
@@ -100,51 +183,38 @@ class MainPanel extends JPanel {
      }
    }
 
-   public MainPanel() {
-      BufferedImage img = null;
-      int N = 10;
-      int M = 10;
-      int R = 50;
-      int width = 20 + R * N + 25;
-      int height = 20 + (int)(R * Math.sqrt(3)/2) * M + 20;
-      System.out.println(width + " " + height);
-
-      img = new BufferedImage(width * 3 / 2, height * 2, BufferedImage.TYPE_INT_ARGB);
-
-      Graphics g = img.createGraphics();
-
-      drawHexahedronGrid(g, N, M, R);
-
-      imagePanel = new ImagePanel(img);
-      scrollpane = new JScrollPane(imagePanel);
-      setLayout(new BorderLayout());
-      setPreferredSize(new Dimension(800, 600));
-      add(scrollpane, BorderLayout .CENTER);
-   }
-}
-
-class ImagePanel extends JPanel {
-   private BufferedImage image;
-   private int initWidth, initHeight;
-   static boolean pressed = false;
-
    public ImagePanel(BufferedImage image) {
       this.image = image;
       initWidth = image.getWidth();
       initHeight = image.getHeight();
       setPreferredSize(new Dimension(initWidth, initHeight));
+      int N = 11;
+      int M = 10;
+      int R = 50;
+      Graphics g = this.image.createGraphics();
+      drawHexahedronGrid(g, N, M, R);
+
       addMouseListener(new MouseAdapter() {
         @Override
-        public void mouseClicked(MouseEvent mouseEvent) {
-          // System.out.println("Mouse x: " + mouseEvent.getX());
-          // System.out.println("Mouse y: " + mouseEvent.getY());
+        public void mouseClicked(MouseEvent e) {
+          int x = e.getX();
+          int y = e.getY();
+          // System.out.println("Mouse x: " + e.getX());
+          // System.out.println("Mouse y: " + e.getY());
+          spanFilling(image, x, y, null);
+          repaint();
         }
       });
       addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
+              int x = e.getX();
+              int y = e.getY();
               // System.out.println("Mouse x: " + e.getX());
               // System.out.println("Mouse y: " + e.getY());
+              spanFilling(image, x, y, null);
+
+              repaint();
             }
 
             @Override
