@@ -41,6 +41,53 @@ class MainPanel extends JPanel {
    private JScrollPane scrollpane;
    private ImagePanel imagePanel;
 
+   void drawHexahedron(Graphics g, int x, int y, int r){
+     int R = r;
+     double a, b, z = 0;
+     int i = 0;
+     double angle = 60.0;
+     int X = x;
+     int Y = y;
+     int[] xc = new int[6];
+     int[] yc = new int[6];
+     a = Math.sqrt(3)/2;
+     int yl = (int)(a * R);
+     System.out.println(y + " " + yl);
+     int xl = R / 2;
+     xc[0] = X + R;  yc[0] = Y;
+     xc[1] = X + xl; yc[1] = Y - yl;
+     xc[2] = X - xl; yc[2] = Y - yl;
+     xc[3] = X - R;  yc[3] = Y;
+     xc[4] = X - xl; yc[4] = Y + yl;
+     xc[5] = X + xl; yc[5] = Y + yl;
+
+     while(i < 6){
+      //  a = Math.cos(z / 180 * Math.PI);
+      //  b = Math.sin(z / 180 * Math.PI);
+      //  xc[i] = X + (int)(a * R);
+      //  yc[i] = Y - (int)(b * R);
+       System.out.println("x: " + xc[i] + " y: " + yc[i]);
+      //  z = z + angle;
+       i++;
+     }
+     int x1, x2, y1, y2;
+     int j = 5;
+     while(j >= 0){
+       if(j > 0){
+         x1 = xc[j]; x2 = xc[j-1];
+         y1 = yc[j]; y2 = yc[j-1];
+         g.drawLine(x1, y1, x2, y2);
+         j--;
+       }
+       else{
+         x1 = xc[j]; x2 = xc[5];
+         y1 = yc[j]; y2 = yc[5];
+         g.drawLine(x1, y1, x2, y2);
+         j--;
+       }
+     }
+   }
+
    public MainPanel() {
       BufferedImage img = null;
       img = new BufferedImage(800, 600, BufferedImage.TYPE_INT_ARGB);
@@ -50,40 +97,44 @@ class MainPanel extends JPanel {
       g.setColor(Color.black);
       // g2d.fill(new Ellipse2D.Float(0, 0, 200, 100));
       // g2d.dispose();
-      int n = 6;
+      // int n = 6;
       int R = 50;
-      double a, b,  z = 0 ;  int i = 0; double angle = 360.0 / n ;
-  		//цикл создающий массив из точек
+      // double a, b,  z = 0 ;  int i = 0; double angle = 360.0 / n ;
+  		// //цикл создающий массив из точек
       int X = R + 20; int Y = (int)(R * Math.sqrt(3)/2) - 1 + 20;
-      int[] x = new int[n];
-      int[] y = new int[n];
-  		while(i < n){
-  			a = Math.cos( z/180*Math.PI);
-  			b = Math.sin( z/180*Math.PI);
-  			x[i] = X + (int)(a * R);
-  			y[i] = Y - (int)(b * R);
-  			z = z + angle;
-  			i++;
-  		}
-  		System.out.println();
+      drawHexahedron(g, X, Y, R);
+      drawHexahedron(g, X + 75, Y + (int)(R * Math.sqrt(3)/2), R);
+      drawHexahedron(g, X + 150, Y, R);
+      drawHexahedron(g, X + 225, Y + (int)(R * Math.sqrt(3)/2), R);
 
-  		int x1, x2, y1, y2;
-
-  		int j = n - 1;
-  		while(j >= 0){
-  			if(j > 0){
-  				x1 = x[j]; x2 = x[j-1];
-  				y1 = y[j]; y2 = y[j-1];
-  				g.drawLine(x1, y1, x2, y2);
-  				j--;
-  			}
-  			else{
-  				x1 = x[j]; x2 = x[n-1];
-  				y1 = y[j]; y2 = y[n-1];
-  				g.drawLine(x1, y1, x2, y2);
-  				j--;
-  			}
-  		}
+      // int[] x = new int[n];
+      // int[] y = new int[n];
+  		// while(i < n){
+  		// 	a = Math.cos( z/180*Math.PI);
+  		// 	b = Math.sin( z/180*Math.PI);
+  		// 	x[i] = X + (int)(a * R);
+  		// 	y[i] = Y - (int)(b * R);
+  		// 	z = z + angle;
+  		// 	i++;
+  		// }
+      //
+  		// int x1, x2, y1, y2;
+      //
+  		// int j = n - 1;
+  		// while(j >= 0){
+  		// 	if(j > 0){
+  		// 		x1 = x[j]; x2 = x[j-1];
+  		// 		y1 = y[j]; y2 = y[j-1];
+  		// 		g.drawLine(x1, y1, x2, y2);
+  		// 		j--;
+  		// 	}
+  		// 	else{
+  		// 		x1 = x[j]; x2 = x[n-1];
+  		// 		y1 = y[j]; y2 = y[n-1];
+  		// 		g.drawLine(x1, y1, x2, y2);
+  		// 		j--;
+  		// 	}
+  		// }
       imagePanel = new ImagePanel(img);
       scrollpane = new JScrollPane(imagePanel);
       setLayout(new BorderLayout());
