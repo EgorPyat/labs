@@ -1,3 +1,5 @@
+// JTextField setText()
+// искать центр, его координаты = > координаты шестиугольника, по Y делим на 2yl, по Х делим на 1.5R
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -7,6 +9,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.Point;
 import java.util.LinkedList;
 
@@ -17,16 +20,21 @@ public class ScalingImage extends JFrame{
       JMenuBar menu = new JMenuBar();
       JMenu mFile = new JMenu("File");
       JMenu mAbout = new JMenu("About");
-      JMenuItem mFileItem = new JMenuItem("Exit");
-      JMenuItem mAboutItem = new JMenuItem("Info");
-      mFileItem.addActionListener((e) -> System.exit(0));
-      mAboutItem.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game."));
-      mFile.add(mFileItem);
-      mAbout.add(mAboutItem);
+      JMenuItem mFileNew = new JMenuItem("New");
+      JMenuItem mFileSave = new JMenuItem("Save");
+      JMenuItem mFileImport = new JMenuItem("Import");
+      JMenuItem mFileQuit = new JMenuItem("Quit");
+      JMenuItem mAboutInfo = new JMenuItem("Info");
+      mFileQuit.addActionListener((e) -> System.exit(0));
+      mAboutInfo.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nBy Egor Pyataev"));
+      mFile.add(mFileNew);
+      mFile.add(mFileSave);
+      mFile.add(mFileImport);
+      mFile.add(mFileQuit);
+      mAbout.add(mAboutInfo);
       menu.add(mFile);
       menu.add(mAbout);
       setJMenuBar(menu);
-
       MainPanel mainPanel = new MainPanel();
       add(mainPanel);
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -46,18 +54,13 @@ class MainPanel extends JPanel {
 
    public MainPanel() {
       BufferedImage img = null;
-      int N = 11;
+      int N = 6;
       int M = 10;
-      int R = 50;
+      int R = 45;
       int width = 20 + R * M + 25;
       int height = 20 + (int)(R * Math.sqrt(3)/2) * N + 20;
-      System.out.println(width + " " + height);
 
       img = new BufferedImage(width * 3 / 2, height * 2, BufferedImage.TYPE_INT_ARGB);
-
-      // Graphics g = img.createGraphics();
-
-      // drawHexahedronGrid(g, N, M, R);
 
       imagePanel = new ImagePanel(img);
       scrollpane = new JScrollPane(imagePanel);
@@ -69,18 +72,18 @@ class MainPanel extends JPanel {
 
 class ImagePanel extends JPanel {
    private BufferedImage image;
-   private int initWidth, initHeight;
+   private int initWidth;
+   private int initHeight;
    static boolean pressed = false;
 
    public void spanFilling(BufferedImage img, int x, int y, Color newColor){
      int oldRGB = img.getRGB(x, y);
-     LinkedList<Point> spans = new LinkedList<>();
-     int tempRGB;
-     if(oldRGB == Color.GREEN.getRGB() || oldRGB == Color.BLACK.getRGB()){
+     if(oldRGB == newColor.getRGB() || oldRGB == Color.BLACK.getRGB()){
        return;
      }
+     LinkedList<Point> spans = new LinkedList<>();
+     int tempRGB;
      spans.add(new Point(x, y));
-     int i = 4;
      while(!spans.isEmpty()){
        boolean upAdded = false;
        boolean downAdded = false;
@@ -109,7 +112,7 @@ class ImagePanel extends JPanel {
                downAdded = true;
              }
            }
-           img.setRGB(x, y, Color.GREEN.getRGB());
+           img.setRGB(x, y, newColor.getRGB());
            x += step;
          }
          else if(step == 1){
@@ -117,17 +120,13 @@ class ImagePanel extends JPanel {
            step = -1;
          }
          else break;
-
        }
-
      }
-    //  repaint();
-
    }
 
    private void drawHexahedron(Graphics g, int x, int y, int r){
      int R = r;
-     double a, b, z = 0;
+     double a = 0;
      int i = 0;
      double angle = 60.0;
      int X = x;
@@ -174,6 +173,7 @@ class ImagePanel extends JPanel {
      for(int i = 0; i < height; i++){
        for(int j = 0; j < width; j++){
          drawHexahedron(g, X, Y, R);
+        //  spanFilling(this.image, X, Y, Color.LIGHT_GRAY);
          X += xl;
          Y = j % 2 == 0 ? Y + yl : Y - yl;
        }
@@ -183,46 +183,50 @@ class ImagePanel extends JPanel {
      }
    }
 
-   public ImagePanel(BufferedImage image) {
+   public ImagePanel(BufferedImage image){
       this.image = image;
-      initWidth = image.getWidth();
-      initHeight = image.getHeight();
+      this.initWidth = image.getWidth();
+      this.initHeight = image.getHeight();
       setPreferredSize(new Dimension(initWidth, initHeight));
-      int N = 11;
+      int N = 6;
       int M = 10;
-      int R = 50;
+      int R = 45;
       Graphics g = this.image.createGraphics();
       drawHexahedronGrid(g, N, M, R);
-
+      int width = 20 + R * M + 25;
+      int yl = (int)(R * Math.sqrt(3)/2);
+      int height = 20 + yl * N + 20;
+      System.out.println(R * 2 + " " + yl * 2);
       addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
+          int yl2 = yl + yl;
           int x = e.getX();
           int y = e.getY();
-          // System.out.println("Mouse x: " + e.getX());
-          // System.out.println("Mouse y: " + e.getY());
-          spanFilling(image, x, y, null);
-          repaint();
+          int cellX = (x - 20) / (R + R);
+          int cellY = (y - 20) / (yl2);
+          System.out.println("(" + cellY + ", " + cellX + ")" + "(" + (y - 20) + ", " + (x - 20) + ")");
+          try{
+            spanFilling(image, x, y, Color.RED);
+            repaint();
+          }
+          catch(ArrayIndexOutOfBoundsException ex){}
         }
       });
-      addMouseMotionListener(new MouseMotionListener() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-              int x = e.getX();
-              int y = e.getY();
-              // System.out.println("Mouse x: " + e.getX());
-              // System.out.println("Mouse y: " + e.getY());
-              spanFilling(image, x, y, null);
-
-              repaint();
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-              // System.out.println("Mouse x: " + e.getX());
-              // System.out.println("Mouse y: " + e.getY());
-            }
-        });
+      addMouseMotionListener(new MouseMotionAdapter() {
+        @Override
+        public void mouseDragged(MouseEvent e) {
+          int x = e.getX();
+          int y = e.getY();
+          int cellX;
+          int cellY;
+          try{
+            spanFilling(image, x, y, Color.RED);
+            repaint();
+          }
+          catch(ArrayIndexOutOfBoundsException ex){}
+        }
+      });
    }
 
    @Override
