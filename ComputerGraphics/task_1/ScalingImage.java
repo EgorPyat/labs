@@ -56,7 +56,7 @@ class MainPanel extends JPanel {
       BufferedImage img = null;
       int N = 6;
       int M = 10;
-      int R = 45;
+      int R = 51;
       int width = 20 + R * M + 25;
       int height = 20 + (int)(R * Math.sqrt(3)/2) * N + 20;
 
@@ -124,6 +124,8 @@ class ImagePanel extends JPanel {
      }
    }
 
+   public void drawBrezenhemLine(){}
+
    private void drawHexahedron(Graphics g, int x, int y, int r){
      int R = r;
      double a = 0;
@@ -163,7 +165,8 @@ class ImagePanel extends JPanel {
 
    public void drawHexahedronGrid(Graphics g, int height, int width, int radius){
      g.setColor(Color.black);
-     int R = radius % 2 == 0 ? radius : radius + 1;
+    //  int R = radius % 2 == 0 ? radius : radius + 1;
+     int R = radius;
      int X = R + 20;
      int tx = X;
      int Y = (int)(R * Math.sqrt(3)/2) - 1 + 20;
@@ -183,6 +186,43 @@ class ImagePanel extends JPanel {
      }
    }
 
+   public Point getCenterCoords(int x, int y){
+     int xc;
+     int yc;
+     int tx = x;
+     int ty = y;
+     int color = this.image.getRGB(x, y);
+     int tc = color;
+     while(color != Color.BLACK.getRGB()){
+       ++x;
+       color = this.image.getRGB(x, y);
+     }
+     xc = x;
+     x = tx;
+     color = tc;
+     while(color != Color.BLACK.getRGB()){
+       --x;
+       color = this.image.getRGB(x, y);
+     }
+     xc += x;
+     x = tx;
+     color = tc;
+     while(color != Color.BLACK.getRGB()){
+       ++y;
+       color = this.image.getRGB(x, y);
+     }
+     yc = y;
+     y = ty;
+     color = tc;
+     while(color != Color.BLACK.getRGB()){
+       --y;
+       color = this.image.getRGB(x, y);
+     }
+     yc += y;
+     System.out.println(xc / 2 + " " + yc / 2);
+     return new Point(xc / 2, yc / 2);
+   }
+
    public ImagePanel(BufferedImage image){
       this.image = image;
       this.initWidth = image.getWidth();
@@ -190,22 +230,23 @@ class ImagePanel extends JPanel {
       setPreferredSize(new Dimension(initWidth, initHeight));
       int N = 6;
       int M = 10;
-      int R = 45;
+      int R = 51;
       Graphics g = this.image.createGraphics();
       drawHexahedronGrid(g, N, M, R);
       int width = 20 + R * M + 25;
       int yl = (int)(R * Math.sqrt(3)/2);
       int height = 20 + yl * N + 20;
-      System.out.println(R * 2 + " " + yl * 2);
+      System.out.println(R + R / 2 + " " + yl * 2);
       addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
           int yl2 = yl + yl;
           int x = e.getX();
           int y = e.getY();
-          int cellX = (x - 20) / (R + R);
-          int cellY = (y - 20) / (yl2);
-          System.out.println("(" + cellY + ", " + cellX + ")" + "(" + (y - 20) + ", " + (x - 20) + ")");
+          Point p = getCenterCoords(x, y);
+          int cellX = ((int)p.getX() - 20) / (R + R / 2);
+          int cellY = ((int)p.getY() - 20) / (yl2);
+          System.out.println("(" + cellY + ", " + cellX + ")" + "(" + (y - 20) + ", " + (x - 20) + ")" + " (" + (p.getY() - 20) + ", " + (p.getX() - 20) + ")");
           try{
             spanFilling(image, x, y, Color.RED);
             repaint();
