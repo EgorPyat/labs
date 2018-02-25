@@ -49,15 +49,6 @@ class MainPanel extends JPanel {
    private ImagePanel imagePanel;
 
    public MainPanel(HexahedronGrid field){
-      // BufferedImage img = null;
-      // int N = 6;
-      // int M = 10;
-      // int R = 51;
-      // int width = 20 + R * M + 25;
-      // int height = 20 + (int)(R * Math.sqrt(3)/2) * N + 20;
-      //
-      // img = new BufferedImage(width * 3 / 2, height * 2, BufferedImage.TYPE_INT_ARGB);
-
       imagePanel = new ImagePanel(field);
       scrollpane = new JScrollPane(imagePanel);
       setLayout(new BorderLayout());
@@ -123,25 +114,26 @@ class ImagePanel extends JPanel {
 
    public void drawBrezenhemLine(){}
 
-   private void drawHexahedron(Graphics g, int x, int y, int r){
-     int R = r;
-     double a = 0;
-     int i = 0;
-     double angle = 60.0;
-     int X = x;
-     int Y = y;
-     int[] xc = new int[6];
-     int[] yc = new int[6];
-     a = Math.sqrt(3)/2;
-     int yl = (int)(a * R);
-     int xl = R / 2;
-     xc[0] = X + R;  yc[0] = Y;
-     xc[1] = X + xl; yc[1] = Y - yl;
-     xc[2] = X - xl; yc[2] = Y - yl;
-     xc[3] = X - R;  yc[3] = Y;
-     xc[4] = X - xl; yc[4] = Y + yl;
-     xc[5] = X + xl; yc[5] = Y + yl;
-
+   private void drawHexahedron(Graphics g, Hexahedron h){
+    //  int R = r;
+    //  double a = 0;
+    //  int i = 0;
+    //  double angle = 60.0;
+    //  int X = x;
+    //  int Y = y;
+    //  int[] xc = new int[6];
+    //  int[] yc = new int[6];
+    //  a = Math.sqrt(3)/2;
+    //  int yl = (int)(a * R);
+    //  int xl = R / 2;
+    //  xc[0] = X + R;  yc[0] = Y;
+    //  xc[1] = X + xl; yc[1] = Y - yl;
+    //  xc[2] = X - xl; yc[2] = Y - yl;
+    //  xc[3] = X - R;  yc[3] = Y;
+    //  xc[4] = X - xl; yc[4] = Y + yl;
+    //  xc[5] = X + xl; yc[5] = Y + yl;
+    int xc[] = h.getXCoords();
+    int yc[] = h.getYCoords();
      int x1, x2, y1, y2;
      int j = 5;
      while(j >= 0){
@@ -160,26 +152,28 @@ class ImagePanel extends JPanel {
      }
    }
 
-   public void drawHexahedronGrid(Graphics g, int height, int width, int radius){
+   public void drawHexahedronGrid(){
+     Graphics g = this.image.createGraphics();
      g.setColor(Color.black);
-    //  int R = radius % 2 == 0 ? radius : radius + 1;
-     int R = radius;
-     int X = R + 20;
-     int tx = X;
-     int Y = (int)(R * Math.sqrt(3)/2) - 1 + 20;
-     int ty = Y;
-     int xl = R + R / 2;
-     int yl = (int)(R * Math.sqrt(3)/2);
-     for(int i = 0; i < height; i++){
-       for(int j = 0; j < width; j++){
-         drawHexahedron(g, X, Y, R);
+    // //  int R = radius % 2 == 0 ? radius : radius + 1;
+    //  int R = radius;
+    //  int X = R + 20;
+    //  int tx = X;
+    //  int Y = (int)(R * Math.sqrt(3)/2) - 1 + 20;
+    //  int ty = Y;
+    //  int xl = R + R / 2;
+    //  int yl = (int)(R * Math.sqrt(3)/2);
+    Hexahedron[][] f = this.field.getField();
+     for(int i = 0; i < this.field.getHexHeight(); i++){
+       for(int j = 0; j < this.field.getHexWidth(); j++){
+         drawHexahedron(g, f[i][j]);
         //  spanFilling(this.image, X, Y, Color.LIGHT_GRAY);
-         X += xl;
-         Y = j % 2 == 0 ? Y + yl : Y - yl;
+        //  X += xl;
+        //  Y = j % 2 == 0 ? Y + yl : Y - yl;
        }
-       X = tx;
-       Y = ty + yl * 2;
-       ty = Y;
+      //  X = tx;
+      //  Y = ty + yl * 2;
+      //  ty = Y;
      }
    }
 
@@ -229,11 +223,8 @@ class ImagePanel extends JPanel {
       int N = this.field.getHexHeight();
       int M = this.field.getHexWidth();
       int R = this.field.getHexRadius();
-      Graphics g = this.image.createGraphics();
-      drawHexahedronGrid(g, N, M, R);
-      // int width = 20 + R * M + 25;
-      // int height = 20 + yl * N + 20;
-      // System.out.println(R + R / 2 + " " + yl * 2);
+      drawHexahedronGrid();
+
       addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
