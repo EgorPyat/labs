@@ -11,6 +11,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.Point;
 import java.util.LinkedList;
+import javax.imageio.ImageIO;
 
 public class ScalingImage extends JFrame{
   public ScalingImage(HexahedronGrid field){
@@ -33,8 +34,31 @@ public class ScalingImage extends JFrame{
     menu.add(mFile);
     menu.add(mAbout);
     setJMenuBar(menu);
+    JToolBar toolBar = new JToolBar();
     MainPanel mainPanel = new MainPanel(field);
     add(mainPanel);
+
+    try{
+      JButton buttonNew = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("new.png"))));
+      buttonNew.setSize(new Dimension(32, 32));
+      buttonNew.addActionListener((e) -> mainPanel.draw());
+
+      JButton buttonStep = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("step.png"))));
+      buttonStep.setSize(new Dimension(32, 32));
+
+      JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
+      buttonExit.setSize(new Dimension(32, 32));
+      buttonExit.addActionListener((e) -> System.exit(0));
+      toolBar.add(buttonNew);
+      toolBar.add(buttonStep);
+      toolBar.add(buttonExit);
+    }
+    catch(IOException e){}
+
+    toolBar.setFloatable(false);
+    toolBar.setRollover(true);
+
+    add(toolBar, BorderLayout.PAGE_START);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     pack();
     setLocationRelativeTo(null);
@@ -45,7 +69,9 @@ public class ScalingImage extends JFrame{
 class MainPanel extends JPanel {
   private JScrollPane scrollpane;
   private ImagePanel imagePanel;
-
+  public void draw(){
+    imagePanel.draw();
+  }
   public MainPanel(HexahedronGrid field){
     imagePanel = new ImagePanel(field);
     scrollpane = new JScrollPane(imagePanel);
@@ -61,7 +87,10 @@ class ImagePanel extends JPanel {
   private int initWidth;
   private int initHeight;
   private Color defColor;
-
+  public void draw(){
+    drawHexahedronGrid();
+    repaint();
+  }
   public void spanFilling(BufferedImage img, int x, int y, Color newColor){
     int oldRGB = img.getRGB(x, y);
 
@@ -192,7 +221,7 @@ class ImagePanel extends JPanel {
     this.defColor = this.image.getGraphics().getColor();
     setPreferredSize(new Dimension(initWidth, initHeight));
     int R = this.field.getHexRadius();
-    drawHexahedronGrid();
+    // drawHexahedronGrid();
     int yl = (int)(R * Math.sqrt(3)/2);
     int yl2 = yl + yl;
 

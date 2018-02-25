@@ -6,6 +6,7 @@ public class Hexahedron extends Polygon{
   private int[] xc;
   private int[] yc;
   private boolean alive = false;
+
   public void construct(int x, int y, int radius){
     this.xc = new int[6];
     this.yc = new int[6];
@@ -27,13 +28,13 @@ public class Hexahedron extends Polygon{
   public Point getCenter(){
     return this.center;
   }
-  
+
   public int[] getXCoords(){
-    return xc;
+    return this.xc;
   }
 
   public int[] getYCoords(){
-    return yc;
+    return this.yc;
   }
 
   public boolean isAlive(){
