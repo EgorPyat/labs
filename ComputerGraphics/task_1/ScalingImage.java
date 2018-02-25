@@ -60,10 +60,11 @@ class ImagePanel extends JPanel {
   private HexahedronGrid field;
   private int initWidth;
   private int initHeight;
-  static boolean pressed = false;
+  private Color defColor;
 
   public void spanFilling(BufferedImage img, int x, int y, Color newColor){
     int oldRGB = img.getRGB(x, y);
+
     if(oldRGB == newColor.getRGB() || oldRGB == Color.BLACK.getRGB()){
      return;
     }
@@ -140,6 +141,8 @@ class ImagePanel extends JPanel {
     for(int i = 0; i < this.field.getHexHeight(); i++){
       for(int j = 0; j < this.field.getHexWidth(); j++){
         drawHexahedron(g, f[i][j]);
+        Point p = f[i][j].getCenter();
+        spanFilling(this.image, (int)p.getX(), (int)p.getY(), this.defColor);
       }
     }
   }
@@ -186,25 +189,35 @@ class ImagePanel extends JPanel {
     this.initWidth = field.getWidth();
     this.initHeight = field.getHeight();
     this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    this.defColor = this.image.getGraphics().getColor();
     setPreferredSize(new Dimension(initWidth, initHeight));
-    int N = this.field.getHexHeight();
-    int M = this.field.getHexWidth();
     int R = this.field.getHexRadius();
     drawHexahedronGrid();
+    int yl = (int)(R * Math.sqrt(3)/2);
+    int yl2 = yl + yl;
 
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        int yl = (int)(R * Math.sqrt(3)/2);
-        int yl2 = yl + yl;
         int x = e.getX();
         int y = e.getY();
+        if(image.getRGB(x, y) == 0 || image.getRGB(x, y) == Color.BLACK.getRGB()){
+          return;
+        }
         Point p = getCenterCoords(x, y);
         int cellX = ((int)p.getX() - 20) / (R + R / 2);
         int cellY = ((int)p.getY() - 20) / (yl2);
         System.out.println("(" + cellY + ", " + cellX + ")" + "(" + (y - 20) + ", " + (x - 20) + ")" + " (" + (p.getY() - 20) + ", " + (p.getX() - 20) + ")");
         try{
-          spanFilling(image, x, y, Color.RED);
+          Hexahedron h = field.getField()[cellY][cellX];
+          if(h.isAlive()){
+            spanFilling(image, x, y, defColor);
+            h.changeStatus();
+          }
+          else{
+            spanFilling(image, x, y, Color.RED);
+            h.changeStatus();
+          }
           repaint();
         }
         catch(ArrayIndexOutOfBoundsException ex){}
@@ -218,6 +231,9 @@ class ImagePanel extends JPanel {
       int cellX;
       int cellY;
       try{
+        if(image.getRGB(x, y) == 0 || image.getRGB(x, y) == Color.BLACK.getRGB()){
+          return;
+        }
         spanFilling(image, x, y, Color.RED);
         repaint();
       }
