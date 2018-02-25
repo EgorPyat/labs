@@ -14,8 +14,7 @@ import java.awt.Point;
 import java.util.LinkedList;
 
 public class ScalingImage extends JFrame{
-
-    public ScalingImage(){
+    public ScalingImage(HexahedronGrid field){
       super("Life - The game.");
       JMenuBar menu = new JMenuBar();
       JMenu mFile = new JMenu("File");
@@ -35,7 +34,7 @@ public class ScalingImage extends JFrame{
       menu.add(mFile);
       menu.add(mAbout);
       setJMenuBar(menu);
-      MainPanel mainPanel = new MainPanel();
+      MainPanel mainPanel = new MainPanel(field);
       add(mainPanel);
       setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       pack();
@@ -43,26 +42,23 @@ public class ScalingImage extends JFrame{
       setVisible(true);
    }
 
-   public static void main(String[] args) {
-      new ScalingImage();
-   }
 }
 
 class MainPanel extends JPanel {
    private JScrollPane scrollpane;
    private ImagePanel imagePanel;
 
-   public MainPanel() {
-      BufferedImage img = null;
-      int N = 6;
-      int M = 10;
-      int R = 51;
-      int width = 20 + R * M + 25;
-      int height = 20 + (int)(R * Math.sqrt(3)/2) * N + 20;
+   public MainPanel(HexahedronGrid field){
+      // BufferedImage img = null;
+      // int N = 6;
+      // int M = 10;
+      // int R = 51;
+      // int width = 20 + R * M + 25;
+      // int height = 20 + (int)(R * Math.sqrt(3)/2) * N + 20;
+      //
+      // img = new BufferedImage(width * 3 / 2, height * 2, BufferedImage.TYPE_INT_ARGB);
 
-      img = new BufferedImage(width * 3 / 2, height * 2, BufferedImage.TYPE_INT_ARGB);
-
-      imagePanel = new ImagePanel(img);
+      imagePanel = new ImagePanel(field);
       scrollpane = new JScrollPane(imagePanel);
       setLayout(new BorderLayout());
       setPreferredSize(new Dimension(800, 600));
@@ -72,6 +68,7 @@ class MainPanel extends JPanel {
 
 class ImagePanel extends JPanel {
    private BufferedImage image;
+   private HexahedronGrid field;
    private int initWidth;
    private int initHeight;
    static boolean pressed = false;
@@ -223,23 +220,24 @@ class ImagePanel extends JPanel {
      return new Point(xc / 2, yc / 2);
    }
 
-   public ImagePanel(BufferedImage image){
-      this.image = image;
-      this.initWidth = image.getWidth();
-      this.initHeight = image.getHeight();
+   public ImagePanel(HexahedronGrid field){
+      this.field = field;
+      this.initWidth = field.getWidth();
+      this.initHeight = field.getHeight();
+      this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
       setPreferredSize(new Dimension(initWidth, initHeight));
-      int N = 6;
-      int M = 10;
-      int R = 51;
+      int N = this.field.getHexHeight();
+      int M = this.field.getHexWidth();
+      int R = this.field.getHexRadius();
       Graphics g = this.image.createGraphics();
       drawHexahedronGrid(g, N, M, R);
-      int width = 20 + R * M + 25;
-      int yl = (int)(R * Math.sqrt(3)/2);
-      int height = 20 + yl * N + 20;
-      System.out.println(R + R / 2 + " " + yl * 2);
+      // int width = 20 + R * M + 25;
+      // int height = 20 + yl * N + 20;
+      // System.out.println(R + R / 2 + " " + yl * 2);
       addMouseListener(new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent e) {
+          int yl = (int)(R * Math.sqrt(3)/2);
           int yl2 = yl + yl;
           int x = e.getX();
           int y = e.getY();

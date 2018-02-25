@@ -6,7 +6,7 @@ public class Hexahedron extends Polygon{
   private int[] xc;
   private int[] yc;
 
-  public void constructHexahedron(int x, int y, int radius){
+  public void construct(int x, int y, int radius){
     this.xc = new int[6];
     this.yc = new int[6];
     this.center = new Point(x, y);
