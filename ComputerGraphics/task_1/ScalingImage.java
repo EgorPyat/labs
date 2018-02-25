@@ -14,7 +14,8 @@ import java.util.LinkedList;
 import javax.imageio.ImageIO;
 
 public class ScalingImage extends JFrame{
-  public ScalingImage(HexahedronGrid field){
+  private MainPanel mainPanel = null;
+  public ScalingImage(){
     super("Life - The game.");
     JMenuBar menu = new JMenuBar();
     JMenu mFile = new JMenu("File");
@@ -35,17 +36,34 @@ public class ScalingImage extends JFrame{
     menu.add(mAbout);
     setJMenuBar(menu);
     JToolBar toolBar = new JToolBar();
-    MainPanel mainPanel = new MainPanel(field);
-    add(mainPanel);
 
     try{
       JButton buttonNew = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("new.png"))));
       buttonNew.setSize(new Dimension(32, 32));
       buttonNew.addActionListener((e) -> {
-        // mainPanel.draw();
-        JDialog dialog = new JDialog(this, "title", true);
+        JDialog dialog = new JDialog(this, "New Game", true);
+        dialog.setLayout(new FlowLayout());
+        TextField height = new TextField("6", 20);
+        TextField width = new TextField("10" , 20);
+        TextField radius = new TextField("46" , 20);
+        TextField thickness = new TextField("1" , 20);
+        JButton submit = new JButton("Sumbit");
+        submit.addActionListener((d) -> {
+          if(mainPanel != null) getContentPane().remove(mainPanel);
+          mainPanel = new MainPanel(new HexahedronGrid(Integer.valueOf(height.getText()), 10, 46));
+          add(mainPanel);
+          mainPanel.draw();
+          pack();
+          dialog.dispose();
+        });
+        dialog.add(height);
+        dialog.add(width);
+        dialog.add(radius);
+        dialog.add(thickness);
+        dialog.add(submit);
+
         dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        dialog.setSize(180, 90);
+        dialog.setSize(200, 220);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
 
@@ -229,7 +247,6 @@ class ImagePanel extends JPanel {
     this.defColor = this.image.getGraphics().getColor();
     setPreferredSize(new Dimension(initWidth, initHeight));
     int R = this.field.getHexRadius();
-    // drawHexahedronGrid();
     int yl = (int)(R * Math.sqrt(3)/2);
     int yl2 = yl + yl;
 
