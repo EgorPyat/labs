@@ -41,7 +41,15 @@ public class ScalingImage extends JFrame{
     try{
       JButton buttonNew = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("new.png"))));
       buttonNew.setSize(new Dimension(32, 32));
-      buttonNew.addActionListener((e) -> mainPanel.draw());
+      buttonNew.addActionListener((e) -> {
+        // mainPanel.draw();
+        JDialog dialog = new JDialog(this, "title", true);
+        dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        dialog.setSize(180, 90);
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
+      });
 
       JButton buttonStep = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("step.png"))));
       buttonStep.setSize(new Dimension(32, 32));
