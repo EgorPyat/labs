@@ -1,4 +1,3 @@
-// JTextField setText()
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -45,15 +44,16 @@ public class ScalingImage extends JFrame{
         dialog.setLayout(new FlowLayout());
         TextField height = new TextField("6", 20);
         TextField width = new TextField("10" , 20);
-        TextField radius = new TextField("46" , 20);
+        TextField radius = new TextField("48" , 20);
         TextField thickness = new TextField("1" , 20);
         JButton submit = new JButton("Sumbit");
         submit.addActionListener((d) -> {
-          if(mainPanel != null) getContentPane().remove(mainPanel);
-          mainPanel = new MainPanel(new HexahedronGrid(Integer.valueOf(height.getText()), 10, 46));
+          getContentPane().remove(mainPanel);
+          mainPanel = new MainPanel(new HexahedronGrid(Integer.valueOf(height.getText()), Integer.valueOf(width.getText()), Integer.valueOf(radius.getText())));
           add(mainPanel);
           mainPanel.draw();
           pack();
+          setLocationRelativeTo(null);
           dialog.dispose();
         });
         dialog.add(height);
@@ -69,14 +69,27 @@ public class ScalingImage extends JFrame{
 
       });
 
+      JButton buttonSave = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("save.png"))));
+      buttonSave.setSize(new Dimension(32, 32));
+      JButton buttonExport = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("export.png"))));
+      buttonExport.setSize(new Dimension(32, 32));
       JButton buttonStep = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("step.png"))));
       buttonStep.setSize(new Dimension(32, 32));
-
+      JButton buttonRun = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("run.png"))));
+      buttonRun.setSize(new Dimension(32, 32));
+      JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
+      buttonAbout.setSize(new Dimension(32, 32));
       JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
       buttonExit.setSize(new Dimension(32, 32));
       buttonExit.addActionListener((e) -> System.exit(0));
       toolBar.add(buttonNew);
+      toolBar.add(buttonSave);
+      toolBar.add(buttonExport);
+      toolBar.addSeparator();
       toolBar.add(buttonStep);
+      toolBar.add(buttonRun);
+      toolBar.addSeparator();
+      toolBar.add(buttonAbout);
       toolBar.add(buttonExit);
     }
     catch(IOException e){}
@@ -85,6 +98,9 @@ public class ScalingImage extends JFrame{
     toolBar.setRollover(true);
 
     add(toolBar, BorderLayout.PAGE_START);
+    mainPanel = new MainPanel(new HexahedronGrid(6, 10, 48));
+    add(mainPanel);
+    mainPanel.draw();
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     pack();
     setLocationRelativeTo(null);
