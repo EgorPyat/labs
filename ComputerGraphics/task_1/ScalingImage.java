@@ -18,20 +18,41 @@ public class ScalingImage extends JFrame{
     super("Life - The game.");
     JMenuBar menu = new JMenuBar();
     JMenu mFile = new JMenu("File");
+    JMenu mGame = new JMenu("Game");
     JMenu mAbout = new JMenu("About");
     JMenuItem mFileNew = new JMenuItem("New");
     JMenuItem mFileSave = new JMenuItem("Save");
     JMenuItem mFileImport = new JMenuItem("Import");
     JMenuItem mFileQuit = new JMenuItem("Quit");
     JMenuItem mAboutInfo = new JMenuItem("Info");
+    JMenuItem mGameRun = new JMenuItem("Run");
+    JMenuItem mGameStep = new JMenuItem("Step");
+    JMenu     mGameMode = new JMenu("Mode");
+    JMenuItem mGameModeXOR = new JMenuItem("XOR");
+    JMenuItem mGameModeReplace = new JMenuItem("Replace");
+    JMenuItem mGameClearField = new JMenuItem("Clear field");
+    JMenuItem mGameSettings = new JMenuItem("Settings");
+
     mFileQuit.addActionListener((e) -> System.exit(0));
     mAboutInfo.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nBy Egor Pyataev"));
     mFile.add(mFileNew);
     mFile.add(mFileSave);
     mFile.add(mFileImport);
+    mFile.addSeparator();
     mFile.add(mFileQuit);
+    mGame.add(mGameRun);
+    mGame.add(mGameStep);
+    mGame.addSeparator();
+    mGameMode.add(mGameModeXOR);
+    mGameMode.add(mGameModeReplace);
+    mGame.add(mGameMode);
+    mGame.addSeparator();
+    mGame.add(mGameClearField);
+    mGame.addSeparator();
+    mGame.add(mGameSettings);
     mAbout.add(mAboutInfo);
     menu.add(mFile);
+    menu.add(mGame);
     menu.add(mAbout);
     setJMenuBar(menu);
     JToolBar toolBar = new JToolBar();
@@ -71,26 +92,45 @@ public class ScalingImage extends JFrame{
 
       JButton buttonSave = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("save.png"))));
       buttonSave.setSize(new Dimension(32, 32));
-      JButton buttonExport = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("export.png"))));
-      buttonExport.setSize(new Dimension(32, 32));
+
+      JButton buttonImport = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("import.png"))));
+      buttonImport.setSize(new Dimension(32, 32));
+
       JButton buttonStep = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("step.png"))));
       buttonStep.setSize(new Dimension(32, 32));
+
       JButton buttonRun = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("run.png"))));
       buttonRun.setSize(new Dimension(32, 32));
+
+      JButton buttonMode = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("mode.png"))));
+      buttonMode.setSize(new Dimension(32, 32));
+
+      JButton buttonClear = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("clear.png"))));
+      buttonClear.setSize(new Dimension(32, 32));
+
+      JButton buttonSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("settings.png"))));
+      buttonSettings.setSize(new Dimension(32, 32));
+
       JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
       buttonAbout.setSize(new Dimension(32, 32));
+      buttonAbout.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nBy Egor Pyataev"));
+
       JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
       buttonExit.setSize(new Dimension(32, 32));
       buttonExit.addActionListener((e) -> System.exit(0));
+
       toolBar.add(buttonNew);
       toolBar.add(buttonSave);
-      toolBar.add(buttonExport);
+      toolBar.add(buttonImport);
+      toolBar.add(buttonExit);
       toolBar.addSeparator();
       toolBar.add(buttonStep);
       toolBar.add(buttonRun);
+      toolBar.add(buttonMode);
+      toolBar.add(buttonClear);
+      toolBar.add(buttonSettings);
       toolBar.addSeparator();
       toolBar.add(buttonAbout);
-      toolBar.add(buttonExit);
     }
     catch(IOException e){}
 
