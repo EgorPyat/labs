@@ -6,6 +6,7 @@ public class Hexahedron extends Polygon{
   private int[] xc;
   private int[] yc;
   private boolean alive = false;
+  private boolean survive;
 
   public void construct(int x, int y, int radius){
     this.xc = new int[6];
@@ -41,7 +42,23 @@ public class Hexahedron extends Polygon{
     return this.alive;
   }
 
+  public void setAlive(boolean alive){
+    this.alive = alive;
+  }
+  
   public void changeStatus(){
     this.alive = !this.alive;
+  }
+
+  public void setSurvive(){
+    this.survive = true;
+  }
+
+  public boolean getSurvive(){
+    return this.survive;
+  }
+
+  public void setDead(){
+    this.survive = false;
   }
 }

@@ -98,6 +98,9 @@ public class ScalingImage extends JFrame{
 
       JButton buttonStep = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("step.png"))));
       buttonStep.setSize(new Dimension(32, 32));
+      buttonStep.addActionListener((e) -> {
+        mainPanel.stepChange();
+      });
 
       JButton buttonRun = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("run.png"))));
       buttonRun.setSize(new Dimension(32, 32));
@@ -107,6 +110,9 @@ public class ScalingImage extends JFrame{
 
       JButton buttonClear = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("clear.png"))));
       buttonClear.setSize(new Dimension(32, 32));
+      buttonClear.addActionListener((e) -> {
+        mainPanel.clear();
+      });
 
       JButton buttonSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("settings.png"))));
       buttonSettings.setSize(new Dimension(32, 32));
@@ -151,6 +157,13 @@ public class ScalingImage extends JFrame{
 class MainPanel extends JPanel {
   private JScrollPane scrollpane;
   private ImagePanel imagePanel;
+
+  public void stepChange(){
+    imagePanel.stepChange();
+  }
+  public void clear(){
+    imagePanel.clear();
+  }
   public void draw(){
     imagePanel.draw();
   }
@@ -169,10 +182,21 @@ class ImagePanel extends JPanel {
   private int initWidth;
   private int initHeight;
   private Color defColor;
+
+  public void stepChange(){
+    field.stepChange();
+    this.draw();
+  }
+
+  public void clear(){
+    this.draw();
+  }
+
   public void draw(){
     drawHexahedronGrid();
     repaint();
   }
+
   public void spanFilling(BufferedImage img, int x, int y, Color newColor){
     int oldRGB = img.getRGB(x, y);
 
@@ -253,7 +277,7 @@ class ImagePanel extends JPanel {
       for(int j = 0; j < this.field.getHexWidth(); j++){
         drawHexahedron(g, f[i][j]);
         Point p = f[i][j].getCenter();
-        spanFilling(this.image, (int)p.getX(), (int)p.getY(), this.defColor);
+        spanFilling(this.image, (int)p.getX(), (int)p.getY(), f[i][j].isAlive() ? Color.RED : this.defColor);
       }
     }
   }
@@ -303,7 +327,7 @@ class ImagePanel extends JPanel {
     this.defColor = this.image.getGraphics().getColor();
     setPreferredSize(new Dimension(initWidth, initHeight));
     int R = this.field.getHexRadius();
-    int yl = (int)(R * Math.sqrt(3)/2);
+    int yl = (int)(R * Math.sqrt(3) / 2);
     int yl2 = yl + yl;
 
     addMouseListener(new MouseAdapter() {
