@@ -8,6 +8,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.ItemEvent;
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.Timer;
@@ -16,6 +17,8 @@ import javax.imageio.ImageIO;
 
 public class ScalingImage extends JFrame{
   private MainPanel mainPanel = null;
+  private Timer timer = null;
+
   public ScalingImage(){
     super("Life - The game.");
     JMenuBar menu = new JMenuBar();
@@ -63,33 +66,34 @@ public class ScalingImage extends JFrame{
       JButton buttonNew = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("new.png"))));
       buttonNew.setSize(new Dimension(32, 32));
       buttonNew.addActionListener((e) -> {
-        JDialog dialog = new JDialog(this, "New Game", true);
-        dialog.setLayout(new FlowLayout());
-        TextField height = new TextField("6", 20);
-        TextField width = new TextField("10" , 20);
-        TextField radius = new TextField("48" , 20);
-        TextField thickness = new TextField("1" , 20);
-        JButton submit = new JButton("Sumbit");
-        submit.addActionListener((d) -> {
-          getContentPane().remove(mainPanel);
-          mainPanel = new MainPanel(new HexahedronGrid(Integer.valueOf(height.getText()), Integer.valueOf(width.getText()), Integer.valueOf(radius.getText())));
-          add(mainPanel);
-          mainPanel.draw();
-          pack();
-          setLocationRelativeTo(null);
-          dialog.dispose();
-        });
-        dialog.add(height);
-        dialog.add(width);
-        dialog.add(radius);
-        dialog.add(thickness);
-        dialog.add(submit);
+        if(timer == null){
+          JDialog dialog = new JDialog(this, "New Game", true);
+          dialog.setLayout(new FlowLayout());
+          TextField height = new TextField("6", 20);
+          TextField width = new TextField("10" , 20);
+          TextField radius = new TextField("48" , 20);
+          TextField thickness = new TextField("1" , 20);
+          JButton submit = new JButton("Sumbit");
+          submit.addActionListener((d) -> {
+            getContentPane().remove(mainPanel);
+            mainPanel = new MainPanel(new HexahedronGrid(Integer.valueOf(height.getText()), Integer.valueOf(width.getText()), Integer.valueOf(radius.getText())));
+            add(mainPanel);
+            mainPanel.draw();
+            pack();
+            setLocationRelativeTo(null);
+            dialog.dispose();
+          });
+          dialog.add(height);
+          dialog.add(width);
+          dialog.add(radius);
+          dialog.add(thickness);
+          dialog.add(submit);
 
-        dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        dialog.setSize(200, 220);
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-
+          dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+          dialog.setSize(200, 220);
+          dialog.setLocationRelativeTo(this);
+          dialog.setVisible(true);
+        }
       });
 
       JButton buttonSave = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("save.png"))));
@@ -104,17 +108,27 @@ public class ScalingImage extends JFrame{
         mainPanel.stepChange();
       });
 
-      JButton buttonRun = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("run.png"))));
+      JToggleButton buttonRun = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("run.png"))));
       buttonRun.setSize(new Dimension(32, 32));
-      buttonRun.addActionListener((e) -> {
-        Timer t = new Timer();
-        TimerTask tt = new TimerTask(){
-          @Override
-          public void run(){
-            mainPanel.stepChange();
-          };
-        };
-        new Timer().schedule(tt, 600, 600);
+      buttonRun.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+          System.out.println("select");
+          timer = new Timer(true);
+          timer.schedule(new TimerTask(){
+            @Override
+            public void run(){
+              mainPanel.stepChange();
+              if(mainPanel.stopChanging()){
+                ((JToggleButton)e.getItem()).setSelected(false);
+              }
+            };
+          }, 600, 600);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+          timer.cancel();
+          timer = null;
+          System.out.println("deselect");
+        }
       });
 
       JButton buttonMode = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("mode.png"))));
@@ -123,7 +137,9 @@ public class ScalingImage extends JFrame{
       JButton buttonClear = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("clear.png"))));
       buttonClear.setSize(new Dimension(32, 32));
       buttonClear.addActionListener((e) -> {
-        mainPanel.clear();
+        if(timer == null){
+          mainPanel.clear();
+        }
       });
 
       JButton buttonSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("settings.png"))));
@@ -170,6 +186,9 @@ class MainPanel extends JPanel {
   private JScrollPane scrollpane;
   private ImagePanel imagePanel;
 
+  public boolean stopChanging(){
+    return imagePanel.stopChanging();
+  }
   public void stepChange(){
     imagePanel.stepChange();
   }
@@ -194,6 +213,10 @@ class ImagePanel extends JPanel {
   private int initWidth;
   private int initHeight;
   private Color defColor;
+
+  public boolean stopChanging(){
+    return this.field.isExtinction();
+  }
 
   public void stepChange(){
     field.stepChange();

@@ -7,6 +7,7 @@ public class HexahedronGrid{
   private int normal;
   private int fieldWidth;
   private int fieldHeight;
+  private boolean extinction = true;
 
   public HexahedronGrid(int N, int M, int hexRadius){
     this.hexWidth = M;
@@ -68,6 +69,7 @@ public class HexahedronGrid{
     int fst_count = 0;
     int snd_count = 0;
     int step;
+
     for(int i = 0; i < hexHeight; i++){
       for(int j = 0; j < hexWidth; j++){
 
@@ -95,6 +97,7 @@ public class HexahedronGrid{
           field[i][j].setDead();
         }
         else{
+          this.extinction = false;
           field[i][j].setSurvive();
         }
         System.out.println("(" + i + ", " + j + ")" + " " + impact + " " + field[i][j].isAlive());
@@ -110,7 +113,13 @@ public class HexahedronGrid{
     System.out.println("step");
   }
 
-  void clearField(){
+  public boolean isExtinction(){
+    boolean temp = this.extinction;
+    this.extinction = true;
+    return temp;
+  }
+
+  public void clearField(){
     this.field = new HexahedronGrid(this.hexHeight, this.hexWidth, this.hexRadius).getField();
   }
 }
