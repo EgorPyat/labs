@@ -133,8 +133,13 @@ public class ScalingImage extends JFrame{
         }
       });
 
-      JButton buttonMode = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("mode.png"))));
+      JToggleButton buttonMode = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("mode.png"))));
       buttonMode.setSize(new Dimension(32, 32));
+      buttonMode.addItemListener((e) -> {
+        if(timer == null){
+          mainPanel.changeMode();
+        }
+      });
 
       JButton buttonClear = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("clear.png"))));
       buttonClear.setSize(new Dimension(32, 32));
@@ -188,6 +193,9 @@ class MainPanel extends JPanel {
   private JScrollPane scrollpane;
   private ImagePanel imagePanel;
 
+  public void changeMode(){
+    imagePanel.changeMode();
+  }
   public boolean stopChanging(){
     return imagePanel.stopChanging();
   }
@@ -216,7 +224,12 @@ class ImagePanel extends JPanel {
   private int initHeight;
   private Color defColor;
   private Point lastCell;
-  private boolean xor = true;
+  private boolean xor = false;
+
+  public void changeMode(){
+    this.xor = !this.xor;
+  }
+
   public boolean stopChanging(){
     return this.field.isExtinction();
   }
@@ -388,7 +401,7 @@ class ImagePanel extends JPanel {
             spanFilling(image, x, y, defColor);
             h.changeStatus();
           }
-          else{
+          else if(!h.isAlive()){
             spanFilling(image, x, y, Color.RED);
             h.changeStatus();
           }
@@ -417,11 +430,9 @@ class ImagePanel extends JPanel {
           spanFilling(image, x, y, defColor);
           h.changeStatus();
         }
-        else{
-          if(xor){
-            spanFilling(image, x, y, Color.RED);
-            h.changeStatus();
-          }
+        else if(!h.isAlive()){
+          spanFilling(image, x, y, Color.RED);
+          h.changeStatus();
         }
         repaint();
       }
