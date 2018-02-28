@@ -71,10 +71,10 @@ public class HexahedronGrid{
     for(int i = 0; i < hexHeight; i++){
       for(int j = 0; j < hexWidth; j++){
 
-        if(i > 0) if(field[i - 1][j].isAlive()) ++fst_count;
-        if(i < hexHeight - 1) if(field[i + 1][j].isAlive()) ++fst_count;
-        if(j < hexWidth - 2) if(field[i][j + 2].isAlive()) ++snd_count;
-        if(j > 1) if(field[i][j - 2].isAlive()) ++snd_count;
+        if(i > 0) if(field[i - 1][j].isAlive()) {++fst_count; System.out.print("9");}
+        if(i < hexHeight - 1) if(field[i + 1][j].isAlive()) {++fst_count; System.out.print("10");}
+        if(j < hexWidth - 2) if(field[i][j + 2].isAlive()) {++snd_count; System.out.print("11");}
+        if(j > 1) if(field[i][j - 2].isAlive()) {++snd_count; System.out.print("12");}
 
         if(j % 2 == 1) step = 1;
         else step = 0;
@@ -108,5 +108,9 @@ public class HexahedronGrid{
       }
     }
     System.out.println("step");
+  }
+
+  void clearField(){
+    this.field = new HexahedronGrid(this.hexHeight, this.hexWidth, this.hexRadius).getField();
   }
 }

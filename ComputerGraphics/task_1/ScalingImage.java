@@ -10,6 +10,8 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.Point;
 import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.imageio.ImageIO;
 
 public class ScalingImage extends JFrame{
@@ -25,8 +27,8 @@ public class ScalingImage extends JFrame{
     JMenuItem mFileImport = new JMenuItem("Import");
     JMenuItem mFileQuit = new JMenuItem("Quit");
     JMenuItem mAboutInfo = new JMenuItem("Info");
-    JMenuItem mGameRun = new JMenuItem("Run");
     JMenuItem mGameStep = new JMenuItem("Step");
+    JMenuItem mGameRun = new JMenuItem("Run");
     JMenu     mGameMode = new JMenu("Mode");
     JMenuItem mGameModeXOR = new JMenuItem("XOR");
     JMenuItem mGameModeReplace = new JMenuItem("Replace");
@@ -40,8 +42,8 @@ public class ScalingImage extends JFrame{
     mFile.add(mFileImport);
     mFile.addSeparator();
     mFile.add(mFileQuit);
-    mGame.add(mGameRun);
     mGame.add(mGameStep);
+    mGame.add(mGameRun);
     mGame.addSeparator();
     mGameMode.add(mGameModeXOR);
     mGameMode.add(mGameModeReplace);
@@ -104,6 +106,16 @@ public class ScalingImage extends JFrame{
 
       JButton buttonRun = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("run.png"))));
       buttonRun.setSize(new Dimension(32, 32));
+      buttonRun.addActionListener((e) -> {
+        Timer t = new Timer();
+        TimerTask tt = new TimerTask(){
+          @Override
+          public void run(){
+            mainPanel.stepChange();
+          };
+        };
+        new Timer().schedule(tt, 600, 600);
+      });
 
       JButton buttonMode = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("mode.png"))));
       buttonMode.setSize(new Dimension(32, 32));
@@ -189,6 +201,7 @@ class ImagePanel extends JPanel {
   }
 
   public void clear(){
+    this.field.clearField();
     this.draw();
   }
 
