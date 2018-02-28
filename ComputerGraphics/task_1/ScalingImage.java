@@ -33,8 +33,8 @@ public class ScalingImage extends JFrame{
     JMenuItem mGameStep = new JMenuItem("Step");
     JMenuItem mGameRun = new JMenuItem("Run");
     JMenu     mGameMode = new JMenu("Mode");
-    JMenuItem mGameModeXOR = new JMenuItem("XOR");
-    JMenuItem mGameModeReplace = new JMenuItem("Replace");
+    JRadioButtonMenuItem mGameModeXOR = new JRadioButtonMenuItem("XOR");
+    JRadioButtonMenuItem mGameModeReplace = new JRadioButtonMenuItem("Replace");
     JMenuItem mGameClearField = new JMenuItem("Clear field");
     JMenuItem mGameSettings = new JMenuItem("Settings");
 
@@ -105,7 +105,9 @@ public class ScalingImage extends JFrame{
       JButton buttonStep = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("step.png"))));
       buttonStep.setSize(new Dimension(32, 32));
       buttonStep.addActionListener((e) -> {
-        mainPanel.stepChange();
+        if(timer == null){
+          mainPanel.stepChange();
+        }
       });
 
       JToggleButton buttonRun = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("run.png"))));
@@ -213,7 +215,8 @@ class ImagePanel extends JPanel {
   private int initWidth;
   private int initHeight;
   private Color defColor;
-
+  private Point lastCell;
+  private boolean xor = true;
   public boolean stopChanging(){
     return this.field.isExtinction();
   }
@@ -377,10 +380,11 @@ class ImagePanel extends JPanel {
         Point p = getCenterCoords(x, y);
         int cellX = ((int)p.getX() - 20) / (R + R / 2);
         int cellY = ((int)p.getY() - 20) / (yl2);
+        lastCell = new Point(cellY, cellX);
         System.out.println("(" + cellY + ", " + cellX + ")" + "(" + (y - 20) + ", " + (x - 20) + ")" + " (" + (p.getY() - 20) + ", " + (p.getX() - 20) + ")");
         try{
           Hexahedron h = field.getField()[cellY][cellX];
-          if(h.isAlive()){
+          if(h.isAlive() && xor){
             spanFilling(image, x, y, defColor);
             h.changeStatus();
           }
@@ -398,13 +402,27 @@ class ImagePanel extends JPanel {
     public void mouseDragged(MouseEvent e) {
       int x = e.getX();
       int y = e.getY();
-      int cellX;
-      int cellY;
+      if(image.getRGB(x, y) == 0 || image.getRGB(x, y) == Color.BLACK.getRGB()){
+        return;
+      }
+      Point p = getCenterCoords(x, y);
+      int cellX = ((int)p.getX() - 20) / (R + R / 2);
+      int cellY = ((int)p.getY() - 20) / (yl2);
+      Point temp = new Point(cellY, cellX);
+      if(temp.equals(lastCell)) return;
+      else lastCell = temp;
       try{
-        if(image.getRGB(x, y) == 0 || image.getRGB(x, y) == Color.BLACK.getRGB()){
-          return;
+        Hexahedron h = field.getField()[cellY][cellX];
+        if(h.isAlive() && xor){
+          spanFilling(image, x, y, defColor);
+          h.changeStatus();
         }
-        spanFilling(image, x, y, Color.RED);
+        else{
+          if(xor){
+            spanFilling(image, x, y, Color.RED);
+            h.changeStatus();
+          }
+        }
         repaint();
       }
        catch(ArrayIndexOutOfBoundsException ex){}
