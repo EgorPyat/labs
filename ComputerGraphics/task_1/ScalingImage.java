@@ -33,13 +33,18 @@ public class ScalingImage extends JFrame{
     JMenuItem mGameStep = new JMenuItem("Step");
     JMenuItem mGameRun = new JMenuItem("Run");
     JMenu     mGameMode = new JMenu("Mode");
+    JRadioButtonMenuItem mGameModeReplace = new JRadioButtonMenuItem("Replace", true);
     JRadioButtonMenuItem mGameModeXOR = new JRadioButtonMenuItem("XOR");
-    JRadioButtonMenuItem mGameModeReplace = new JRadioButtonMenuItem("Replace");
     JMenuItem mGameClearField = new JMenuItem("Clear field");
     JMenuItem mGameSettings = new JMenuItem("Settings");
 
     mFileQuit.addActionListener((e) -> System.exit(0));
     mAboutInfo.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nBy Egor Pyataev"));
+
+    ButtonGroup bg = new ButtonGroup();
+    bg.add(mGameModeReplace);
+    bg.add(mGameModeXOR);
+
     mFile.add(mFileNew);
     mFile.add(mFileSave);
     mFile.add(mFileImport);
@@ -48,8 +53,8 @@ public class ScalingImage extends JFrame{
     mGame.add(mGameStep);
     mGame.add(mGameRun);
     mGame.addSeparator();
-    mGameMode.add(mGameModeXOR);
     mGameMode.add(mGameModeReplace);
+    mGameMode.add(mGameModeXOR);
     mGame.add(mGameMode);
     mGame.addSeparator();
     mGame.add(mGameClearField);
@@ -136,9 +141,7 @@ public class ScalingImage extends JFrame{
       JToggleButton buttonMode = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("mode.png"))));
       buttonMode.setSize(new Dimension(32, 32));
       buttonMode.addItemListener((e) -> {
-        if(timer == null){
-          mainPanel.changeMode();
-        }
+        mainPanel.changeMode();
       });
 
       JButton buttonClear = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("clear.png"))));
@@ -159,7 +162,6 @@ public class ScalingImage extends JFrame{
       JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
       buttonExit.setSize(new Dimension(32, 32));
       buttonExit.addActionListener((e) -> System.exit(0));
-
       toolBar.add(buttonNew);
       toolBar.add(buttonSave);
       toolBar.add(buttonImport);
