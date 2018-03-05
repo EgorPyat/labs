@@ -159,6 +159,102 @@ public class ScalingImage extends JFrame{
 
       JButton buttonSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("settings.png"))));
       buttonSettings.setSize(new Dimension(32, 32));
+      buttonSettings.addActionListener((e) -> {
+        if(timer == null){
+          JDialog dialog = new JDialog(this, "Settings", true);
+          JPanel fieldPane = new JPanel();
+          JPanel cellPane = new JPanel();
+          JPanel modePane = new JPanel();
+          JPanel buttonPane = new JPanel();
+          JPanel mPane = new JPanel();
+          JPanel bPane = new JPanel();
+          // dialog.setLayout(new GridLayout(3, 1));
+
+          fieldPane.setLayout(new GridLayout(2, 3));
+          cellPane.setLayout(new GridLayout(2, 3));
+          mPane.setLayout(new GridLayout(2, 1));
+          modePane.setLayout(new GridLayout(1, 2));
+          bPane.setLayout(new BorderLayout());
+
+          GridBagLayout gridbag = new GridBagLayout();
+          GridBagConstraints constraints = new GridBagConstraints();
+          constraints.fill = GridBagConstraints.CENTER;
+          gridbag.setConstraints(buttonPane, constraints);
+          buttonPane.setLayout(gridbag);
+
+          TextField height = new TextField("6", 5);
+          TextField width = new TextField("10" , 5);
+          TextField radius = new TextField("48" , 5);
+          TextField thickness = new TextField("2" , 5);
+          JButton submit = new JButton("Submit");
+          JButton cancel = new JButton("Cancel");
+          JRadioButton replace = new JRadioButton("Replace", true);
+          JRadioButton xor = new JRadioButton("XOR");
+          ButtonGroup group = new ButtonGroup();
+          group.add(replace);
+          group.add(xor);
+          mPane.add(replace);
+          mPane.add(xor);
+
+          submit.addActionListener((d) -> {
+            dialog.dispose();
+          });
+
+          cancel.addActionListener((d) -> {
+            dialog.dispose();
+          });
+
+          JSlider framesPerSecond1 = new JSlider(JSlider.HORIZONTAL);
+          JSlider framesPerSecond2 = new JSlider(JSlider.HORIZONTAL);
+          JSlider framesPerSecond3 = new JSlider(JSlider.HORIZONTAL);
+          JSlider framesPerSecond4 = new JSlider(JSlider.HORIZONTAL);
+
+          bPane.add(submit, BorderLayout.PAGE_START);
+          bPane.add(new JPanel(), BorderLayout.CENTER);
+          bPane.add(cancel, BorderLayout.PAGE_END);
+
+          buttonPane.add(bPane);
+          // buttonPane.add(cancel);
+          // modePane.add(buttonPane);
+          fieldPane.add(new JLabel("Height"));
+          fieldPane.add(framesPerSecond1);
+          fieldPane.add(height);
+
+          fieldPane.add(new JLabel("Width"));
+          fieldPane.add(framesPerSecond2);
+
+          fieldPane.add(width);
+          cellPane.add(new JLabel("Radius"));
+          cellPane.add(framesPerSecond3);
+          cellPane.add(radius);
+
+          cellPane.add(new JLabel("Thickness"));
+          cellPane.add(framesPerSecond4);
+          cellPane.add(thickness);
+
+          fieldPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Field"), BorderFactory.createEmptyBorder(5,5,5,5)));
+          cellPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Hexahedron"), BorderFactory.createEmptyBorder(5,5,5,5)));
+          mPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Mode"), BorderFactory.createEmptyBorder(5,5,5,5)));
+
+          JPanel leftPane = new JPanel(new GridLayout(3, 1));
+          modePane.add(mPane);
+          modePane.add(buttonPane);
+          leftPane.add(fieldPane);
+          leftPane.add(cellPane);
+          leftPane.add(modePane);
+          leftPane.setPreferredSize(new Dimension(350, 300));
+          dialog.add(leftPane, BorderLayout.LINE_START);
+          // dialog.add(buttonPane, BorderLayout.PAGE_END);
+          // dialog.add(cellPane);
+          // dialog.add(submit, BorderLayout.PAGE_END);
+          // dialog.add(cancel);
+          dialog.setResizable(false);
+          dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+          dialog.pack();
+          dialog.setLocationRelativeTo(this);
+          dialog.setVisible(true);
+        }
+      });
 
       JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
       buttonAbout.setSize(new Dimension(32, 32));
