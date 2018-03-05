@@ -4,15 +4,17 @@ public class HexahedronGrid{
   private int hexWidth;
   private int hexHeight;
   private int hexRadius;
+  private int hexSideThick;
   private int normal;
   private int fieldWidth;
   private int fieldHeight;
   private boolean extinction = true;
 
-  public HexahedronGrid(int N, int M, int hexRadius){
+  public HexahedronGrid(int N, int M, int hexRadius, int sideThick){
     this.hexWidth = M;
     this.hexHeight = N;
     this.hexRadius = hexRadius;
+    this.hexSideThick = sideThick;
     this.fieldWidth = (20 + this.hexRadius * M + 25) * 3 / 2;
     this.normal = (int)(this.hexRadius * Math.sqrt(3)/2);
     this.fieldHeight = (20 + this.normal * N + 20) * 2;
@@ -29,7 +31,7 @@ public class HexahedronGrid{
     for(int i = 0; i < N; i++){
       for(int j = 0; j < M; j++){
         field[i][j] = new Hexahedron();
-        field[i][j].construct(X, Y, R);
+        field[i][j].construct(X, Y, R, this.hexSideThick);
         X += xl;
         Y = j % 2 == 0 ? Y + yl : Y - yl;
       }
@@ -120,6 +122,6 @@ public class HexahedronGrid{
   }
 
   public void clearField(){
-    this.field = new HexahedronGrid(this.hexHeight, this.hexWidth, this.hexRadius).getField();
+    this.field = new HexahedronGrid(this.hexHeight, this.hexWidth, this.hexRadius, this.hexSideThick).getField();
   }
 }

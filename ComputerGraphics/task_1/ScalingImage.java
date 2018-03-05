@@ -73,29 +73,34 @@ public class ScalingImage extends JFrame{
       buttonNew.addActionListener((e) -> {
         if(timer == null){
           JDialog dialog = new JDialog(this, "New Game", true);
-          dialog.setLayout(new FlowLayout());
-          TextField height = new TextField("6", 20);
-          TextField width = new TextField("10" , 20);
-          TextField radius = new TextField("48" , 20);
-          TextField thickness = new TextField("1" , 20);
+          JPanel inFieldPane = new JPanel();
+          inFieldPane.setLayout(new GridLayout(4, 2));
+          TextField height = new TextField("6", 10);
+          TextField width = new TextField("10" , 10);
+          TextField radius = new TextField("48" , 10);
+          TextField thickness = new TextField("2" , 10);
           JButton submit = new JButton("Sumbit");
           submit.addActionListener((d) -> {
             getContentPane().remove(mainPanel);
-            mainPanel = new MainPanel(new HexahedronGrid(Integer.valueOf(height.getText()), Integer.valueOf(width.getText()), Integer.valueOf(radius.getText())));
+            mainPanel = new MainPanel(new HexahedronGrid(Integer.valueOf(height.getText()), Integer.valueOf(width.getText()), Integer.valueOf(radius.getText()), Integer.valueOf(thickness.getText())));
             add(mainPanel);
             mainPanel.draw();
             pack();
-            setLocationRelativeTo(null);
             dialog.dispose();
           });
-          dialog.add(height);
-          dialog.add(width);
-          dialog.add(radius);
-          dialog.add(thickness);
-          dialog.add(submit);
+          inFieldPane.add(new JLabel("Height"));
+          inFieldPane.add(height);
+          inFieldPane.add(new JLabel("Width"));
+          inFieldPane.add(width);
+          inFieldPane.add(new JLabel("Radius"));
+          inFieldPane.add(radius);
+          inFieldPane.add(new JLabel("Thickness"));
+          inFieldPane.add(thickness);
+          dialog.add(inFieldPane, BorderLayout.NORTH);
+          dialog.add(submit, BorderLayout.SOUTH);
 
           dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-          dialog.setSize(200, 220);
+          dialog.pack();
           dialog.setLocationRelativeTo(this);
           dialog.setVisible(true);
         }
@@ -157,7 +162,7 @@ public class ScalingImage extends JFrame{
 
       JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
       buttonAbout.setSize(new Dimension(32, 32));
-      buttonAbout.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nBy Egor Pyataev"));
+      buttonAbout.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nVersion 0.5\nBy Egor Pyataev"));
 
       JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
       buttonExit.setSize(new Dimension(32, 32));
@@ -181,10 +186,10 @@ public class ScalingImage extends JFrame{
     toolBar.setRollover(true);
 
     add(toolBar, BorderLayout.PAGE_START);
-    mainPanel = new MainPanel(new HexahedronGrid(6, 10, 48));
+    mainPanel = new MainPanel(new HexahedronGrid(6, 10, 48, 2));
     add(mainPanel);
-    mainPanel.draw();
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    mainPanel.draw();
     pack();
     setLocationRelativeTo(null);
     setVisible(true);
@@ -307,18 +312,27 @@ class ImagePanel extends JPanel {
     int yc[] = h.getYCoords();
     int x1, x2, y1, y2;
     int j = 5;
-    while(j >= 0){
-      if(j > 0){
-        x1 = xc[j]; x2 = xc[j-1];
-        y1 = yc[j]; y2 = yc[j-1];
-        g.drawLine(x1, y1, x2, y2);
-        j--;
-      }
-      else{
-        x1 = xc[j]; x2 = xc[5];
-        y1 = yc[j]; y2 = yc[5];
-        g.drawLine(x1, y1, x2, y2);
-        j--;
+    int thick = h.getSideThick();
+
+    if(thick > 1){
+      Graphics2D g2 = (Graphics2D)g;
+      g2.setStroke(new BasicStroke(thick));
+      g2.drawPolygon(xc, yc, 6);
+    }
+    else{
+      while(j >= 0){
+        if(j > 0){
+          x1 = xc[j]; x2 = xc[j-1];
+          y1 = yc[j]; y2 = yc[j-1];
+          g.drawLine(x1, y1, x2, y2);
+          j--;
+        }
+        else{
+          x1 = xc[j]; x2 = xc[5];
+          y1 = yc[j]; y2 = yc[5];
+          g.drawLine(x1, y1, x2, y2);
+          j--;
+        }
       }
     }
   }
