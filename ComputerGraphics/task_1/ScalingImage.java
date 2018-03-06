@@ -39,7 +39,7 @@ public class ScalingImage extends JFrame{
     JRadioButtonMenuItem mGameModeXOR = new JRadioButtonMenuItem("XOR");
     JMenuItem mGameClearField = new JMenuItem("Clear field");
     JMenuItem mGameSettings = new JMenuItem("Settings");
-
+    Object o = new Object();
     mFileQuit.addActionListener((e) -> System.exit(0));
     mAboutInfo.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nBy Egor Pyataev"));
 
@@ -128,10 +128,12 @@ public class ScalingImage extends JFrame{
         if(e.getStateChange() == ItemEvent.SELECTED){
           System.out.println("select");
           timer = new Timer(true);
-          timer.schedule(new TimerTask(){
+            timer.schedule(new TimerTask(){
             @Override
             public void run(){
-              mainPanel.stepChange();
+              synchronized(o){
+                mainPanel.stepChange();
+              }
               if(mainPanel.stopChanging()){
                 ((JToggleButton)e.getItem()).setSelected(false);
               }
@@ -230,13 +232,25 @@ public class ScalingImage extends JFrame{
         JSlider slider3 = new JSlider(JSlider.HORIZONTAL);
         slider3.setMinimum(10);
         slider3.setValue(settings[2]);
+        slider3.setMaximum(50);
         slider3.addChangeListener((s) -> {
           radius.setText(String.valueOf(slider3.getValue()));
+          synchronized(o){
+            mainPanel.setRadius(slider3.getValue());
+            add(mainPanel);
+            mainPanel.draw();
+            pack();
+          }
         });
 
         JSlider slider4 = new JSlider(JSlider.HORIZONTAL, 1, settings[2] / 2, settings[3]);
         slider4.addChangeListener((s) -> {
+          slider4.setMaximum(slider3.getValue() / 2);
           thickness.setText(String.valueOf(slider4.getValue()));
+          synchronized(o){
+            mainPanel.setSideThickness(slider4.getValue());
+            mainPanel.draw();
+          }
         });
 
         JSlider slider5 = new JSlider(JSlider.HORIZONTAL, 100, 1000, settings[4]);
@@ -374,6 +388,13 @@ class MainPanel extends JPanel {
   private JScrollPane scrollpane;
   private ImagePanel imagePanel;
 
+  public void setRadius(int r){
+    imagePanel.setRadius(r);
+  }
+
+  public void setSideThickness(int s){
+    imagePanel.setSideThickness(s);
+  }
   public int[] getSettings(){
     return this.imagePanel.getSettings();
   }
@@ -411,6 +432,19 @@ class ImagePanel extends JPanel {
   private boolean xor = false;
   private int speed = 600;
 
+  public void setRadius(int r){
+    field.setRadius(r);
+    this.initWidth = field.getWidth();
+    this.initHeight = field.getHeight();
+    this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    this.defColor = this.image.getGraphics().getColor();
+    setPreferredSize(new Dimension(initWidth, initHeight));
+  }
+
+  public void setSideThickness(int s){
+    field.setSideThickness(s);
+  }
+
   public int[] getSettings(){
     int[] s = new int[5];
     s[0] = this.field.getHexHeight();
@@ -421,6 +455,7 @@ class ImagePanel extends JPanel {
 
     return s;
   }
+
   public void changeMode(){
     this.xor = !this.xor;
   }
@@ -500,7 +535,7 @@ class ImagePanel extends JPanel {
     int yc[] = h.getYCoords();
     int x1, x2, y1, y2;
     int j = 5;
-    int thick = h.getSideThick();
+    int thick = field.getHexSideThick();
 
     if(thick > 1){
       Graphics2D g2 = (Graphics2D)g;
@@ -527,6 +562,7 @@ class ImagePanel extends JPanel {
 
   public void drawHexahedronGrid(){
     Graphics g = this.image.createGraphics();
+    paintComponent(g);
     g.setColor(Color.black);
     Hexahedron[][] f = this.field.getField();
     for(int i = 0; i < this.field.getHexHeight(); i++){
@@ -582,13 +618,13 @@ class ImagePanel extends JPanel {
     this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
     this.defColor = this.image.getGraphics().getColor();
     setPreferredSize(new Dimension(initWidth, initHeight));
-    int R = this.field.getHexRadius();
-    int yl = (int)(R * Math.sqrt(3) / 2);
-    int yl2 = yl + yl;
 
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
+        int R = field.getHexRadius();
+        int yl = (int)(R * Math.sqrt(3) / 2);
+        int yl2 = yl + yl;
         int x = e.getX();
         int y = e.getY();
         if(image.getRGB(x, y) == 0 || image.getRGB(x, y) == Color.BLACK.getRGB()){
@@ -617,6 +653,9 @@ class ImagePanel extends JPanel {
     addMouseMotionListener(new MouseMotionAdapter() {
     @Override
     public void mouseDragged(MouseEvent e) {
+      int R = field.getHexRadius();
+      int yl = (int)(R * Math.sqrt(3) / 2);
+      int yl2 = yl + yl;
       int x = e.getX();
       int y = e.getY();
       if(image.getRGB(x, y) == 0 || image.getRGB(x, y) == Color.BLACK.getRGB()){

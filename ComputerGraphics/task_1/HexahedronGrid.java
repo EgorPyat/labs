@@ -66,10 +66,39 @@ public class HexahedronGrid{
     return this.hexRadius;
   }
 
+  public void setRadius(int r){
+    this.hexRadius = r;
+    int M = this.hexWidth;
+    int N = this.hexHeight;
+    int R = this.hexRadius;
+    this.fieldWidth = (20 + this.hexRadius * M + 25) * 3 / 2;
+    this.normal = (int)(this.hexRadius * Math.sqrt(3)/2);
+    this.fieldHeight = (20 + this.normal * N + 20) * 2;
+    int X = R + 20;
+    int tx = X;
+    int yl = this.normal;
+    int Y = yl - 1 + 20;
+    int ty = Y;
+    int xl = R + R / 2;
+    for(int i = 0; i < N; i++){
+      for(int j = 0; j < M; j++){
+        field[i][j].construct(X, Y, R, this.hexSideThick);
+        X += xl;
+        Y = j % 2 == 0 ? Y + yl : Y - yl;
+      }
+      X = tx;
+      Y = ty + yl * 2;
+      ty = Y;
+    }
+  }
+
   public int getHexSideThick(){
     return this.hexSideThick;
   }
 
+  public void setSideThickness(int s){
+    this.hexSideThick = s;
+  }
   public void stepChange(){
     double impact = 0.0;
     int fst_count = 0;

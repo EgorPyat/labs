@@ -35,7 +35,11 @@ public class Hexahedron extends Polygon{
   public int getSideThick(){
     return this.sideThick;
   }
-  
+
+  public void setSideThick(int s){
+    this.sideThick = s;
+  }
+
   public int[] getXCoords(){
     return this.xc;
   }
