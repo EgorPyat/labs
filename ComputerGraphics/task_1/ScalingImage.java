@@ -237,9 +237,8 @@ public class ScalingImage extends JFrame{
           radius.setText(String.valueOf(slider3.getValue()));
           synchronized(o){
             mainPanel.setRadius(slider3.getValue());
-            add(mainPanel);
             mainPanel.draw();
-            pack();
+            mainPanel.scrollpane.updateUI();
           }
         });
 
@@ -385,7 +384,7 @@ public class ScalingImage extends JFrame{
 }
 
 class MainPanel extends JPanel {
-  private JScrollPane scrollpane;
+  public JScrollPane scrollpane;
   private ImagePanel imagePanel;
 
   public void setRadius(int r){
