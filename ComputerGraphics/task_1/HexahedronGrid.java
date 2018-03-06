@@ -66,6 +66,10 @@ public class HexahedronGrid{
     return this.hexRadius;
   }
 
+  public int getHexSideThick(){
+    return this.hexSideThick;
+  }
+
   public void stepChange(){
     double impact = 0.0;
     int fst_count = 0;

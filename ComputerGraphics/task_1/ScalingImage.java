@@ -9,6 +9,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.ItemEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.FocusEvent;
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.Timer;
@@ -182,11 +184,14 @@ public class ScalingImage extends JFrame{
         gridbag.setConstraints(buttonPane, constraints);
         buttonPane.setLayout(gridbag);
 
-        TextField height = new TextField("6", 5);
-        TextField width = new TextField("10" , 5);
-        TextField radius = new TextField("48" , 5);
-        TextField thickness = new TextField("2" , 5);
-        TextField speed = new TextField("100", 10);
+        int[] settings = mainPanel.getSettings();
+        int[] newSettings = new int[settings.length];
+
+        TextField height = new TextField(String.valueOf(settings[0]), 5);
+        TextField width = new TextField(String.valueOf(settings[1]) , 5);
+        TextField radius = new TextField(String.valueOf(settings[2]) , 5);
+        TextField thickness = new TextField(String.valueOf(settings[3]) , 5);
+        TextField speed = new TextField(String.valueOf(settings[4]), 5);
         TextField save = new TextField("./", 10);
 
         JButton submit = new JButton("Submit");
@@ -209,30 +214,74 @@ public class ScalingImage extends JFrame{
         });
 
         JSlider slider1 = new JSlider(JSlider.HORIZONTAL);
+        slider1.setMinimum(1);
+        slider1.setValue(settings[0]);
         slider1.addChangeListener((s) -> {
           height.setText(String.valueOf(slider1.getValue()));
         });
-        slider1.setMinimum(1);
-        slider1.setValue(6);
+
         JSlider slider2 = new JSlider(JSlider.HORIZONTAL);
+        slider2.setMinimum(1);
+        slider2.setValue(settings[1]);
         slider2.addChangeListener((s) -> {
           width.setText(String.valueOf(slider2.getValue()));
         });
-        slider2.setMinimum(1);
-        slider2.setValue(10);
+
         JSlider slider3 = new JSlider(JSlider.HORIZONTAL);
+        slider3.setMinimum(10);
+        slider3.setValue(settings[2]);
         slider3.addChangeListener((s) -> {
           radius.setText(String.valueOf(slider3.getValue()));
         });
-        slider3.setMinimum(10);
-        slider3.setValue(48);
-        JSlider slider4 = new JSlider(JSlider.HORIZONTAL, 1, 24, 2);
+
+        JSlider slider4 = new JSlider(JSlider.HORIZONTAL, 1, settings[2] / 2, settings[3]);
         slider4.addChangeListener((s) -> {
           thickness.setText(String.valueOf(slider4.getValue()));
         });
-        JSlider slider5 = new JSlider(JSlider.HORIZONTAL, 100, 1000, 200);
+
+        JSlider slider5 = new JSlider(JSlider.HORIZONTAL, 100, 1000, settings[4]);
         slider5.addChangeListener((s) -> {
           speed.setText(String.valueOf(slider5.getValue()));
+        });
+
+        height.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            slider1.setValue(Integer.valueOf(height.getText()));
+          }
+        });
+
+        width.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            slider2.setValue(Integer.valueOf(width.getText()));
+          }
+        });
+
+        radius.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            slider3.setValue(Integer.valueOf(radius.getText()));
+          }
+        });
+
+        thickness.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            slider4.setValue(Integer.valueOf(thickness.getText()));
+          }
+        });
+
+        speed.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            slider5.setValue(Integer.valueOf(speed.getText()));
+          }
         });
 
         bPane.add(submit, BorderLayout.PAGE_START);
@@ -325,6 +374,9 @@ class MainPanel extends JPanel {
   private JScrollPane scrollpane;
   private ImagePanel imagePanel;
 
+  public int[] getSettings(){
+    return this.imagePanel.getSettings();
+  }
   public void changeMode(){
     imagePanel.changeMode();
   }
@@ -357,7 +409,18 @@ class ImagePanel extends JPanel {
   private Color defColor;
   private Point lastCell;
   private boolean xor = false;
+  private int speed = 600;
 
+  public int[] getSettings(){
+    int[] s = new int[5];
+    s[0] = this.field.getHexHeight();
+    s[1] = this.field.getHexWidth();
+    s[2] = this.field.getHexRadius();
+    s[3] = this.field.getHexSideThick();
+    s[4] = this.speed;
+
+    return s;
+  }
   public void changeMode(){
     this.xor = !this.xor;
   }
