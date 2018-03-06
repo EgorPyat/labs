@@ -167,12 +167,13 @@ public class ScalingImage extends JFrame{
         JPanel buttonPane = new JPanel();
         JPanel mPane = new JPanel();
         JPanel bPane = new JPanel();
-        // dialog.setLayout(new GridLayout(3, 1));
+        JPanel gamePane = new JPanel();
 
         fieldPane.setLayout(new GridLayout(2, 3));
         cellPane.setLayout(new GridLayout(2, 3));
         mPane.setLayout(new GridLayout(2, 1));
         modePane.setLayout(new GridLayout(1, 2));
+        gamePane.setLayout(new GridLayout(2, 3));
         bPane.setLayout(new BorderLayout());
 
         GridBagLayout gridbag = new GridBagLayout();
@@ -185,11 +186,15 @@ public class ScalingImage extends JFrame{
         TextField width = new TextField("10" , 5);
         TextField radius = new TextField("48" , 5);
         TextField thickness = new TextField("2" , 5);
+        TextField speed = new TextField("100", 10);
+        TextField save = new TextField("./", 10);
+
         JButton submit = new JButton("Submit");
         JButton cancel = new JButton("Cancel");
         JRadioButton replace = new JRadioButton("Replace", true);
         JRadioButton xor = new JRadioButton("XOR");
         ButtonGroup group = new ButtonGroup();
+
         group.add(replace);
         group.add(xor);
         mPane.add(replace);
@@ -203,50 +208,76 @@ public class ScalingImage extends JFrame{
           dialog.dispose();
         });
 
-        JSlider framesPerSecond1 = new JSlider(JSlider.HORIZONTAL);
-        JSlider framesPerSecond2 = new JSlider(JSlider.HORIZONTAL);
-        JSlider framesPerSecond3 = new JSlider(JSlider.HORIZONTAL);
-        JSlider framesPerSecond4 = new JSlider(JSlider.HORIZONTAL);
+        JSlider slider1 = new JSlider(JSlider.HORIZONTAL);
+        slider1.addChangeListener((s) -> {
+          height.setText(String.valueOf(slider1.getValue()));
+        });
+        slider1.setMinimum(1);
+        slider1.setValue(6);
+        JSlider slider2 = new JSlider(JSlider.HORIZONTAL);
+        slider2.addChangeListener((s) -> {
+          width.setText(String.valueOf(slider2.getValue()));
+        });
+        slider2.setMinimum(1);
+        slider2.setValue(10);
+        JSlider slider3 = new JSlider(JSlider.HORIZONTAL);
+        slider3.addChangeListener((s) -> {
+          radius.setText(String.valueOf(slider3.getValue()));
+        });
+        slider3.setMinimum(10);
+        slider3.setValue(48);
+        JSlider slider4 = new JSlider(JSlider.HORIZONTAL, 1, 24, 2);
+        slider4.addChangeListener((s) -> {
+          thickness.setText(String.valueOf(slider4.getValue()));
+        });
+        JSlider slider5 = new JSlider(JSlider.HORIZONTAL, 100, 1000, 200);
+        slider5.addChangeListener((s) -> {
+          speed.setText(String.valueOf(slider5.getValue()));
+        });
 
         bPane.add(submit, BorderLayout.PAGE_START);
         bPane.add(new JPanel(), BorderLayout.CENTER);
         bPane.add(cancel, BorderLayout.PAGE_END);
 
         buttonPane.add(bPane);
-        // buttonPane.add(cancel);
-        // modePane.add(buttonPane);
         fieldPane.add(new JLabel("Height"));
-        fieldPane.add(framesPerSecond1);
+        fieldPane.add(slider1);
         fieldPane.add(height);
 
         fieldPane.add(new JLabel("Width"));
-        fieldPane.add(framesPerSecond2);
-
+        fieldPane.add(slider2);
         fieldPane.add(width);
+
         cellPane.add(new JLabel("Radius"));
-        cellPane.add(framesPerSecond3);
+        cellPane.add(slider3);
         cellPane.add(radius);
 
         cellPane.add(new JLabel("Thickness"));
-        cellPane.add(framesPerSecond4);
+        cellPane.add(slider4);
         cellPane.add(thickness);
+
+        gamePane.add(new JLabel("Run speed"));
+        gamePane.add(slider5);
+        gamePane.add(speed);
+
+        gamePane.add(new JLabel("Default dir"));
+        gamePane.add(new JLabel(""));
+        gamePane.add(save);
 
         fieldPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Field"), BorderFactory.createEmptyBorder(5,5,5,5)));
         cellPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Hexahedron"), BorderFactory.createEmptyBorder(5,5,5,5)));
         mPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Mode"), BorderFactory.createEmptyBorder(5,5,5,5)));
+        gamePane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Game"), BorderFactory.createEmptyBorder(5,5,5,5)));
         buttonPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Apply changes"), BorderFactory.createEmptyBorder(5,5,5,5)));
-        JPanel leftPane = new JPanel(new GridLayout(3, 1));
+        JPanel leftPane = new JPanel(new GridLayout(4, 1));
         modePane.add(mPane);
         modePane.add(buttonPane);
         leftPane.add(fieldPane);
         leftPane.add(cellPane);
+        leftPane.add(gamePane);
         leftPane.add(modePane);
-        leftPane.setPreferredSize(new Dimension(350, 300));
+        leftPane.setPreferredSize(new Dimension(350, 350));
         dialog.add(leftPane, BorderLayout.LINE_START);
-        // dialog.add(buttonPane, BorderLayout.PAGE_END);
-        // dialog.add(cellPane);
-        // dialog.add(submit, BorderLayout.PAGE_END);
-        // dialog.add(cancel);
         dialog.setResizable(false);
         dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         dialog.pack();
