@@ -2,6 +2,8 @@
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.File;
+import java.io.FileWriter;
 import javax.swing.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.event.MouseEvent;
@@ -109,11 +111,43 @@ public class ScalingImage extends JFrame{
         }
       });
       buttonNew.setToolTipText("Create new field");
+
       JButton buttonSave = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("save.png"))));
       buttonSave.setSize(new Dimension(32, 32));
+      buttonSave.addActionListener((e) -> {
+        if(timer == null){
+          JFileChooser c = new JFileChooser(".");
+          int rVal = c.showSaveDialog(this);
+          if (rVal == JFileChooser.APPROVE_OPTION) {
+            try(FileWriter fw = new FileWriter(c.getSelectedFile()+".txt")) {
+              int[] settings = mainPanel.getSettings();
+              fw.write("sb.toString()");
+            }
+            catch (Exception ex) {
+              System.out.println(ex.getMessage());
+            }
+          }
+          if (rVal == JFileChooser.CANCEL_OPTION) {
+            System.out.println("canceled");
+          }
+        }
+      });
 
       JButton buttonImport = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("import.png"))));
       buttonImport.setSize(new Dimension(32, 32));
+      buttonImport.addActionListener((e) -> {
+        if(timer == null){
+          JTextField filename = new JTextField(), dir = new JTextField();
+          JFileChooser c = new JFileChooser(".");
+          int rVal = c.showOpenDialog(this);
+          if (rVal == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = c.getSelectedFile();
+          }
+          if (rVal == JFileChooser.CANCEL_OPTION) {
+            System.out.println("canceled");
+          }
+        }
+      });
 
       JButton buttonStep = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("step.png"))));
       buttonStep.setSize(new Dimension(32, 32));
