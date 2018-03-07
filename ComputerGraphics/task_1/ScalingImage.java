@@ -1,3 +1,4 @@
+// Рассказать об обьемной визуализации
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -107,7 +108,7 @@ public class ScalingImage extends JFrame{
           dialog.setVisible(true);
         }
       });
-
+      buttonNew.setToolTipText("Create new field");
       JButton buttonSave = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("save.png"))));
       buttonSave.setSize(new Dimension(32, 32));
 
@@ -138,7 +139,7 @@ public class ScalingImage extends JFrame{
                 ((JToggleButton)e.getItem()).setSelected(false);
               }
             };
-          }, 600, 600);
+          }, mainPanel.getSpeed(), mainPanel.getSpeed());
         }
         else if(e.getStateChange() == ItemEvent.DESELECTED){
           timer.cancel();
@@ -150,6 +151,7 @@ public class ScalingImage extends JFrame{
       JToggleButton buttonMode = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("mode.png"))));
       buttonMode.setSize(new Dimension(32, 32));
       buttonMode.addItemListener((e) -> {
+        System.out.println("butt");
         mainPanel.changeMode();
       });
 
@@ -198,10 +200,21 @@ public class ScalingImage extends JFrame{
 
         JButton submit = new JButton("Submit");
         JButton cancel = new JButton("Cancel");
-        JRadioButton replace = new JRadioButton("Replace", true);
-        JRadioButton xor = new JRadioButton("XOR");
+        JRadioButton replace = new JRadioButton("Replace", settings[5] == 0 ? true : false);
+        JRadioButton xor = new JRadioButton("XOR", settings[5] == 0 ? false : true);
         ButtonGroup group = new ButtonGroup();
-
+        replace.addActionListener((m) -> {
+          System.out.println("rep");
+          // mainPanel.changeMode();
+          buttonMode.setSelected(false);
+          // repaint();
+        });
+        xor.addActionListener((m) -> {
+          System.out.println("xor");
+          // mainPanel.changeMode();
+          buttonMode.setSelected(true);
+          // repaint();
+        });
         group.add(replace);
         group.add(xor);
         mPane.add(replace);
@@ -220,6 +233,7 @@ public class ScalingImage extends JFrame{
         slider1.setValue(settings[0]);
         slider1.addChangeListener((s) -> {
           height.setText(String.valueOf(slider1.getValue()));
+          mainPanel.changeHeight(slider1.getValue());
         });
 
         JSlider slider2 = new JSlider(JSlider.HORIZONTAL);
@@ -227,6 +241,7 @@ public class ScalingImage extends JFrame{
         slider2.setValue(settings[1]);
         slider2.addChangeListener((s) -> {
           width.setText(String.valueOf(slider2.getValue()));
+          mainPanel.changeWidth(slider2.getValue());
         });
 
         JSlider slider3 = new JSlider(JSlider.HORIZONTAL);
@@ -257,19 +272,21 @@ public class ScalingImage extends JFrame{
         slider5.addChangeListener((s) -> {
           speed.setText(String.valueOf(slider5.getValue()));
           mainPanel.setSpeed(slider5.getValue());
-          timer.cancel();
-          timer = new Timer(true);
-          timer.schedule(new TimerTask(){
-            @Override
-            public void run(){
-              synchronized(o){
-                mainPanel.stepChange();
-              }
-              if(mainPanel.stopChanging()){
-                buttonRun.setSelected(false);
-              }
-            };
-          }, slider5.getValue(), slider5.getValue());
+          if(timer != null){
+            timer.cancel();
+            timer = new Timer(true);
+            timer.schedule(new TimerTask(){
+              @Override
+              public void run(){
+                synchronized(o){
+                  mainPanel.stepChange();
+                }
+                if(mainPanel.stopChanging()){
+                  buttonRun.setSelected(false);
+                }
+              };
+            }, slider5.getValue(), slider5.getValue());
+          }
         });
 
         height.addFocusListener(new FocusListener() {
@@ -402,6 +419,18 @@ class MainPanel extends JPanel {
   public JScrollPane scrollpane;
   private ImagePanel imagePanel;
 
+  public void changeWidth(int w){
+    imagePanel.changeWidth(w);
+  }
+
+  public void changeHeight(int h){
+    imagePanel.changeHeight(h);
+  }
+
+  public int getSpeed(){
+    return imagePanel.getSpeed();
+  }
+
   public void setSpeed(int s){
     imagePanel.setSpeed(s);
   }
@@ -450,6 +479,18 @@ class ImagePanel extends JPanel {
   private boolean xor = false;
   private int speed = 600;
 
+  public void changeWidth(int w){
+
+  }
+
+  public void changeHeight(int h){
+
+  }
+
+  public int getSpeed(){
+    return this.speed;
+  }
+
   public void setSpeed(int s){
     this.speed = s;
   }
@@ -468,12 +509,13 @@ class ImagePanel extends JPanel {
   }
 
   public int[] getSettings(){
-    int[] s = new int[5];
+    int[] s = new int[6];
     s[0] = this.field.getHexHeight();
     s[1] = this.field.getHexWidth();
     s[2] = this.field.getHexRadius();
     s[3] = this.field.getHexSideThick();
     s[4] = this.speed;
+    s[5] = this.xor == false ? 0 : 1;
 
     return s;
   }
