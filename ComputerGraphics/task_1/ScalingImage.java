@@ -233,8 +233,11 @@ public class ScalingImage extends JFrame{
         slider3.setMinimum(10);
         slider3.setValue(settings[2]);
         slider3.setMaximum(50);
+        JSlider slider4 = new JSlider(JSlider.HORIZONTAL, 1, settings[2] / 2, settings[3]);
         slider3.addChangeListener((s) -> {
           radius.setText(String.valueOf(slider3.getValue()));
+          slider4.setMaximum(slider3.getValue() / 2);
+          if(slider4.getMaximum() < slider4.getValue()) slider4.setValue(slider4.getMaximum());
           synchronized(o){
             mainPanel.setRadius(slider3.getValue());
             mainPanel.draw();
@@ -242,9 +245,7 @@ public class ScalingImage extends JFrame{
           }
         });
 
-        JSlider slider4 = new JSlider(JSlider.HORIZONTAL, 1, settings[2] / 2, settings[3]);
         slider4.addChangeListener((s) -> {
-          slider4.setMaximum(slider3.getValue() / 2);
           thickness.setText(String.valueOf(slider4.getValue()));
           synchronized(o){
             mainPanel.setSideThickness(slider4.getValue());
@@ -255,6 +256,20 @@ public class ScalingImage extends JFrame{
         JSlider slider5 = new JSlider(JSlider.HORIZONTAL, 100, 1000, settings[4]);
         slider5.addChangeListener((s) -> {
           speed.setText(String.valueOf(slider5.getValue()));
+          mainPanel.setSpeed(slider5.getValue());
+          timer.cancel();
+          timer = new Timer(true);
+          timer.schedule(new TimerTask(){
+            @Override
+            public void run(){
+              synchronized(o){
+                mainPanel.stepChange();
+              }
+              if(mainPanel.stopChanging()){
+                buttonRun.setSelected(false);
+              }
+            };
+          }, slider5.getValue(), slider5.getValue());
         });
 
         height.addFocusListener(new FocusListener() {
@@ -387,6 +402,10 @@ class MainPanel extends JPanel {
   public JScrollPane scrollpane;
   private ImagePanel imagePanel;
 
+  public void setSpeed(int s){
+    imagePanel.setSpeed(s);
+  }
+
   public void setRadius(int r){
     imagePanel.setRadius(r);
   }
@@ -430,6 +449,10 @@ class ImagePanel extends JPanel {
   private Point lastCell;
   private boolean xor = false;
   private int speed = 600;
+
+  public void setSpeed(int s){
+    this.speed = s;
+  }
 
   public void setRadius(int r){
     field.setRadius(r);
