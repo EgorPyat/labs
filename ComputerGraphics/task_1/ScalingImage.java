@@ -233,7 +233,11 @@ public class ScalingImage extends JFrame{
         slider1.setValue(settings[0]);
         slider1.addChangeListener((s) -> {
           height.setText(String.valueOf(slider1.getValue()));
-          mainPanel.changeHeight(slider1.getValue());
+          synchronized(o){
+            mainPanel.changeHeight(slider1.getValue());
+            mainPanel.draw();
+            mainPanel.scrollpane.updateUI();
+          }
         });
 
         JSlider slider2 = new JSlider(JSlider.HORIZONTAL);
@@ -241,7 +245,11 @@ public class ScalingImage extends JFrame{
         slider2.setValue(settings[1]);
         slider2.addChangeListener((s) -> {
           width.setText(String.valueOf(slider2.getValue()));
-          mainPanel.changeWidth(slider2.getValue());
+          synchronized(o){
+            mainPanel.changeWidth(slider2.getValue());
+            mainPanel.draw();
+            mainPanel.scrollpane.updateUI();
+          }
         });
 
         JSlider slider3 = new JSlider(JSlider.HORIZONTAL);
@@ -480,11 +488,21 @@ class ImagePanel extends JPanel {
   private int speed = 600;
 
   public void changeWidth(int w){
-
+    this.field.changeWidth(w);
+    // this.draw();
+    this.initWidth = field.getWidth();
+    this.initHeight = field.getHeight();
+    this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    setPreferredSize(new Dimension(initWidth, initHeight));
   }
 
   public void changeHeight(int h){
-
+    this.field.changeHeight(h);
+    this.initWidth = field.getWidth();
+    this.initHeight = field.getHeight();
+    this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    setPreferredSize(new Dimension(initWidth, initHeight));
+    // this.draw();
   }
 
   public int getSpeed(){

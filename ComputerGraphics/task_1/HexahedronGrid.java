@@ -50,8 +50,75 @@ public class HexahedronGrid{
     return this.fieldWidth;
   }
 
+  public void changeWidth(int w){
+    Hexahedron[][] nf = new Hexahedron[this.hexHeight][w];
+    // this.normal = (int)(this.hexRadius * Math.sqrt(3)/2);
+    // this.fieldHeight = (20 + this.normal * h + 20) * 2;
+    this.fieldWidth = (20 + this.hexRadius * w + 25) * 3 / 2;
+
+    int R = hexRadius;
+    int X = R + 20;
+    int tx = X;
+    int yl = this.normal;
+    int Y = yl - 1 + 20;
+    int ty = Y;
+    int xl = R + R / 2;
+
+    for(int i = 0; i < this.hexHeight; i++){
+      for(int j = 0; j < w; j++){
+        if(j < this.hexWidth){
+          nf[i][j] = field[i][j];
+        }
+        else{
+          nf[i][j] = new Hexahedron();
+          nf[i][j].construct(X, Y, R, this.hexSideThick);
+        }
+        X += xl;
+        Y = j % 2 == 0 ? Y + yl : Y - yl;
+      }
+      X = tx;
+      Y = ty + yl * 2;
+      ty = Y;
+    }
+    this.field = nf;
+    this.hexWidth = w;
+  }
+
   public int getHeight(){
     return this.fieldHeight;
+  }
+
+  public void changeHeight(int h){
+    Hexahedron[][] nf = new Hexahedron[h][this.hexWidth];
+    this.normal = (int)(this.hexRadius * Math.sqrt(3)/2);
+    this.fieldHeight = (20 + this.normal * h + 20) * 2;
+
+    int R = hexRadius;
+    int X = R + 20;
+    int tx = X;
+    int yl = this.normal;
+    int Y = yl - 1 + 20;
+    int ty = Y;
+    int xl = R + R / 2;
+
+    for(int i = 0; i < h; i++){
+      for(int j = 0; j < this.hexWidth; j++){
+        if(i < this.hexHeight){
+          nf[i][j] = field[i][j];
+        }
+        else{
+          nf[i][j] = new Hexahedron();
+          nf[i][j].construct(X, Y, R, this.hexSideThick);
+        }
+        X += xl;
+        Y = j % 2 == 0 ? Y + yl : Y - yl;
+      }
+      X = tx;
+      Y = ty + yl * 2;
+      ty = Y;
+    }
+    this.field = nf;
+    this.hexHeight = h;
   }
 
   public int getHexWidth(){
