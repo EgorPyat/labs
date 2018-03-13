@@ -11,6 +11,10 @@ public class HexahedronGrid{
   private int fieldWidth;
   private int fieldHeight;
   private boolean extinction = true;
+  private double LIVE_BEGIN = 2.0;
+  private double LIVE_END = 3.3;
+  private double FST_IMPACT = 1.0;
+  private double SND_IMPACT = 0.3;
 
   public HexahedronGrid(int N, int M, int hexRadius, int sideThick){
     this.hexWidth = M;
@@ -196,7 +200,7 @@ public class HexahedronGrid{
         else step = 1;
         if(i - step > 0 && j < hexWidth - 1) {if(field[i - 1 - step][j + 1].isAlive()) {++snd_count; System.out.print("8");}}
 
-        impact = 1.0 * fst_count + 0.3 * snd_count;
+        impact = FST_IMPACT * fst_count + SND_IMPACT * snd_count;
         fst_count = 0;
         snd_count = 0;
         field[i][j].setImpact(impact);
@@ -231,8 +235,8 @@ public class HexahedronGrid{
         else step = 1;
         if(i - step > 0 && j < hexWidth - 1) {if(field[i - 1 - step][j + 1].isAlive()) {++snd_count; System.out.print("8");}}
 
-        impact = 1.0 * fst_count + 0.3 * snd_count;
-        if(impact < 2.0 || impact > 3.3){
+        impact = FST_IMPACT * fst_count + SND_IMPACT * snd_count;
+        if(impact < LIVE_BEGIN || impact > LIVE_END){
           field[i][j].setDead();
         }
         else{
@@ -280,5 +284,26 @@ public class HexahedronGrid{
     for(Point p : ac){
       field[(int)p.getX()][(int)p.getY()].setAlive(true);
     }
+  }
+
+  public double[] getLiveProps(){
+    double[] props = {FST_IMPACT, SND_IMPACT, LIVE_BEGIN, LIVE_END};
+    return props;
+  }
+
+  public void setFI(double fi){
+    FST_IMPACT = fi;
+  }
+
+  public void setSI(double si){
+    SND_IMPACT = si;
+  }
+
+  public void setLB(double lb){
+    LIVE_BEGIN = lb;
+  }
+
+  public void setLE(double le){
+    LIVE_END = le;
   }
 }

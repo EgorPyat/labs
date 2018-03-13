@@ -283,7 +283,7 @@ public class ScalingImage extends JFrame{
         cellPane.setLayout(new GridLayout(2, 3));
         mPane.setLayout(new GridLayout(2, 1));
         modePane.setLayout(new GridLayout(1, 2));
-        gamePane.setLayout(new GridLayout(2, 3));
+        gamePane.setLayout(new GridLayout(5, 3));
         bPane.setLayout(new BorderLayout());
 
         GridBagLayout gridbag = new GridBagLayout();
@@ -300,7 +300,12 @@ public class ScalingImage extends JFrame{
         TextField radius = new TextField(String.valueOf(settings[2]) , 5);
         TextField thickness = new TextField(String.valueOf(settings[3]) , 5);
         TextField speed = new TextField(String.valueOf(settings[4]), 5);
-        TextField save = new TextField("./", 10);
+
+        double[] p = mainPanel.getProps();
+        TextField fi = new TextField(String.valueOf(p[0]), 5);
+        TextField si = new TextField(String.valueOf(p[1]), 5);
+        TextField lb = new TextField(String.valueOf(p[2]), 5);
+        TextField le = new TextField(String.valueOf(p[3]), 5);
 
         JButton submit = new JButton("Submit");
         JButton cancel = new JButton("Cancel");
@@ -441,6 +446,52 @@ public class ScalingImage extends JFrame{
           }
         });
 
+        fi.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            synchronized(o){
+              mainPanel.setFI(Double.valueOf(fi.getText()));
+              mainPanel.changeImpacts();
+            }
+          }
+        });
+
+        si.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            synchronized(o){
+              mainPanel.setSI(Double.valueOf(si.getText()));
+              mainPanel.changeImpacts();
+            }
+          }
+        });
+
+        lb.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            double lbt = Double.valueOf(lb.getText());
+            double let = Double.valueOf(le.getText());
+            if(lbt > let) lbt = let;
+            mainPanel.setLB(lbt);
+            // mainPanel.changeImpacts();
+          }
+        });
+
+        le.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            double let = Double.valueOf(le.getText());
+            double lbt = Double.valueOf(lb.getText());
+            if(let < lbt) let = lbt;
+            mainPanel.setLE(let);
+            // mainPanel.changeImpacts();
+          }
+        });
+
         bPane.add(submit, BorderLayout.PAGE_START);
         bPane.add(new JPanel(), BorderLayout.CENTER);
         bPane.add(cancel, BorderLayout.PAGE_END);
@@ -466,9 +517,24 @@ public class ScalingImage extends JFrame{
         gamePane.add(slider5);
         gamePane.add(speed);
 
-        gamePane.add(new JLabel("Default dir"));
+        gamePane.add(new JLabel("FST_IMPACT"));
         gamePane.add(new JLabel(""));
-        gamePane.add(save);
+        gamePane.add(fi);
+
+        gamePane.add(new JLabel("SND_IMPACT"));
+        gamePane.add(new JLabel(""));
+        gamePane.add(si);
+
+        gamePane.add(new JLabel("LIVE_BEGIN"));
+        gamePane.add(new JLabel(""));
+        gamePane.add(lb);
+
+        gamePane.add(new JLabel("LIVE_END"));
+        gamePane.add(new JLabel(""));
+        gamePane.add(le);
+        // gamePane.add(new JLabel("Default dir"));
+        // gamePane.add(new JLabel(""));
+        // gamePane.add(save);
 
         fieldPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Field"), BorderFactory.createEmptyBorder(5,5,5,5)));
         cellPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Hexahedron"), BorderFactory.createEmptyBorder(5,5,5,5)));
@@ -482,7 +548,7 @@ public class ScalingImage extends JFrame{
         leftPane.add(cellPane);
         leftPane.add(gamePane);
         leftPane.add(modePane);
-        leftPane.setPreferredSize(new Dimension(350, 350));
+        leftPane.setPreferredSize(new Dimension(350, 450));
         dialog.add(leftPane, BorderLayout.LINE_START);
         dialog.setResizable(false);
         dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -535,6 +601,30 @@ public class ScalingImage extends JFrame{
 class MainPanel extends JPanel {
   public JScrollPane scrollpane;
   private ImagePanel imagePanel;
+
+  public void changeImpacts(){
+    imagePanel.changeImpacts();
+  }
+
+  public double[] getProps(){
+    return imagePanel.getProps();
+  }
+
+  public void setFI(double fi){
+    imagePanel.setFI(fi);
+  }
+
+  public void setSI(double si){
+    imagePanel.setSI(si);
+  }
+
+  public void setLB(double lb){
+    imagePanel.setLB(lb);
+  }
+
+  public void setLE(double le){
+    imagePanel.setLE(le);
+  }
 
   public void setCells(LinkedList<Point> ac){
     imagePanel.setCells(ac);
@@ -610,6 +700,31 @@ class ImagePanel extends JPanel {
   private int speed = 600;
   private boolean showImpacts = false;
 
+  public void changeImpacts(){
+    field.recountImpact();
+    draw();
+  }
+
+  public double[] getProps(){
+    return field.getLiveProps();
+  }
+
+  public void setFI(double fi){
+    field.setFI(fi);
+  }
+
+  public void setSI(double si){
+    field.setSI(si);
+  }
+
+  public void setLB(double lb){
+    field.setLB(lb);
+  }
+
+  public void setLE(double le){
+    field.setLE(le);
+  }
+
   public void setCells(LinkedList<Point> ac){
     field.setAliveCells(ac);
   }
@@ -624,7 +739,7 @@ class ImagePanel extends JPanel {
     ((Graphics2D)ig).setBackground(new Color(0, 0, 0, 0));
     ig.clearRect(0, 0, impactIm.getWidth(), impactIm.getHeight());
     ig.setColor(Color.black);
-
+    field.recountImpact();
     if(showImpacts){
       Hexahedron[][] f = field.getField();
       for(int i = 0; i < field.getHexHeight(); i++){
