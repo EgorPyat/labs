@@ -560,7 +560,7 @@ public class ScalingImage extends JFrame{
 
       JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
       buttonAbout.setSize(new Dimension(32, 32));
-      buttonAbout.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nVersion 0.5\nBy Egor Pyataev"));
+      buttonAbout.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nVersion 0.8\nBy Egor Pyataev"));
       buttonAbout.setToolTipText("View information about game");
 
       JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
@@ -880,7 +880,52 @@ class ImagePanel extends JPanel {
     }
   }
 
-  public void drawBrezenhemLine(){}
+  private int sign (int x) {
+  	return (x > 0) ? 1 : (x < 0) ? -1 : 0;
+  }
+
+  public void drawBrezenhemLine(Graphics g, int x1, int y1, int x2, int y2){
+    // g.drawLine(x1, y1, x2, y2);
+    int x, y, dx, dy, incx, incy, pdx, pdy, es, el, err;
+
+  	dx = x2 - x1;
+  	dy = y2 - y1;
+
+  	incx = sign(dx);
+  	incy = sign(dy);
+
+  	if(dx < 0) dx = -dx;
+  	if(dy < 0) dy = -dy;
+
+  	if (dx > dy){
+  		pdx = incx;	pdy = 0;
+  		es = dy;	el = dx;
+  	}
+  	else{
+  		pdx = 0;	pdy = incy;
+  		es = dx;	el = dy;
+  	}
+
+  	x = x1;
+  	y = y1;
+  	err = el/2;
+  	g.drawLine(x, y, x, y);
+
+  	for(int t = 0; t < el; t++){
+  		err -= es;
+  		if (err < 0){
+  			err += el;
+  			x += incx;
+  			y += incy;
+  		}
+  		else{
+  			x += pdx;
+  			y += pdy;
+  		}
+
+  		g.drawLine(x, y, x, y);
+  	}
+  }
 
   private void drawHexahedron(Graphics g, Hexahedron h){
     int xc[] = h.getXCoords();
@@ -899,15 +944,18 @@ class ImagePanel extends JPanel {
         if(j > 0){
           x1 = xc[j]; x2 = xc[j-1];
           y1 = yc[j]; y2 = yc[j-1];
-          g.drawLine(x1, y1, x2, y2);
+          // g.drawLine(x1, y1, x2, y2);
+          drawBrezenhemLine(g, x1, y1, x2, y2);
           j--;
         }
         else{
           x1 = xc[j]; x2 = xc[5];
           y1 = yc[j]; y2 = yc[5];
-          g.drawLine(x1, y1, x2, y2);
+          // g.drawLine(x1, y1, x2, y2);
+          drawBrezenhemLine(g, x1, y1, x2, y2);
           j--;
         }
+        //возвращает 0, если аргумент (x) равен нулю; -1, если x < 0 и 1, если x > 0.
       }
     }
   }
