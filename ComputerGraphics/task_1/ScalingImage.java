@@ -38,10 +38,12 @@ public class ScalingImage extends JFrame{
     JMenuItem mGameStep = new JMenuItem("Step");
     JMenuItem mGameRun = new JMenuItem("Run");
     JMenu     mGameMode = new JMenu("Mode");
+    JRadioButtonMenuItem mGameImpacts = new JRadioButtonMenuItem("Show impacts");
     JRadioButtonMenuItem mGameModeReplace = new JRadioButtonMenuItem("Replace", true);
     JRadioButtonMenuItem mGameModeXOR = new JRadioButtonMenuItem("XOR");
     JMenuItem mGameClearField = new JMenuItem("Clear field");
     JMenuItem mGameSettings = new JMenuItem("Settings");
+
     Object o = new Object();
     mFileQuit.addActionListener((e) -> System.exit(0));
     mAboutInfo.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nBy Egor Pyataev"));
@@ -61,6 +63,7 @@ public class ScalingImage extends JFrame{
     mGameMode.add(mGameModeReplace);
     mGameMode.add(mGameModeXOR);
     mGame.add(mGameMode);
+    mGame.add(mGameImpacts);
     mGame.addSeparator();
     mGame.add(mGameClearField);
     mGame.addSeparator();
@@ -187,6 +190,17 @@ public class ScalingImage extends JFrame{
       buttonMode.addItemListener((e) -> {
         System.out.println("butt");
         mainPanel.changeMode();
+      });
+
+      JToggleButton buttonImpact = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("impact.png"))));
+      buttonImpact.setSize(new Dimension(32, 32));
+      buttonImpact.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+          mainPanel.showImpact(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+          mainPanel.showImpact(false);
+        }
       });
 
       JButton buttonClear = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("clear.png"))));
@@ -436,6 +450,7 @@ public class ScalingImage extends JFrame{
       toolBar.add(buttonStep);
       toolBar.add(buttonRun);
       toolBar.add(buttonMode);
+      toolBar.add(buttonImpact);
       toolBar.add(buttonClear);
       toolBar.add(buttonSettings);
       toolBar.addSeparator();
@@ -460,6 +475,10 @@ public class ScalingImage extends JFrame{
 class MainPanel extends JPanel {
   public JScrollPane scrollpane;
   private ImagePanel imagePanel;
+
+  public void showImpact(boolean show){
+    this.imagePanel.showImpact(show);
+  }
 
   public void changeWidth(int w){
     imagePanel.changeWidth(w);
@@ -513,6 +532,7 @@ class MainPanel extends JPanel {
 
 class ImagePanel extends JPanel {
   private BufferedImage image;
+  private BufferedImage impactIm;
   private HexahedronGrid field;
   private int initWidth;
   private int initHeight;
@@ -520,6 +540,26 @@ class ImagePanel extends JPanel {
   private Point lastCell;
   private boolean xor = false;
   private int speed = 600;
+  private boolean showImpacts = false;
+
+  public void showImpact(boolean show){
+    this.showImpacts = show;
+    Graphics ig = this.impactIm.createGraphics();
+    ((Graphics2D)ig).setBackground(new Color(0, 0, 0, 0));
+    ig.clearRect(0, 0, impactIm.getWidth(), impactIm.getHeight());
+    ig.setColor(Color.black);
+
+    if(showImpacts){
+      Hexahedron[][] f = field.getField();
+      for(int i = 0; i < field.getHexHeight(); i++){
+        for(int j = 0; j < field.getHexWidth(); j++){
+          Point ce = f[i][j].getCenter();
+          if(showImpacts) ig.drawString(String.format("%.1f", f[i][j].getImpact()), (int)ce.getX() - 8, (int)ce.getY() + 5);
+        }
+      }
+    }
+    repaint();
+  }
 
   public void changeWidth(int w){
     this.field.changeWidth(w);
@@ -527,6 +567,7 @@ class ImagePanel extends JPanel {
     this.initWidth = field.getWidth();
     this.initHeight = field.getHeight();
     this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    this.impactIm = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
     setPreferredSize(new Dimension(initWidth, initHeight));
   }
 
@@ -535,6 +576,8 @@ class ImagePanel extends JPanel {
     this.initWidth = field.getWidth();
     this.initHeight = field.getHeight();
     this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    this.impactIm = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
     setPreferredSize(new Dimension(initWidth, initHeight));
     // this.draw();
   }
@@ -552,6 +595,7 @@ class ImagePanel extends JPanel {
     this.initWidth = field.getWidth();
     this.initHeight = field.getHeight();
     this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    this.impactIm = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
     this.defColor = this.image.getGraphics().getColor();
     setPreferredSize(new Dimension(initWidth, initHeight));
   }
@@ -582,6 +626,7 @@ class ImagePanel extends JPanel {
 
   public void stepChange(){
     field.stepChange();
+    field.recountImpact();
     this.draw();
   }
 
@@ -678,7 +723,15 @@ class ImagePanel extends JPanel {
 
   public void drawHexahedronGrid(){
     Graphics g = this.image.createGraphics();
+    Graphics ig = this.impactIm.createGraphics();
     paintComponent(g);
+
+    if(showImpacts){
+      ((Graphics2D)ig).setBackground(new Color(0, 0, 0, 0));
+      ig.clearRect(0, 0, impactIm.getWidth(), impactIm.getHeight());
+      ig.setColor(Color.black);
+    }
+
     g.setColor(Color.black);
     Hexahedron[][] f = this.field.getField();
     for(int i = 0; i < this.field.getHexHeight(); i++){
@@ -686,6 +739,9 @@ class ImagePanel extends JPanel {
         drawHexahedron(g, f[i][j]);
         Point p = f[i][j].getCenter();
         spanFilling(this.image, (int)p.getX(), (int)p.getY(), f[i][j].isAlive() ? Color.RED : this.defColor);
+        if(showImpacts){
+          ig.drawString(String.format("%.1f", f[i][j].getImpact()), (int)p.getX() - 8, (int)p.getY() + 5);
+        }
       }
     }
   }
@@ -732,6 +788,7 @@ class ImagePanel extends JPanel {
     this.initWidth = field.getWidth();
     this.initHeight = field.getHeight();
     this.image = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    this.impactIm = new BufferedImage(field.getWidth(), field.getHeight(), BufferedImage.TYPE_INT_ARGB);
     this.defColor = this.image.getGraphics().getColor();
     setPreferredSize(new Dimension(initWidth, initHeight));
 
@@ -760,6 +817,23 @@ class ImagePanel extends JPanel {
           else if(!h.isAlive()){
             spanFilling(image, x, y, Color.RED);
             h.changeStatus();
+          }
+
+          field.recountImpact();
+          Graphics ig = impactIm.createGraphics();
+
+          if(showImpacts){
+            ((Graphics2D)ig).setBackground(new Color(0, 0, 0, 0));
+            ig.clearRect(0, 0, impactIm.getWidth(), impactIm.getHeight());
+            ig.setColor(Color.black);
+          }
+
+          Hexahedron[][] f = field.getField();
+          for(int i = 0; i < field.getHexHeight(); i++){
+            for(int j = 0; j < field.getHexWidth(); j++){
+              Point ce = f[i][j].getCenter();
+              if(showImpacts) ig.drawString(String.format("%.1f", f[i][j].getImpact()), (int)ce.getX() - 8, (int)ce.getY() + 5);
+            }
           }
           repaint();
         }
@@ -793,6 +867,21 @@ class ImagePanel extends JPanel {
           spanFilling(image, x, y, Color.RED);
           h.changeStatus();
         }
+
+        field.recountImpact();
+        Graphics ig = impactIm.createGraphics();
+        if(showImpacts){
+          ((Graphics2D)ig).setBackground(new Color(0, 0, 0, 0));
+          ig.clearRect(0, 0, impactIm.getWidth(), impactIm.getHeight());
+          ig.setColor(Color.black);
+        }
+        Hexahedron[][] f = field.getField();
+        for(int i = 0; i < field.getHexHeight(); i++){
+          for(int j = 0; j < field.getHexWidth(); j++){
+            Point ce = f[i][j].getCenter();
+            if(showImpacts) ig.drawString(String.format("%.1f", f[i][j].getImpact()), (int)ce.getX() - 8, (int)ce.getY() + 5);
+          }
+        }
         repaint();
       }
        catch(ArrayIndexOutOfBoundsException ex){}
@@ -805,6 +894,7 @@ class ImagePanel extends JPanel {
     super.paint(g);
     if(image != null) {
       g.drawImage(image, 0, 0, null);
+      g.drawImage(impactIm, 0, 0, null);
     }
   }
 }

@@ -8,6 +8,7 @@ public class Hexahedron extends Polygon{
   private int sideThick;
   private boolean alive = false;
   private boolean survive;
+  private double impact = 0.0;
 
   public void construct(int x, int y, int radius, int sideThick){
     this.xc = new int[6];
@@ -70,5 +71,13 @@ public class Hexahedron extends Polygon{
 
   public void setDead(){
     this.survive = false;
+  }
+
+  public double getImpact(){
+    return this.impact;
+  }
+
+  public void setImpact(double impact){
+    this.impact = impact;
   }
 }
