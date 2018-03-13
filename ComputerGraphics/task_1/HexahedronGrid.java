@@ -1,3 +1,5 @@
+import java.awt.Point;
+import java.util.LinkedList;
 
 public class HexahedronGrid{
   private Hexahedron[][] field;
@@ -259,5 +261,24 @@ public class HexahedronGrid{
 
   public void clearField(){
     this.field = new HexahedronGrid(this.hexHeight, this.hexWidth, this.hexRadius, this.hexSideThick).getField();
+  }
+
+  public LinkedList<Point> getAliveCells(){
+    LinkedList<Point> ac = new LinkedList<Point>();
+    for (int i = 0; i < this.hexHeight; i++) {
+      for (int j = 0; j < this.hexWidth; j++) {
+        if(field[i][j].isAlive()){
+          ac.add(new Point(i, j));
+        }
+      }
+    }
+
+    return ac;
+  }
+
+  public void setAliveCells(LinkedList<Point> ac){
+    for(Point p : ac){
+      field[(int)p.getX()][(int)p.getY()].setAlive(true);
+    }
   }
 }

@@ -4,6 +4,8 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.BufferedReader;
 import javax.swing.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.event.MouseEvent;
@@ -122,9 +124,16 @@ public class ScalingImage extends JFrame{
           JFileChooser c = new JFileChooser(".");
           int rVal = c.showSaveDialog(this);
           if (rVal == JFileChooser.APPROVE_OPTION) {
-            try(FileWriter fw = new FileWriter(c.getSelectedFile()+".txt")) {
+            try(FileWriter fw = new FileWriter(c.getSelectedFile())) {
               int[] settings = mainPanel.getSettings();
-              fw.write("sb.toString()");
+              LinkedList<Point> ac = mainPanel.getCells();
+              fw.write(settings[1] + " " + settings[0] + "\n");
+              fw.write(settings[3] + "\n");
+              fw.write(settings[2] + "\n");
+              fw.write(ac.size() + "\n");
+              for (Point el : ac) {
+                fw.write((int)el.getX() + " " + (int)el.getY() + "\n");
+              }
             }
             catch (Exception ex) {
               System.out.println(ex.getMessage());
@@ -135,22 +144,64 @@ public class ScalingImage extends JFrame{
           }
         }
       });
+      buttonSave.setToolTipText("Save field state");
 
       JButton buttonImport = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("import.png"))));
       buttonImport.setSize(new Dimension(32, 32));
       buttonImport.addActionListener((e) -> {
         if(timer == null){
-          JTextField filename = new JTextField(), dir = new JTextField();
           JFileChooser c = new JFileChooser(".");
           int rVal = c.showOpenDialog(this);
           if (rVal == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = c.getSelectedFile();
+            int i = 0;
+            int N = 6;
+            int M = 10;
+            int thickness = 2;
+            int radius = 48;
+            LinkedList<Point> ac = new LinkedList<Point>();
+            try(BufferedReader br = new BufferedReader (new FileReader(c.getSelectedFile()))){
+              while(true){
+                String line = br.readLine();
+                if(line == null) break;
+                System.out.println(line);
+                String[] ars = line.split(" ");
+                if(i == 0){
+                  M = Integer.valueOf(ars[0]);
+                  N = Integer.valueOf(ars[1]);
+                }
+                else if(i == 1){
+                  thickness = Integer.valueOf(ars[0]);
+                }
+                else if(i == 2){
+                  radius = Integer.valueOf(ars[0]);
+                }
+                else if(i == 3){
+                  ++i;
+                  continue;
+                }
+                else{
+                  ac.add(new Point(Integer.valueOf(ars[0]), Integer.valueOf(ars[1])));
+                }
+                ++i;
+              }
+              System.out.println(ac.size());
+              getContentPane().remove(mainPanel);
+              mainPanel = new MainPanel(new HexahedronGrid(N, M, radius, thickness));
+              mainPanel.setCells(ac);
+              add(mainPanel);
+              mainPanel.draw();
+              pack();
+            }
+            catch(Exception ex){
+              System.out.println(ex.getMessage());
+            }
           }
           if (rVal == JFileChooser.CANCEL_OPTION) {
             System.out.println("canceled");
           }
         }
       });
+      buttonImport.setToolTipText("Import field state from file");
 
       JButton buttonStep = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("step.png"))));
       buttonStep.setSize(new Dimension(32, 32));
@@ -159,6 +210,7 @@ public class ScalingImage extends JFrame{
           mainPanel.stepChange();
         }
       });
+      buttonStep.setToolTipText("Change field state by one step");
 
       JToggleButton buttonRun = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("run.png"))));
       buttonRun.setSize(new Dimension(32, 32));
@@ -184,6 +236,7 @@ public class ScalingImage extends JFrame{
           System.out.println("deselect");
         }
       });
+      buttonRun.setToolTipText("Change field state continuously");
 
       JToggleButton buttonMode = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("mode.png"))));
       buttonMode.setSize(new Dimension(32, 32));
@@ -191,6 +244,7 @@ public class ScalingImage extends JFrame{
         System.out.println("butt");
         mainPanel.changeMode();
       });
+      buttonMode.setToolTipText("Change cell filling mode");
 
       JToggleButton buttonImpact = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("impact.png"))));
       buttonImpact.setSize(new Dimension(32, 32));
@@ -202,6 +256,7 @@ public class ScalingImage extends JFrame{
           mainPanel.showImpact(false);
         }
       });
+      buttonImpact.setToolTipText("Enable / disable cells' impact show");
 
       JButton buttonClear = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("clear.png"))));
       buttonClear.setSize(new Dimension(32, 32));
@@ -210,6 +265,7 @@ public class ScalingImage extends JFrame{
           mainPanel.clear();
         }
       });
+      buttonClear.setToolTipText("Clear field");
 
       JButton buttonSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("settings.png"))));
       buttonSettings.setSize(new Dimension(32, 32));
@@ -434,14 +490,18 @@ public class ScalingImage extends JFrame{
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
       });
+      buttonSettings.setToolTipText("Change game settings");
 
       JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
       buttonAbout.setSize(new Dimension(32, 32));
       buttonAbout.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nVersion 0.5\nBy Egor Pyataev"));
+      buttonAbout.setToolTipText("View information about game");
 
       JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
       buttonExit.setSize(new Dimension(32, 32));
       buttonExit.addActionListener((e) -> System.exit(0));
+      buttonExit.setToolTipText("Exit");
+
       toolBar.add(buttonNew);
       toolBar.add(buttonSave);
       toolBar.add(buttonImport);
@@ -475,6 +535,14 @@ public class ScalingImage extends JFrame{
 class MainPanel extends JPanel {
   public JScrollPane scrollpane;
   private ImagePanel imagePanel;
+
+  public void setCells(LinkedList<Point> ac){
+    imagePanel.setCells(ac);
+  }
+
+  public LinkedList<Point> getCells(){
+    return imagePanel.getCells();
+  }
 
   public void showImpact(boolean show){
     this.imagePanel.showImpact(show);
@@ -541,6 +609,14 @@ class ImagePanel extends JPanel {
   private boolean xor = false;
   private int speed = 600;
   private boolean showImpacts = false;
+
+  public void setCells(LinkedList<Point> ac){
+    field.setAliveCells(ac);
+  }
+
+  public LinkedList<Point> getCells(){
+    return field.getAliveCells();
+  }
 
   public void showImpact(boolean show){
     this.showImpacts = show;
