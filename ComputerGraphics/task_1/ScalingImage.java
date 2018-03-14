@@ -124,7 +124,7 @@ public class ScalingImage extends JFrame{
           JFileChooser c = new JFileChooser(".");
           int rVal = c.showSaveDialog(this);
           if (rVal == JFileChooser.APPROVE_OPTION) {
-            try(FileWriter fw = new FileWriter(c.getSelectedFile())) {
+            try(FileWriter fw = new FileWriter(c.getSelectedFile() + ".txt")) {
               int[] settings = mainPanel.getSettings();
               LinkedList<Point> ac = mainPanel.getCells();
               fw.write(settings[1] + " " + settings[0] + "\n");
@@ -138,9 +138,6 @@ public class ScalingImage extends JFrame{
             catch (Exception ex) {
               System.out.println(ex.getMessage());
             }
-          }
-          if (rVal == JFileChooser.CANCEL_OPTION) {
-            System.out.println("canceled");
           }
         }
       });
@@ -158,8 +155,12 @@ public class ScalingImage extends JFrame{
             int M = 10;
             int thickness = 2;
             int radius = 48;
+            int count = 0;
             LinkedList<Point> ac = new LinkedList<Point>();
-            try(BufferedReader br = new BufferedReader (new FileReader(c.getSelectedFile()))){
+            try(BufferedReader br = new BufferedReader(new FileReader(c.getSelectedFile()))){
+              if(!c.getSelectedFile().getName().endsWith(".txt")){
+                throw new Exception("Incorrect file format");
+              }
               while(true){
                 String line = br.readLine();
                 if(line == null) break;
@@ -175,8 +176,11 @@ public class ScalingImage extends JFrame{
                   radius = Integer.valueOf(ars[0]);
                 }
                 else if(i == 3){
+                  if(ars.length == 1) count = Integer.valueOf(ars[0]);
+                  else{
+                    throw new Exception("Incorrect file format");
+                  }
                   ++i;
-                  continue;
                 }
                 else{
                   ac.add(new Point(Integer.valueOf(ars[0]), Integer.valueOf(ars[1])));
@@ -192,10 +196,8 @@ public class ScalingImage extends JFrame{
             }
             catch(Exception ex){
               System.out.println(ex.getMessage());
+              JOptionPane.showMessageDialog(null, "Incorrect file format.", "Import error", JOptionPane.ERROR_MESSAGE);
             }
-          }
-          if (rVal == JFileChooser.CANCEL_OPTION) {
-            System.out.println("canceled");
           }
         }
       });
@@ -279,7 +281,7 @@ public class ScalingImage extends JFrame{
         cellPane.setLayout(new GridLayout(2, 3));
         mPane.setLayout(new GridLayout(2, 1));
         modePane.setLayout(new GridLayout(1, 2));
-        gamePane.setLayout(new GridLayout(5, 3));
+        gamePane.setLayout(new GridLayout(7, 3));
         bPane.setLayout(new BorderLayout());
 
         GridBagLayout gridbag = new GridBagLayout();
@@ -300,8 +302,10 @@ public class ScalingImage extends JFrame{
         double[] p = mainPanel.getProps();
         TextField fi = new TextField(String.valueOf(p[0]), 5);
         TextField si = new TextField(String.valueOf(p[1]), 5);
-        TextField lb = new TextField(String.valueOf(p[2]), 5);
-        TextField le = new TextField(String.valueOf(p[3]), 5);
+        TextField bb = new TextField(String.valueOf(p[2]), 5);
+        TextField be = new TextField(String.valueOf(p[3]), 5);
+        TextField lb = new TextField(String.valueOf(p[4]), 5);
+        TextField le = new TextField(String.valueOf(p[5]), 5);
 
         JButton submit = new JButton("Submit");
         JButton cancel = new JButton("Cancel");
@@ -458,13 +462,40 @@ public class ScalingImage extends JFrame{
           }
         });
 
+        bb.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            double lbt = Double.valueOf(lb.getText());
+            double bbt = Double.valueOf(bb.getText());
+            double bet = Double.valueOf(be.getText());
+            if(lbt > bbt || bet < bbt) bbt = (lbt + bet) / 2;
+            bb.setText(String.valueOf(bbt));
+            mainPanel.setBB(bbt);
+          }
+        });
+
+        be.addFocusListener(new FocusListener() {
+          public void focusGained(FocusEvent e) {}
+
+          public void focusLost(FocusEvent e) {
+            double bbt = Double.valueOf(bb.getText());
+            double bet = Double.valueOf(be.getText());
+            double let = Double.valueOf(le.getText());
+            if(bbt > bet || let < bet) bet = (bbt + let) / 2;
+            be.setText(String.valueOf(bet));
+            mainPanel.setBE(bet);
+          }
+        });
+
         lb.addFocusListener(new FocusListener() {
           public void focusGained(FocusEvent e) {}
 
           public void focusLost(FocusEvent e) {
             double lbt = Double.valueOf(lb.getText());
-            double let = Double.valueOf(le.getText());
-            if(lbt > let) lbt = let;
+            double bbt = Double.valueOf(bb.getText());
+            if(lbt > bbt) lbt = bbt;
+            lb.setText(String.valueOf(lbt));
             mainPanel.setLB(lbt);
           }
         });
@@ -474,8 +505,9 @@ public class ScalingImage extends JFrame{
 
           public void focusLost(FocusEvent e) {
             double let = Double.valueOf(le.getText());
-            double lbt = Double.valueOf(lb.getText());
-            if(let < lbt) let = lbt;
+            double bet = Double.valueOf(be.getText());
+            if(let < bet) let = bet;
+            le.setText(String.valueOf(let));
             mainPanel.setLE(let);
           }
         });
@@ -517,6 +549,15 @@ public class ScalingImage extends JFrame{
         gamePane.add(new JLabel(""));
         gamePane.add(lb);
 
+        gamePane.add(new JLabel("BIRTH_BEGIN"));
+        gamePane.add(new JLabel(""));
+        gamePane.add(bb);
+
+        gamePane.add(new JLabel("BIRTH_END"));
+        gamePane.add(new JLabel(""));
+        gamePane.add(be);
+
+
         gamePane.add(new JLabel("LIVE_END"));
         gamePane.add(new JLabel(""));
         gamePane.add(le);
@@ -533,7 +574,7 @@ public class ScalingImage extends JFrame{
         leftPane.add(cellPane);
         leftPane.add(gamePane);
         leftPane.add(modePane);
-        leftPane.setPreferredSize(new Dimension(350, 450));
+        leftPane.setPreferredSize(new Dimension(350, 600));
         dialog.add(leftPane, BorderLayout.LINE_START);
         dialog.setResizable(false);
         dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -601,6 +642,14 @@ class MainPanel extends JPanel {
 
   public void setSI(double si){
     imagePanel.setSI(si);
+  }
+
+  public void setBB(double bb){
+    imagePanel.setBB(bb);
+  }
+
+  public void setBE(double be){
+    imagePanel.setBE(be);
   }
 
   public void setLB(double lb){
@@ -700,6 +749,14 @@ class ImagePanel extends JPanel {
 
   public void setSI(double si){
     field.setSI(si);
+  }
+
+  public void setBB(double bb){
+    field.setBB(bb);
+  }
+
+  public void setBE(double be){
+    field.setBE(be);
   }
 
   public void setLB(double lb){
@@ -1062,21 +1119,21 @@ class ImagePanel extends JPanel {
     addMouseMotionListener(new MouseMotionAdapter() {
     @Override
     public void mouseDragged(MouseEvent e) {
-      int R = field.getHexRadius();
-      int yl = (int)(R * Math.sqrt(3) / 2);
-      int yl2 = yl + yl;
-      int x = e.getX();
-      int y = e.getY();
-      if(image.getRGB(x, y) == 0 || image.getRGB(x, y) == Color.BLACK.getRGB()){
-        return;
-      }
-      Point p = getCenterCoords(x, y);
-      int cellX = ((int)p.getX() - 20) / (R + R / 2);
-      int cellY = ((int)p.getY() - 20) / (yl2);
-      Point temp = new Point(cellY, cellX);
-      if(temp.equals(lastCell)) return;
-      else lastCell = temp;
       try{
+        int R = field.getHexRadius();
+        int yl = (int)(R * Math.sqrt(3) / 2);
+        int yl2 = yl + yl;
+        int x = e.getX();
+        int y = e.getY();
+        if(image.getRGB(x, y) == 0 || image.getRGB(x, y) == Color.BLACK.getRGB()){
+          return;
+        }
+        Point p = getCenterCoords(x, y);
+        int cellX = ((int)p.getX() - 20) / (R + R / 2);
+        int cellY = ((int)p.getY() - 20) / (yl2);
+        Point temp = new Point(cellY, cellX);
+        if(temp.equals(lastCell)) return;
+        else lastCell = temp;
         Hexahedron h = field.getField()[cellY][cellX];
         if(h.isAlive() && xor){
           spanFilling(image, x, y, defColor);

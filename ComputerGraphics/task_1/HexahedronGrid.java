@@ -12,6 +12,8 @@ public class HexahedronGrid{
   private int fieldHeight;
   private boolean extinction = true;
   private double LIVE_BEGIN = 2.0;
+  private double BIRTH_BEGIN = 2.3;
+  private double BIRTH_END = 2.9;
   private double LIVE_END = 3.3;
   private double FST_IMPACT = 1.0;
   private double SND_IMPACT = 0.3;
@@ -234,12 +236,23 @@ public class HexahedronGrid{
         if(i - step > 0 && j < hexWidth - 1) {if(field[i - 1 - step][j + 1].isAlive()) {++snd_count;}}
 
         impact = FST_IMPACT * fst_count + SND_IMPACT * snd_count;
-        if(impact < LIVE_BEGIN || impact > LIVE_END){
-          field[i][j].setDead();
+        if(field[i][j].isAlive()){
+          if(impact < LIVE_BEGIN || impact > LIVE_END){
+            field[i][j].setDead();
+          }
+          else{
+            this.extinction = false;
+            field[i][j].setSurvive();
+          }
         }
         else{
-          this.extinction = false;
-          field[i][j].setSurvive();
+          if(impact < BIRTH_BEGIN || impact > BIRTH_END){
+            field[i][j].setDead();
+          }
+          else{
+            this.extinction = false;
+            field[i][j].setSurvive();
+          }
         }
         fst_count = 0;
         snd_count = 0;
@@ -283,7 +296,7 @@ public class HexahedronGrid{
   }
 
   public double[] getLiveProps(){
-    double[] props = {FST_IMPACT, SND_IMPACT, LIVE_BEGIN, LIVE_END};
+    double[] props = {FST_IMPACT, SND_IMPACT, BIRTH_BEGIN, BIRTH_END, LIVE_BEGIN, LIVE_END};
     return props;
   }
 
@@ -293,6 +306,14 @@ public class HexahedronGrid{
 
   public void setSI(double si){
     SND_IMPACT = si;
+  }
+
+  public void setBB(double bb){
+    BIRTH_BEGIN = bb;
+  }
+
+  public void setBE(double be){
+    BIRTH_END = be;
   }
 
   public void setLB(double lb){
