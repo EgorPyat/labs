@@ -163,7 +163,6 @@ public class ScalingImage extends JFrame{
               while(true){
                 String line = br.readLine();
                 if(line == null) break;
-                System.out.println(line);
                 String[] ars = line.split(" ");
                 if(i == 0){
                   M = Integer.valueOf(ars[0]);
@@ -184,7 +183,6 @@ public class ScalingImage extends JFrame{
                 }
                 ++i;
               }
-              System.out.println(ac.size());
               getContentPane().remove(mainPanel);
               mainPanel = new MainPanel(new HexahedronGrid(N, M, radius, thickness));
               mainPanel.setCells(ac);
@@ -216,7 +214,6 @@ public class ScalingImage extends JFrame{
       buttonRun.setSize(new Dimension(32, 32));
       buttonRun.addItemListener((e) -> {
         if(e.getStateChange() == ItemEvent.SELECTED){
-          System.out.println("select");
           timer = new Timer(true);
             timer.schedule(new TimerTask(){
             @Override
@@ -241,7 +238,6 @@ public class ScalingImage extends JFrame{
       JToggleButton buttonMode = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("mode.png"))));
       buttonMode.setSize(new Dimension(32, 32));
       buttonMode.addItemListener((e) -> {
-        System.out.println("butt");
         mainPanel.changeMode();
       });
       buttonMode.setToolTipText("Change cell filling mode");
@@ -313,16 +309,10 @@ public class ScalingImage extends JFrame{
         JRadioButton xor = new JRadioButton("XOR", settings[5] == 0 ? false : true);
         ButtonGroup group = new ButtonGroup();
         replace.addActionListener((m) -> {
-          System.out.println("rep");
-          // mainPanel.changeMode();
           buttonMode.setSelected(false);
-          // repaint();
         });
         xor.addActionListener((m) -> {
-          System.out.println("xor");
-          // mainPanel.changeMode();
           buttonMode.setSelected(true);
-          // repaint();
         });
         group.add(replace);
         group.add(xor);
@@ -476,7 +466,6 @@ public class ScalingImage extends JFrame{
             double let = Double.valueOf(le.getText());
             if(lbt > let) lbt = let;
             mainPanel.setLB(lbt);
-            // mainPanel.changeImpacts();
           }
         });
 
@@ -488,7 +477,6 @@ public class ScalingImage extends JFrame{
             double lbt = Double.valueOf(lb.getText());
             if(let < lbt) let = lbt;
             mainPanel.setLE(let);
-            // mainPanel.changeImpacts();
           }
         });
 
@@ -532,9 +520,6 @@ public class ScalingImage extends JFrame{
         gamePane.add(new JLabel("LIVE_END"));
         gamePane.add(new JLabel(""));
         gamePane.add(le);
-        // gamePane.add(new JLabel("Default dir"));
-        // gamePane.add(new JLabel(""));
-        // gamePane.add(save);
 
         fieldPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Field"), BorderFactory.createEmptyBorder(5,5,5,5)));
         cellPane.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Hexahedron"), BorderFactory.createEmptyBorder(5,5,5,5)));
@@ -560,7 +545,7 @@ public class ScalingImage extends JFrame{
 
       JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
       buttonAbout.setSize(new Dimension(32, 32));
-      buttonAbout.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nVersion 0.8\nBy Egor Pyataev"));
+      buttonAbout.addActionListener((e) -> JOptionPane.showMessageDialog(this,  "Life - The Game.\nVersion 0.8\nBy Egor Pyataev - Group 15206"));
       buttonAbout.setToolTipText("View information about game");
 
       JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
@@ -884,8 +869,7 @@ class ImagePanel extends JPanel {
   	return (x > 0) ? 1 : (x < 0) ? -1 : 0;
   }
 
-  public void drawBrezenhemLine(Graphics g, int x1, int y1, int x2, int y2){
-    // g.drawLine(x1, y1, x2, y2);
+  public void drawBrezenhemLine(BufferedImage img, int x1, int y1, int x2, int y2){
     int x, y, dx, dy, incx, incy, pdx, pdy, es, el, err;
 
   	dx = x2 - x1;
@@ -909,7 +893,7 @@ class ImagePanel extends JPanel {
   	x = x1;
   	y = y1;
   	err = el/2;
-  	g.drawLine(x, y, x, y);
+  	img.setRGB(x, y, Color.BLACK.getRGB());
 
   	for(int t = 0; t < el; t++){
   		err -= es;
@@ -923,11 +907,11 @@ class ImagePanel extends JPanel {
   			y += pdy;
   		}
 
-  		g.drawLine(x, y, x, y);
+      img.setRGB(x, y, Color.BLACK.getRGB());
   	}
   }
 
-  private void drawHexahedron(Graphics g, Hexahedron h){
+  private void drawHexahedron(BufferedImage img, Hexahedron h){
     int xc[] = h.getXCoords();
     int yc[] = h.getYCoords();
     int x1, x2, y1, y2;
@@ -935,8 +919,9 @@ class ImagePanel extends JPanel {
     int thick = field.getHexSideThick();
 
     if(thick > 1){
-      Graphics2D g2 = (Graphics2D)g;
+      Graphics2D g2 = (Graphics2D)img.createGraphics();
       g2.setStroke(new BasicStroke(thick));
+      g2.setColor(Color.BLACK);
       g2.drawPolygon(xc, yc, 6);
     }
     else{
@@ -944,18 +929,15 @@ class ImagePanel extends JPanel {
         if(j > 0){
           x1 = xc[j]; x2 = xc[j-1];
           y1 = yc[j]; y2 = yc[j-1];
-          // g.drawLine(x1, y1, x2, y2);
-          drawBrezenhemLine(g, x1, y1, x2, y2);
+          drawBrezenhemLine(img, x1, y1, x2, y2);
           j--;
         }
         else{
           x1 = xc[j]; x2 = xc[5];
           y1 = yc[j]; y2 = yc[5];
-          // g.drawLine(x1, y1, x2, y2);
-          drawBrezenhemLine(g, x1, y1, x2, y2);
+          drawBrezenhemLine(img, x1, y1, x2, y2);
           j--;
         }
-        //возвращает 0, если аргумент (x) равен нулю; -1, если x < 0 и 1, если x > 0.
       }
     }
   }
@@ -975,7 +957,7 @@ class ImagePanel extends JPanel {
     Hexahedron[][] f = this.field.getField();
     for(int i = 0; i < this.field.getHexHeight(); i++){
       for(int j = 0; j < this.field.getHexWidth(); j++){
-        drawHexahedron(g, f[i][j]);
+        drawHexahedron(this.image, f[i][j]);
         Point p = f[i][j].getCenter();
         spanFilling(this.image, (int)p.getX(), (int)p.getY(), f[i][j].isAlive() ? Color.RED : this.defColor);
         if(showImpacts){
@@ -1018,7 +1000,6 @@ class ImagePanel extends JPanel {
      color = this.image.getRGB(x, y);
     }
     yc += y;
-    System.out.println(xc / 2 + " " + yc / 2);
     return new Point(xc / 2, yc / 2);
   }
 
@@ -1046,7 +1027,6 @@ class ImagePanel extends JPanel {
         int cellX = ((int)p.getX() - 20) / (R + R / 2);
         int cellY = ((int)p.getY() - 20) / (yl2);
         lastCell = new Point(cellY, cellX);
-        System.out.println("(" + cellY + ", " + cellX + ")" + "(" + (y - 20) + ", " + (x - 20) + ")" + " (" + (p.getY() - 20) + ", " + (p.getX() - 20) + ")");
         try{
           Hexahedron h = field.getField()[cellY][cellX];
           if(h.isAlive() && xor){
@@ -1133,7 +1113,7 @@ class ImagePanel extends JPanel {
     super.paint(g);
     if(image != null) {
       g.drawImage(image, 0, 0, null);
-      g.drawImage(impactIm, 0, 0, null);
+      if(showImpacts) g.drawImage(impactIm, 0, 0, null);
     }
   }
 }

@@ -58,8 +58,6 @@ public class HexahedronGrid{
 
   public void changeWidth(int w){
     Hexahedron[][] nf = new Hexahedron[this.hexHeight][w];
-    // this.normal = (int)(this.hexRadius * Math.sqrt(3)/2);
-    // this.fieldHeight = (20 + this.normal * h + 20) * 2;
     this.fieldWidth = (20 + this.hexRadius * w + 25) * 3 / 2;
 
     int R = hexRadius;
@@ -181,24 +179,24 @@ public class HexahedronGrid{
     for(int i = 0; i < hexHeight; i++){
       for(int j = 0; j < hexWidth; j++){
 
-        if(i > 0) if(field[i - 1][j].isAlive()) {++fst_count; System.out.print("9");}
-        if(i < hexHeight - 1) if(field[i + 1][j].isAlive()) {++fst_count; System.out.print("10");}
-        if(j < hexWidth - 2) if(field[i][j + 2].isAlive()) {++snd_count; System.out.print("11");}
-        if(j > 1) if(field[i][j - 2].isAlive()) {++snd_count; System.out.print("12");}
+        if(i > 0) if(field[i - 1][j].isAlive()) {++fst_count;}
+        if(i < hexHeight - 1) if(field[i + 1][j].isAlive()) {++fst_count;}
+        if(j < hexWidth - 2) if(field[i][j + 2].isAlive()) {++snd_count;}
+        if(j > 1) if(field[i][j - 2].isAlive()) {++snd_count;}
 
         if(j % 2 == 1) step = 1;
         else step = 0;
-        if(i + step > 0 && j < hexWidth - 1) {if(field[i - 1 + step][j + 1].isAlive()) {++fst_count; System.out.print("1");}}
-        if(i + step < hexHeight && j < hexWidth - 1) {if(field[i + step][j + 1].isAlive()) {++fst_count; System.out.print("2");}}
-        if(i + step < hexHeight - 1 && j < hexWidth - 1) {if(field[i + 1 + step][j + 1].isAlive()) {++snd_count;System.out.print("3");}}
-        if(i + step < hexHeight && j > 0) {if(field[i + step][j - 1].isAlive()) {++fst_count;System.out.print("4");}}
-        if(i + step < hexHeight - 1 && j > 0) {if(field[i + 1 + step][j - 1].isAlive()) {++snd_count;System.out.print("5");}}
-        if(i + step > 0 && j > 0) {if(field[i - 1 + step][j - 1].isAlive()) {++fst_count;System.out.print("6");}}
-        if(i + step > 1 && j > 0) {if(field[i - 2 + step][j - 1].isAlive()) {++snd_count;System.out.print("7");}}
+        if(i + step > 0 && j < hexWidth - 1) {if(field[i - 1 + step][j + 1].isAlive()) {++fst_count;}}
+        if(i + step < hexHeight && j < hexWidth - 1) {if(field[i + step][j + 1].isAlive()) {++fst_count;}}
+        if(i + step < hexHeight - 1 && j < hexWidth - 1) {if(field[i + 1 + step][j + 1].isAlive()) {++snd_count;}}
+        if(i + step < hexHeight && j > 0) {if(field[i + step][j - 1].isAlive()) {++fst_count;}}
+        if(i + step < hexHeight - 1 && j > 0) {if(field[i + 1 + step][j - 1].isAlive()) {++snd_count;}}
+        if(i + step > 0 && j > 0) {if(field[i - 1 + step][j - 1].isAlive()) {++fst_count;}}
+        if(i + step > 1 && j > 0) {if(field[i - 2 + step][j - 1].isAlive()) {++snd_count;}}
 
         if(j % 2 == 1) step = 0;
         else step = 1;
-        if(i - step > 0 && j < hexWidth - 1) {if(field[i - 1 - step][j + 1].isAlive()) {++snd_count; System.out.print("8");}}
+        if(i - step > 0 && j < hexWidth - 1) {if(field[i - 1 - step][j + 1].isAlive()) {++snd_count;}}
 
         impact = FST_IMPACT * fst_count + SND_IMPACT * snd_count;
         fst_count = 0;
@@ -216,24 +214,24 @@ public class HexahedronGrid{
     for(int i = 0; i < hexHeight; i++){
       for(int j = 0; j < hexWidth; j++){
 
-        if(i > 0) if(field[i - 1][j].isAlive()) {++fst_count; System.out.print("9");}
-        if(i < hexHeight - 1) if(field[i + 1][j].isAlive()) {++fst_count; System.out.print("10");}
-        if(j < hexWidth - 2) if(field[i][j + 2].isAlive()) {++snd_count; System.out.print("11");}
-        if(j > 1) if(field[i][j - 2].isAlive()) {++snd_count; System.out.print("12");}
+        if(i > 0) if(field[i - 1][j].isAlive()) {++fst_count;}
+        if(i < hexHeight - 1) if(field[i + 1][j].isAlive()) {++fst_count;}
+        if(j < hexWidth - 2) if(field[i][j + 2].isAlive()) {++snd_count;}
+        if(j > 1) if(field[i][j - 2].isAlive()) {++snd_count;}
 
         if(j % 2 == 1) step = 1;
         else step = 0;
-        if(i + step > 0 && j < hexWidth - 1) {if(field[i - 1 + step][j + 1].isAlive()) {++fst_count; System.out.print("1");}}
-        if(i + step < hexHeight && j < hexWidth - 1) {if(field[i + step][j + 1].isAlive()) {++fst_count; System.out.print("2");}}
-        if(i + step < hexHeight - 1 && j < hexWidth - 1) {if(field[i + 1 + step][j + 1].isAlive()) {++snd_count;System.out.print("3");}}
-        if(i + step < hexHeight && j > 0) {if(field[i + step][j - 1].isAlive()) {++fst_count;System.out.print("4");}}
-        if(i + step < hexHeight - 1 && j > 0) {if(field[i + 1 + step][j - 1].isAlive()) {++snd_count;System.out.print("5");}}
-        if(i + step > 0 && j > 0) {if(field[i - 1 + step][j - 1].isAlive()) {++fst_count;System.out.print("6");}}
-        if(i + step > 1 && j > 0) {if(field[i - 2 + step][j - 1].isAlive()) {++snd_count;System.out.print("7");}}
+        if(i + step > 0 && j < hexWidth - 1) {if(field[i - 1 + step][j + 1].isAlive()) {++fst_count;}}
+        if(i + step < hexHeight && j < hexWidth - 1) {if(field[i + step][j + 1].isAlive()) {++fst_count;}}
+        if(i + step < hexHeight - 1 && j < hexWidth - 1) {if(field[i + 1 + step][j + 1].isAlive()) {++snd_count;}}
+        if(i + step < hexHeight && j > 0) {if(field[i + step][j - 1].isAlive()) {++fst_count;}}
+        if(i + step < hexHeight - 1 && j > 0) {if(field[i + 1 + step][j - 1].isAlive()) {++snd_count;}}
+        if(i + step > 0 && j > 0) {if(field[i - 1 + step][j - 1].isAlive()) {++fst_count;}}
+        if(i + step > 1 && j > 0) {if(field[i - 2 + step][j - 1].isAlive()) {++snd_count;}}
 
         if(j % 2 == 1) step = 0;
         else step = 1;
-        if(i - step > 0 && j < hexWidth - 1) {if(field[i - 1 - step][j + 1].isAlive()) {++snd_count; System.out.print("8");}}
+        if(i - step > 0 && j < hexWidth - 1) {if(field[i - 1 - step][j + 1].isAlive()) {++snd_count;}}
 
         impact = FST_IMPACT * fst_count + SND_IMPACT * snd_count;
         if(impact < LIVE_BEGIN || impact > LIVE_END){
@@ -243,7 +241,6 @@ public class HexahedronGrid{
           this.extinction = false;
           field[i][j].setSurvive();
         }
-        System.out.println("(" + i + ", " + j + ")" + " " + impact + " " + field[i][j].isAlive());
         fst_count = 0;
         snd_count = 0;
         field[i][j].setImpact(impact);
@@ -254,7 +251,6 @@ public class HexahedronGrid{
         field[i][j].setAlive(field[i][j].getSurvive());
       }
     }
-    System.out.println("step");
   }
 
   public boolean isExtinction(){
