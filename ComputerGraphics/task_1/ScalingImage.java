@@ -1,9 +1,9 @@
-// Рассказать об обьемной визуализации
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Scanner;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import javax.swing.*;
@@ -875,49 +875,112 @@ class ImagePanel extends JPanel {
 
   public void spanFilling(BufferedImage img, int x, int y, Color newColor){
     int oldRGB = img.getRGB(x, y);
+    int tempRGB;
 
     if(oldRGB == newColor.getRGB() || oldRGB == Color.BLACK.getRGB()){
      return;
     }
-    LinkedList<Point> spans = new LinkedList<>();
-    int tempRGB;
-    spans.add(new Point(x, y));
-    while(!spans.isEmpty()){
-      boolean upAdded = false;
-      boolean downAdded = false;
-      Point span = spans.poll();
 
-      x = (int)span.getX();
-      y = (int)span.getY();
+    LinkedList<int[]> sp = new LinkedList<>();
 
-      int tx = x;
-      int step = 1;
+    int xc;
+    int yc;
+    int tx = x;
+    int ty = y;
+    int color = this.image.getRGB(x, y);
+    int tc = color;
 
-      while(true){
-        tempRGB = img.getRGB(x, y);
-        if(tempRGB != Color.BLACK.getRGB()){
-          if(!upAdded){
-            int t = img.getRGB(x, y + 1);
-            if(t == oldRGB){
-              spans.add(new Point(x, y + 1));
-              upAdded = true;
-            }
-          }
-          if(!downAdded){
-            int t = img.getRGB(x, y - 1);
-            if(t == oldRGB){
-              spans.add(new Point(x, y - 1));
-              downAdded = true;
-            }
-          }
-          img.setRGB(x, y, newColor.getRGB());
-          x += step;
+    while(color != Color.BLACK.getRGB()){
+      ++x;
+      color = this.image.getRGB(x, y);
+    }
+    --x;
+    xc = x;
+    x = tx;
+    color = tc;
+    while(color != Color.BLACK.getRGB()){
+     --x;
+     color = this.image.getRGB(x, y);
+    }
+    ++x;
+    int[] start = {x, xc, y};
+    sp.add(start);
+
+    x = tx;
+    color = tc;
+    while(!sp.isEmpty()){
+      int[] t = sp.poll();
+      if(this.image.getRGB(t[0], t[2]) == newColor.getRGB()){
+        continue;
+      }
+      for(int i = t[0]; i <= t[1]; i++){
+        img.setRGB(i, t[2], newColor.getRGB());
+      }
+
+      tx = t[0];
+      while(tx <= t[1]){
+        color = this.image.getRGB(tx, t[2] + 1);
+        while(color == Color.BLACK.getRGB() && tx < t[1]){
+          ++tx;
+          color = this.image.getRGB(tx, t[2] + 1);
         }
-        else if(step == 1){
-          x = tx;
-          step = -1;
+        if(tx == t[1]) break;
+        color = tc;
+        x = tx;
+        color = this.image.getRGB(x, t[2] + 1);
+        while(color != Color.BLACK.getRGB()){
+          ++x;
+          color = this.image.getRGB(x, t[2] + 1);
         }
-        else break;
+        xc = x - 1;
+        x = tx;
+        color = tc;
+
+        color = this.image.getRGB(x, t[2] + 1);
+        while(color != Color.BLACK.getRGB()){
+          --x;
+          color = this.image.getRGB(x, t[2] + 1);
+        }
+        ++x;
+        int[] s = {x, xc, t[2] + 1};
+        if(x != xc) sp.add(s);
+        x = tx;
+        color = tc;
+        // break;
+        tx = xc + 1;
+      }
+
+      tx = t[0];
+      while(tx <= t[1]){
+        color = this.image.getRGB(tx, t[2] - 1);
+        while(color == Color.BLACK.getRGB() && tx < t[1]){
+          ++tx;
+          color = this.image.getRGB(tx, t[2] - 1);
+        }
+        if(tx == t[1]) break;
+        color = tc;
+        x = tx;
+        color = this.image.getRGB(x, t[2] - 1);
+        while(color != Color.BLACK.getRGB()){
+          ++x;
+          color = this.image.getRGB(x, t[2] - 1);
+        }
+        xc = x - 1;
+        x = tx;
+        color = tc;
+
+        color = this.image.getRGB(x, t[2] - 1);
+        while(color != Color.BLACK.getRGB()){
+          --x;
+          color = this.image.getRGB(x, t[2] - 1);
+        }
+        ++x;
+        int[] s = {x, xc, t[2] - 1};
+        if(x != xc) sp.add(s);
+        x = tx;
+        color = tc;
+        tx = xc + 1;
+        // break;
       }
     }
   }
@@ -1017,6 +1080,8 @@ class ImagePanel extends JPanel {
         drawHexahedron(this.image, f[i][j]);
         Point p = f[i][j].getCenter();
         spanFilling(this.image, (int)p.getX(), (int)p.getY(), f[i][j].isAlive() ? Color.RED : this.defColor);
+        // g.drawString(String.format("%.1f", f[i][j].getImpact()), (int)p.getX() - 8, (int)p.getY() + 5);
+
         if(showImpacts){
           ig.drawString(String.format("%.1f", f[i][j].getImpact()), (int)p.getX() - 8, (int)p.getY() + 5);
         }
