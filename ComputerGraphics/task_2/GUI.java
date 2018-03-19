@@ -48,7 +48,7 @@ class AreasPanel extends JPanel{
     setPreferredSize(new Dimension(1110, 400));
 
     try{
-      image = ImageIO.read(getClass().getResource("m.jpg"));
+      image = ImageIO.read(getClass().getResource("p.jpeg"));
     }
     catch(IOException ex) {
       System.err.println(ex.getMessage());
@@ -78,38 +78,41 @@ class AreasPanel extends JPanel{
     addMouseListener(new MouseAdapter(){
       @Override
       public void mousePressed(MouseEvent e){
-        visible = true;
-        dragging = true;
-        int x = e.getX() - selector.width / 2;
-        int y = e.getY() - selector.height / 2;
-        setSelector(x, y);
-        X = (int)((selector.x - 15) / scale);
-        Y = (int)((selector.y - 15) / scale);
-        System.out.println(X + " " + Y);
-        int shiftX = 0;
-        int shiftY = 0;
-        int sideX = 350;
-        int sideY = 350;
-        if(scale == 1.0){
-          sideX = image.getWidth();
-          sideY = image.getHeight();
-        }
-        if(Y + sideY > image.getHeight()){
-          shiftY = image.getHeight() - Y - sideY;
-          System.out.println("shiftY " + shiftY);
-        }
-        if(X + sideX > image.getWidth()){
-          System.out.println("shiftX " + shiftX);
-          shiftX = image.getWidth() - X - sideX;
-        }
-        try{
+        Point p = e.getPoint();
+        if(imageBounds.contains(p)){
+          visible = true;
+          dragging = true;
+          int x = e.getX() - selector.width / 2;
+          int y = e.getY() - selector.height / 2;
+          setSelector(x, y);
+          X = (int)((selector.x - 15) / scale);
+          Y = (int)((selector.y - 15) / scale);
           // System.out.println(X + " " + Y);
-          subimage = image.getSubimage(X + shiftX, Y + shiftY, sideX, sideY);
+          int shiftX = 0;
+          int shiftY = 0;
+          int sideX = 350;
+          int sideY = 350;
+          if(scale == 1.0){
+            sideX = image.getWidth();
+            sideY = image.getHeight();
+          }
+          if(Y + sideY > image.getHeight()){
+            shiftY = image.getHeight() - Y - sideY;
+            // System.out.println("shiftY " + shiftY);
+          }
+          if(X + sideX > image.getWidth()){
+            // System.out.println("shiftX " + shiftX);
+            shiftX = image.getWidth() - X - sideX;
+          }
+          try{
+            // System.out.println(X + " " + Y);
+            subimage = image.getSubimage(X + shiftX, Y + shiftY, sideX, sideY);
+          }
+          catch(Exception ex){
+            System.out.println(ex.getMessage());
+          }
+          repaint();
         }
-        catch(Exception ex){
-          System.out.println(ex.getMessage());
-        }
-        repaint();
       }
 
       @Override
@@ -122,40 +125,43 @@ class AreasPanel extends JPanel{
     addMouseMotionListener(new MouseMotionAdapter(){
       @Override
       public void mouseDragged(MouseEvent e){
-        if(dragging){
-          int x = e.getX();
-          int y = e.getY();
-          setSelector(x - selector.width / 2, y - selector.height / 2);
-          X = (int)((selector.x - 15) / scale);
-          Y = (int)((selector.y - 15) / scale);
-          System.out.println(X + " " + Y);
-
-          // System.out.println((int)((selector.y) / scale));
-          int shiftX = 0;
-          int shiftY = 0;
-          int sideX = 350;
-          int sideY = 350;
-          if(scale == 1.0){
-            sideX = image.getWidth();
-            sideY = image.getHeight();
-          }
-          if(Y + sideY > image.getHeight()){
-            shiftY = image.getHeight() - Y - sideY;
-            System.out.println("shiftY " + shiftY);
-          }
-          if(X + sideX > image.getWidth()){
-            System.out.println(image.getWidth());
-            shiftX = image.getWidth() - X - sideX;
-            System.out.println("shiftX " + shiftX);
-          }
-          try{
+        Point p = e.getPoint();
+        if(imageBounds.contains(p)){
+          if(dragging){
+            int x = e.getX();
+            int y = e.getY();
+            setSelector(x - selector.width / 2, y - selector.height / 2);
+            X = (int)((selector.x - 15) / scale);
+            Y = (int)((selector.y - 15) / scale);
             // System.out.println(X + " " + Y);
-            subimage = image.getSubimage(X + shiftX, Y + shiftY, sideX, sideY);
+
+            // System.out.println((int)((selector.y) / scale));
+            int shiftX = 0;
+            int shiftY = 0;
+            int sideX = 350;
+            int sideY = 350;
+            if(scale == 1.0){
+              sideX = image.getWidth();
+              sideY = image.getHeight();
+            }
+            if(Y + sideY > image.getHeight()){
+              shiftY = image.getHeight() - Y - sideY;
+              // System.out.println("shiftY " + shiftY);
+            }
+            if(X + sideX > image.getWidth()){
+              System.out.println(image.getWidth());
+              shiftX = image.getWidth() - X - sideX;
+              // System.out.println("shiftX " + shiftX);
+            }
+            try{
+              // System.out.println(X + " " + Y);
+              subimage = image.getSubimage(X + shiftX, Y + shiftY, sideX, sideY);
+            }
+            catch(Exception ex){
+              System.out.println(ex.getMessage());
+            }
+            repaint();
           }
-          catch(Exception ex){
-            System.out.println(ex.getMessage());
-          }
-          repaint();
         }
       }
     });
