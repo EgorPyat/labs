@@ -198,7 +198,27 @@ class AreasPanel extends JPanel{
   private boolean selected = false;
 
   public void blackNwhiteFilter(){
-    filteredImage = subimage;
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    int alpha, red, green, blue;
+    int newPixel;
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    for(int i = 0; i < subimage.getWidth(); i++) {
+      for(int j = 0; j < subimage.getHeight(); j++) {
+        alpha = new Color(subimage.getRGB(i, j)).getAlpha();
+        red = new Color(subimage.getRGB(i, j)).getRed();
+        green = new Color(subimage.getRGB(i, j)).getGreen();
+        blue = new Color(subimage.getRGB(i, j)).getBlue();
+        newPixel = (red + green + blue) / 3;
+        newPixel = (new Color(newPixel, newPixel, newPixel, alpha)).getRGB();
+        filteredImage.setRGB(i, j, newPixel);
+      }
+    }
     repaint();
   }
 
@@ -248,6 +268,7 @@ class AreasPanel extends JPanel{
     int h = (int)(imgH * scale);
     imageBounds = new Rectangle(15, 15, w, h);
     subimage = null;
+    filteredImage = null;
     repaint();
   }
 
