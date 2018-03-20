@@ -26,6 +26,8 @@ public class GUI extends JFrame{
     JRadioButtonMenuItem mFilterSelect = new JRadioButtonMenuItem("Select");
     JMenuItem mFilterReset = new JMenuItem("Reset");
     JMenuItem mFilterTransfer = new JMenuItem("Transfer");
+    JMenuItem mFilterBNWF = new JMenuItem("BlackNWhite filter");
+
     JMenuItem mAboutInfo = new JMenuItem("Info");
 
     mFile.add(mFileNew);
@@ -38,6 +40,7 @@ public class GUI extends JFrame{
     mFilter.add(mFilterReset);
     mFilter.add(mFilterTransfer);
     mFilter.addSeparator();
+    mFilter.add(mFilterBNWF);
 
     mAbout.add(mAboutInfo);
 
@@ -159,6 +162,7 @@ public class GUI extends JFrame{
       });
       mFilterReset.addActionListener(lr);
       mFilterTransfer.addActionListener(lt);
+      mFilterBNWF.addActionListener(bnwf);
 
       mAboutInfo.addActionListener(la);
     }
