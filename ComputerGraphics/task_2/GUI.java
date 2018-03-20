@@ -7,24 +7,171 @@ import java.net.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class GUI extends JFrame{
   public GUI(){
-    super("Filters.");
+    super("Filter - The App.");
+
+    AreasPanel areasPanel = new AreasPanel();
 
     JMenuBar menu = new JMenuBar();
     JMenu mFile = new JMenu("File");
     JMenu mFilter = new JMenu("Filter");
     JMenu mAbout = new JMenu("About");
+    JMenuItem mFileNew = new JMenuItem("New");
+    JMenuItem mFileSave = new JMenuItem("Save");
+    JMenuItem mFileQuit = new JMenuItem("Quit");
+
+    JRadioButtonMenuItem mFilterSelect = new JRadioButtonMenuItem("Select");
+    JMenuItem mFilterReset = new JMenuItem("Reset");
+    JMenuItem mFilterTransfer = new JMenuItem("Transfer");
+    JMenuItem mAboutInfo = new JMenuItem("Info");
+
+    mFile.add(mFileNew);
+    mFile.add(mFileSave);
+    mFile.addSeparator();
+    mFile.add(mFileQuit);
+
+    mFilter.add(mFilterSelect);
+    mFilter.addSeparator();
+    mFilter.add(mFilterReset);
+    mFilter.add(mFilterTransfer);
+    mFilter.addSeparator();
+
+    mAbout.add(mAboutInfo);
 
     menu.add(mFile);
     menu.add(mFilter);
     menu.add(mAbout);
     setJMenuBar(menu);
 
-    JScrollPane scrollpane = new JScrollPane(new AreasPanel());
-    setLayout(new BorderLayout());
-    setPreferredSize(new Dimension(800, 600));
+    JToolBar toolBar = new JToolBar();
+    try{
+      JButton buttonNew = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("new.png"))));
+      ActionListener ln = (e) -> {
+        JFileChooser c = new JFileChooser(".");
+        c.setFileFilter(new FileNameExtensionFilter("Image formats", "jpg", "jpeg", "png"));
+        int rVal = c.showOpenDialog(this);
+        if(rVal == JFileChooser.APPROVE_OPTION){
+          areasPanel.setImage(c.getSelectedFile().getName());
+        }
+      };
+      buttonNew.addActionListener(ln);
+
+      JButton buttonSave = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("save.png"))));
+      ActionListener ls = (e) -> {
+        JFileChooser c = new JFileChooser(".");
+        BufferedImage image = areasPanel.getFilteredImage();
+        if(image == null){
+          JOptionPane.showMessageDialog(this, "Nothing to save.", "Save warning", JOptionPane.WARNING_MESSAGE);
+          return;
+        }
+        while(true){
+          int rVal = c.showSaveDialog(this);
+          if(rVal == JFileChooser.APPROVE_OPTION){
+            try{
+              File selectedFile = c.getSelectedFile();
+              if(selectedFile.exists()){
+                JOptionPane.showMessageDialog(this, "Selected file exists, choose other name for file.", "Save warning", JOptionPane.WARNING_MESSAGE);
+                continue;
+              }
+              File outputfile = new File(c.getSelectedFile().getName() + ".png");
+              ImageIO.write(image, "png", outputfile);
+              break;
+            }
+            catch(IOException ex) {
+              System.err.println(ex.getMessage());
+            }
+          }
+          else{
+            break;
+          }
+        }
+      };
+      buttonSave.addActionListener(ls);
+
+      JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
+      ActionListener le = (e) -> {
+        System.exit(0);
+      };
+      buttonExit.addActionListener(le);
+
+      JToggleButton buttonSelect = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("select.png"))));
+      buttonSelect.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+              mFilterSelect.setSelected(true);
+              areasPanel.setSelect(true);
+          }
+          else if(e.getStateChange() == ItemEvent.DESELECTED){
+              mFilterSelect.setSelected(false);
+              areasPanel.setSelect(false);
+          }
+      });
+
+      JButton buttonReset = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("reset.png"))));
+      ActionListener lr = (e) -> {
+        areasPanel.reset();
+      };
+      buttonReset.addActionListener(lr);
+
+      JButton buttonTransfer = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("transfer.png"))));
+      ActionListener lt = (e) -> {
+        areasPanel.transfer();
+      };
+      buttonTransfer.addActionListener(lt);
+
+      JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
+      ActionListener la = (e) -> {
+        JOptionPane.showMessageDialog(this,  "Filter - The App.\nVersion 0.1\nBy Egor Pyataev - Group 15206");
+      };
+      buttonAbout.addActionListener(la);
+
+      JButton blackNwhiteFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("bnw.png"))));
+      ActionListener bnwf = (e) -> {
+        areasPanel.blackNwhiteFilter();
+      };
+      blackNwhiteFilter.addActionListener(bnwf);
+
+      toolBar.add(buttonNew);
+      toolBar.add(buttonSave);
+      toolBar.add(buttonExit);
+      toolBar.addSeparator();
+      toolBar.add(buttonSelect);
+      toolBar.add(buttonReset);
+      toolBar.add(buttonTransfer);
+      toolBar.addSeparator();
+      toolBar.add(buttonAbout);
+      toolBar.addSeparator();
+      toolBar.add(blackNwhiteFilter);
+
+      mFileNew.addActionListener(ln);
+      mFileSave.addActionListener(ls);
+      mFileQuit.addActionListener(le);
+
+      mFilterSelect.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+          buttonSelect.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+          buttonSelect.setSelected(false);
+        }
+      });
+      mFilterReset.addActionListener(lr);
+      mFilterTransfer.addActionListener(lt);
+
+      mAboutInfo.addActionListener(la);
+    }
+    catch(Exception ex){
+      System.err.println(ex.getMessage());
+    }
+    toolBar.setFloatable(false);
+    toolBar.setRollover(true);
+
+    add(toolBar, BorderLayout.PAGE_START);
+
+    JScrollPane scrollpane = new JScrollPane(areasPanel);
+    setPreferredSize(new Dimension(1123, 600));
     add(scrollpane, BorderLayout.CENTER);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     pack();
@@ -34,8 +181,9 @@ public class GUI extends JFrame{
 }
 
 class AreasPanel extends JPanel{
-  private BufferedImage image;
-  private BufferedImage subimage;
+  private BufferedImage image = null;
+  private BufferedImage subimage = null;
+  private BufferedImage filteredImage = null;
   private int X = 0;
   private int Y = 0;
   private double scale;
@@ -43,12 +191,35 @@ class AreasPanel extends JPanel{
   private Rectangle selector;
   private boolean dragging;
   private boolean visible;
+  private boolean selected = false;
 
-  public AreasPanel(){
-    setPreferredSize(new Dimension(1110, 400));
+  public void blackNwhiteFilter(){
+    filteredImage = subimage;
+    repaint();
+  }
 
+  public BufferedImage getFilteredImage(){
+    return filteredImage;
+  }
+
+  public void setSelect(boolean select){
+    selected = select;
+  }
+
+  public void reset(){
+    subimage = null;
+    filteredImage = null;
+    repaint();
+  }
+
+  public void transfer(){
+    subimage = filteredImage;
+    repaint();
+  }
+
+  public void setImage(String name){
     try{
-      image = ImageIO.read(getClass().getResource("p.jpeg"));
+      image = ImageIO.read(getClass().getResource(name));
     }
     catch(IOException ex) {
       System.err.println(ex.getMessage());
@@ -64,22 +235,26 @@ class AreasPanel extends JPanel{
       scale = 1.0;
     }
     if(scale == 1.0){
-      // System.out.println("1.0");
       selector = new Rectangle(0, 0, imgW, imgH);
     }
     else{
       selector = new Rectangle(0, 0, (int)(350 * scale), (int)(350 * scale));
     }
-    // System.out.println(scale);
     int w = (int)(imgW * scale);
     int h = (int)(imgH * scale);
     imageBounds = new Rectangle(15, 15, w, h);
+    subimage = null;
+    repaint();
+  }
+
+  public AreasPanel(){
+    setPreferredSize(new Dimension(1110, 450));
 
     addMouseListener(new MouseAdapter(){
       @Override
       public void mousePressed(MouseEvent e){
         Point p = e.getPoint();
-        if(imageBounds.contains(p)){
+        if(imageBounds != null && selected && imageBounds.contains(p)){
           visible = true;
           dragging = true;
           int x = e.getX() - selector.width / 2;
@@ -87,7 +262,6 @@ class AreasPanel extends JPanel{
           setSelector(x, y);
           X = (int)((selector.x - 15) / scale);
           Y = (int)((selector.y - 15) / scale);
-          // System.out.println(X + " " + Y);
           int shiftX = 0;
           int shiftY = 0;
           int sideX = 350;
@@ -98,14 +272,11 @@ class AreasPanel extends JPanel{
           }
           if(Y + sideY > image.getHeight()){
             shiftY = image.getHeight() - Y - sideY;
-            // System.out.println("shiftY " + shiftY);
           }
           if(X + sideX > image.getWidth()){
-            // System.out.println("shiftX " + shiftX);
             shiftX = image.getWidth() - X - sideX;
           }
           try{
-            // System.out.println(X + " " + Y);
             subimage = image.getSubimage(X + shiftX, Y + shiftY, sideX, sideY);
           }
           catch(Exception ex){
@@ -126,16 +297,13 @@ class AreasPanel extends JPanel{
       @Override
       public void mouseDragged(MouseEvent e){
         Point p = e.getPoint();
-        if(imageBounds.contains(p)){
+        if(imageBounds != null && selected && imageBounds.contains(p)){
           if(dragging){
             int x = e.getX();
             int y = e.getY();
             setSelector(x - selector.width / 2, y - selector.height / 2);
             X = (int)((selector.x - 15) / scale);
             Y = (int)((selector.y - 15) / scale);
-            // System.out.println(X + " " + Y);
-
-            // System.out.println((int)((selector.y) / scale));
             int shiftX = 0;
             int shiftY = 0;
             int sideX = 350;
@@ -146,15 +314,12 @@ class AreasPanel extends JPanel{
             }
             if(Y + sideY > image.getHeight()){
               shiftY = image.getHeight() - Y - sideY;
-              // System.out.println("shiftY " + shiftY);
             }
             if(X + sideX > image.getWidth()){
               System.out.println(image.getWidth());
               shiftX = image.getWidth() - X - sideX;
-              // System.out.println("shiftX " + shiftX);
             }
             try{
-              // System.out.println(X + " " + Y);
               subimage = image.getSubimage(X + shiftX, Y + shiftY, sideX, sideY);
             }
             catch(Exception ex){
@@ -165,7 +330,6 @@ class AreasPanel extends JPanel{
         }
       }
     });
-
   }
 
   private Point getLegalLocation(int x, int y){
@@ -214,17 +378,22 @@ class AreasPanel extends JPanel{
     drawDashedLine(g, 730, 15, 730, 365);
     drawDashedLine(g, 745, 15, 745, 365);
     drawDashedLine(g, 1095, 15, 1095, 365);
-    if(image.getHeight() > 350 || image.getWidth() > 350){
-      g.drawImage(image, 15, 15, (int)(image.getWidth() * scale), (int)(image.getHeight() * scale), null);
+
+    if(image != null){
+      if(image.getHeight() > 350 || image.getWidth() > 350){
+        g.drawImage(image, 15, 15, (int)(image.getWidth() * scale), (int)(image.getHeight() * scale), null);
+      }
+      else{
+        g.drawImage(image, 15, 15, null);
+      }
+      g.drawImage(subimage, 380, 15, null);
+      g.drawImage(filteredImage, 745, 15, null);
+
+      g.setXORMode(Color.WHITE);
+      Graphics2D g2d = (Graphics2D) g.create();
+      Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0);
+      g2d.setStroke(dashed);
+      if(visible)g2d.draw(selector);
     }
-    else{
-      g.drawImage(image, 15, 15, null);
-    }
-    g.drawImage(subimage, 380, 15, null);
-    g.setXORMode(Color.WHITE);
-    Graphics2D g2d = (Graphics2D) g.create();
-    Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{3}, 0);
-    g2d.setStroke(dashed);
-    if(visible)g2d.draw(selector);
   }
 }
