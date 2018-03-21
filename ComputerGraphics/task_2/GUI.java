@@ -27,6 +27,7 @@ public class GUI extends JFrame{
     JMenuItem mFilterReset = new JMenuItem("Reset");
     JMenuItem mFilterTransfer = new JMenuItem("Transfer");
     JMenuItem mFilterBNWF = new JMenuItem("BlackNWhite filter");
+    JMenuItem mFilterNF = new JMenuItem("Negative filter");
 
     JMenuItem mAboutInfo = new JMenuItem("Info");
 
@@ -41,6 +42,7 @@ public class GUI extends JFrame{
     mFilter.add(mFilterTransfer);
     mFilter.addSeparator();
     mFilter.add(mFilterBNWF);
+    mFilter.add(mFilterNF);
 
     mAbout.add(mAboutInfo);
 
@@ -79,6 +81,8 @@ public class GUI extends JFrame{
                 JOptionPane.showMessageDialog(this, "Selected file exists, choose other name for file.", "Save warning", JOptionPane.WARNING_MESSAGE);
                 continue;
               }
+              String ending = ".png";
+              if(c.getSelectedFile().getName().endsWith(".png")) ending = "";
               File outputfile = new File(c.getSelectedFile().getName() + ".png");
               ImageIO.write(image, "png", outputfile);
               break;
@@ -136,6 +140,12 @@ public class GUI extends JFrame{
       };
       blackNwhiteFilter.addActionListener(bnwf);
 
+      JButton negativeFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("negative.png"))));
+      ActionListener nf = (e) -> {
+        areasPanel.negativeFilter();
+      };
+      negativeFilter.addActionListener(nf);
+
       toolBar.add(buttonNew);
       toolBar.add(buttonSave);
       toolBar.add(buttonExit);
@@ -147,6 +157,7 @@ public class GUI extends JFrame{
       toolBar.add(buttonAbout);
       toolBar.addSeparator();
       toolBar.add(blackNwhiteFilter);
+      toolBar.add(negativeFilter);
 
       mFileNew.addActionListener(ln);
       mFileSave.addActionListener(ls);
@@ -163,6 +174,7 @@ public class GUI extends JFrame{
       mFilterReset.addActionListener(lr);
       mFilterTransfer.addActionListener(lt);
       mFilterBNWF.addActionListener(bnwf);
+      mFilterNF.addActionListener(nf);
 
       mAboutInfo.addActionListener(la);
     }
@@ -220,6 +232,13 @@ class AreasPanel extends JPanel{
       }
     }
     repaint();
+  }
+
+  public void negativeFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
   }
 
   public BufferedImage getFilteredImage(){
