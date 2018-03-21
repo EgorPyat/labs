@@ -28,7 +28,9 @@ public class GUI extends JFrame{
     JMenuItem mFilterTransfer = new JMenuItem("Transfer");
     JMenuItem mFilterBNWF = new JMenuItem("BlackNWhite filter");
     JMenuItem mFilterNF = new JMenuItem("Negative filter");
-    JMenuItem mFilterDouble = new JMenuItem("Double scale");
+    JMenuItem mFilterDouble = new JMenuItem("Double scale filter");
+    JMenuItem mFilterWC = new JMenuItem("Water color filter");
+
     JMenuItem mAboutInfo = new JMenuItem("Info");
 
     mFile.add(mFileNew);
@@ -44,6 +46,7 @@ public class GUI extends JFrame{
     mFilter.add(mFilterBNWF);
     mFilter.add(mFilterNF);
     mFilter.add(mFilterDouble);
+    mFilter.add(mFilterWC);
 
     mAbout.add(mAboutInfo);
 
@@ -131,7 +134,7 @@ public class GUI extends JFrame{
 
       JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
       ActionListener la = (e) -> {
-        JOptionPane.showMessageDialog(this,  "Filter - The App.\nVersion 0.1\nBy Egor Pyataev - Group 15206");
+        JOptionPane.showMessageDialog(this,  "Filter - The App.\nVersion 0.2.2.8\nBy Egor Pyataev - Group 15206");
       };
       buttonAbout.addActionListener(la);
 
@@ -153,6 +156,12 @@ public class GUI extends JFrame{
       };
       doubleScaleFilter.addActionListener(df);
 
+      JButton watercolorFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("watercolor.png"))));
+      ActionListener wcf = (e) -> {
+        areasPanel.watercolorFilter();
+      };
+      watercolorFilter.addActionListener(wcf);
+
       toolBar.add(buttonNew);
       toolBar.add(buttonSave);
       toolBar.add(buttonExit);
@@ -161,11 +170,12 @@ public class GUI extends JFrame{
       toolBar.add(buttonReset);
       toolBar.add(buttonTransfer);
       toolBar.addSeparator();
-      toolBar.add(buttonAbout);
-      toolBar.addSeparator();
       toolBar.add(blackNwhiteFilter);
       toolBar.add(negativeFilter);
       toolBar.add(doubleScaleFilter);
+      toolBar.add(watercolorFilter);
+      toolBar.addSeparator();
+      toolBar.add(buttonAbout);
 
       mFileNew.addActionListener(ln);
       mFileSave.addActionListener(ls);
@@ -184,6 +194,7 @@ public class GUI extends JFrame{
       mFilterBNWF.addActionListener(bnwf);
       mFilterNF.addActionListener(nf);
       mFilterDouble.addActionListener(df);
+      mFilterWC.addActionListener(wcf);
 
       mAboutInfo.addActionListener(la);
     }
@@ -290,6 +301,13 @@ class AreasPanel extends JPanel{
       }
     }
     repaint();
+  }
+
+  public void watercolorFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
   }
 
   public BufferedImage getFilteredImage(){
