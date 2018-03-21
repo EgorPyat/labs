@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.util.Arrays;
 
 public class GUI extends JFrame{
   public GUI(){
@@ -29,6 +30,7 @@ public class GUI extends JFrame{
     JMenuItem mFilterBNWF = new JMenuItem("BlackNWhite filter");
     JMenuItem mFilterNF = new JMenuItem("Negative filter");
     JMenuItem mFilterDouble = new JMenuItem("Double scale filter");
+    JMenuItem mFilterEF = new JMenuItem("Embossing filter");
     JMenuItem mFilterWC = new JMenuItem("Water color filter");
 
     JMenuItem mAboutInfo = new JMenuItem("Info");
@@ -156,6 +158,12 @@ public class GUI extends JFrame{
       };
       doubleScaleFilter.addActionListener(df);
 
+      JButton embossingFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("stamp.png"))));
+      ActionListener ef = (e) -> {
+        areasPanel.embossingFilter();
+      };
+      embossingFilter.addActionListener(ef);
+
       JButton watercolorFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("watercolor.png"))));
       ActionListener wcf = (e) -> {
         areasPanel.watercolorFilter();
@@ -173,6 +181,7 @@ public class GUI extends JFrame{
       toolBar.add(blackNwhiteFilter);
       toolBar.add(negativeFilter);
       toolBar.add(doubleScaleFilter);
+      toolBar.add(embossingFilter);
       toolBar.add(watercolorFilter);
       toolBar.addSeparator();
       toolBar.add(buttonAbout);
@@ -194,6 +203,7 @@ public class GUI extends JFrame{
       mFilterBNWF.addActionListener(bnwf);
       mFilterNF.addActionListener(nf);
       mFilterDouble.addActionListener(df);
+      mFilterEF.addActionListener(ef);
       mFilterWC.addActionListener(wcf);
 
       mAboutInfo.addActionListener(la);
@@ -303,11 +313,57 @@ class AreasPanel extends JPanel{
     repaint();
   }
 
+  public void embossingFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    int alpha, red, green, blue;
+
+    for(int i = 1; i < filteredImage.getWidth() - 1; i++){
+      for(int j = 1; j < filteredImage.getHeight() - 1; j++){
+        alpha = new Color(subimage.getRGB(i - 1, j)).getAlpha() - new Color(subimage.getRGB(i, j - 1)).getAlpha() + new Color(subimage.getRGB(i, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j)).getAlpha() + 128;
+        alpha = alpha < 0 ? 255 : alpha;
+        alpha = alpha > 255 ? 255 : alpha;
+
+        red = new Color(subimage.getRGB(i - 1, j)).getRed() - new Color(subimage.getRGB(i, j - 1)).getRed() + new Color(subimage.getRGB(i, j + 1)).getRed() - new Color(subimage.getRGB(i + 1, j)).getRed() + 128;
+        red = red < 0 ? 255 : red;
+        red = red > 255 ? 255 : red;
+
+        green = new Color(subimage.getRGB(i - 1, j)).getGreen() - new Color(subimage.getRGB(i, j - 1)).getGreen() + new Color(subimage.getRGB(i, j + 1)).getGreen() - new Color(subimage.getRGB(i + 1, j)).getGreen() + 128;
+        green = green < 0 ? 255 : green;
+        green = green > 255 ? 255 : green;
+
+        blue = new Color(subimage.getRGB(i - 1, j)).getBlue() - new Color(subimage.getRGB(i, j - 1)).getBlue() + new Color(subimage.getRGB(i, j + 1)).getBlue() - new Color(subimage.getRGB(i + 1, j)).getBlue() + 128;
+        blue = blue < 0 ? 255 : blue;
+        blue = blue > 255 ? 255 : blue;
+
+        filteredImage.setRGB(i, j, new Color(red, green, blue, alpha).getRGB());
+      }
+    }
+    repaint();
+  }
+
   public void watercolorFilter(){
     if(subimage == null){
       JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
       return;
     }
+
+    int[] window = null;
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+    for(int i = 2; i < filteredImage.getWidth() - 2; i++){
+      for(int j = 2; j < filteredImage.getHeight() - 2; j++){
+        window = subimage.getRGB(i - 2, j - 2, 5, 5, window, 0, 5);
+        Arrays.sort(window, 0, window.length);
+        filteredImage.setRGB(i, j, window[13]);
+      }
+    }
+    repaint();
   }
 
   public BufferedImage getFilteredImage(){
