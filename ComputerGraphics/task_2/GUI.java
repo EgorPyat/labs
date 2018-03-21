@@ -215,20 +215,21 @@ class AreasPanel extends JPanel{
       return;
     }
 
-    int alpha, red, green, blue;
-    int newPixel;
+    double alpha, red, green, blue;
+    double newPixel;
 
     filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
 
     for(int i = 0; i < subimage.getWidth(); i++) {
       for(int j = 0; j < subimage.getHeight(); j++) {
         alpha = new Color(subimage.getRGB(i, j)).getAlpha();
-        red = new Color(subimage.getRGB(i, j)).getRed();
-        green = new Color(subimage.getRGB(i, j)).getGreen();
-        blue = new Color(subimage.getRGB(i, j)).getBlue();
-        newPixel = (red + green + blue) / 3;
-        newPixel = (new Color(newPixel, newPixel, newPixel, alpha)).getRGB();
-        filteredImage.setRGB(i, j, newPixel);
+        red = new Color(subimage.getRGB(i, j)).getRed() * 0.299;
+        green = new Color(subimage.getRGB(i, j)).getGreen() * 0.587;
+        blue = new Color(subimage.getRGB(i, j)).getBlue() * 0.114;
+        newPixel = red + green + blue;
+        newPixel = newPixel > 255 ? 255 : newPixel;
+        newPixel = (new Color((int)newPixel, (int)newPixel, (int)newPixel, (int)alpha)).getRGB();
+        filteredImage.setRGB(i, j, (int)newPixel);
       }
     }
     repaint();
@@ -239,6 +240,25 @@ class AreasPanel extends JPanel{
       JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
       return;
     }
+    int pixel, alpha, red, green, blue;
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    for(int i = 0; i < subimage.getWidth(); i++) {
+      for(int j = 0; j < subimage.getHeight(); j++) {
+        pixel = subimage.getRGB(i, j);
+        alpha = (pixel >> 24) & 0xff;
+        red = (pixel >> 16) & 0xff;
+        green = (pixel >> 8) & 0xff;
+        blue = pixel & 0xff;
+        red = 255 - red;
+        green = 255 - green;
+        blue = 255 - blue;
+        pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+        filteredImage.setRGB(i, j, pixel);
+      }
+    }
+    repaint();
   }
 
   public BufferedImage getFilteredImage(){
