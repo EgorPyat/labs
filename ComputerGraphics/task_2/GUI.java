@@ -28,7 +28,7 @@ public class GUI extends JFrame{
     JMenuItem mFilterTransfer = new JMenuItem("Transfer");
     JMenuItem mFilterBNWF = new JMenuItem("BlackNWhite filter");
     JMenuItem mFilterNF = new JMenuItem("Negative filter");
-
+    JMenuItem mFilterDouble = new JMenuItem("Double scale");
     JMenuItem mAboutInfo = new JMenuItem("Info");
 
     mFile.add(mFileNew);
@@ -43,6 +43,7 @@ public class GUI extends JFrame{
     mFilter.addSeparator();
     mFilter.add(mFilterBNWF);
     mFilter.add(mFilterNF);
+    mFilter.add(mFilterDouble);
 
     mAbout.add(mAboutInfo);
 
@@ -146,6 +147,12 @@ public class GUI extends JFrame{
       };
       negativeFilter.addActionListener(nf);
 
+      JButton doubleScaleFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("double.png"))));
+      ActionListener df = (e) -> {
+        areasPanel.doubleScaleFilter();
+      };
+      doubleScaleFilter.addActionListener(df);
+
       toolBar.add(buttonNew);
       toolBar.add(buttonSave);
       toolBar.add(buttonExit);
@@ -158,6 +165,7 @@ public class GUI extends JFrame{
       toolBar.addSeparator();
       toolBar.add(blackNwhiteFilter);
       toolBar.add(negativeFilter);
+      toolBar.add(doubleScaleFilter);
 
       mFileNew.addActionListener(ln);
       mFileSave.addActionListener(ls);
@@ -175,6 +183,7 @@ public class GUI extends JFrame{
       mFilterTransfer.addActionListener(lt);
       mFilterBNWF.addActionListener(bnwf);
       mFilterNF.addActionListener(nf);
+      mFilterDouble.addActionListener(df);
 
       mAboutInfo.addActionListener(la);
     }
@@ -256,6 +265,28 @@ class AreasPanel extends JPanel{
         blue = 255 - blue;
         pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
         filteredImage.setRGB(i, j, pixel);
+      }
+    }
+    repaint();
+  }
+
+  public void doubleScaleFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    int pixel;
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    for(int i = 0; i < subimage.getWidth(); i += 2){
+      for(int j = 0; j < subimage.getHeight(); j += 2){
+        pixel = subimage.getRGB(subimage.getWidth() / 4 + i / 2, subimage.getHeight() / 4 + j / 2);
+        filteredImage.setRGB(i, j, pixel);
+        if(j + 1 < subimage.getHeight()) filteredImage.setRGB(i, j + 1, pixel);
+        if(i + 1 < subimage.getWidth()) filteredImage.setRGB(i + 1, j, pixel);
+        if(i + 1 < subimage.getWidth() && j + 1 < subimage.getHeight()) filteredImage.setRGB(i + 1, j + 1, pixel);
       }
     }
     repaint();
