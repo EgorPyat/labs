@@ -30,6 +30,8 @@ public class GUI extends JFrame{
     JMenuItem mFilterBNWF = new JMenuItem("BlackNWhite filter");
     JMenuItem mFilterNF = new JMenuItem("Negative filter");
     JMenuItem mFilterDouble = new JMenuItem("Double scale filter");
+    JMenuItem mFilterBF = new JMenuItem("Blur filter");
+    JMenuItem mFilterSF = new JMenuItem("Sharpness filter");
     JMenuItem mFilterEF = new JMenuItem("Embossing filter");
     JMenuItem mFilterWC = new JMenuItem("Water color filter");
 
@@ -48,6 +50,9 @@ public class GUI extends JFrame{
     mFilter.add(mFilterBNWF);
     mFilter.add(mFilterNF);
     mFilter.add(mFilterDouble);
+    mFilter.add(mFilterBF);
+    mFilter.add(mFilterSF);
+    mFilter.add(mFilterEF);
     mFilter.add(mFilterWC);
 
     mAbout.add(mAboutInfo);
@@ -59,20 +64,20 @@ public class GUI extends JFrame{
 
     JToolBar toolBar = new JToolBar();
     try{
-      JButton buttonNew = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("new.png"))));
+      JButton buttonNew = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/new.png"))));
       ActionListener ln = (e) -> {
-        JFileChooser c = new JFileChooser(".");
-        c.setFileFilter(new FileNameExtensionFilter("Image formats", "jpg", "jpeg", "png"));
+        JFileChooser c = new JFileChooser("./FIT_15206_Pyataev_Egor_Data");
+        c.setFileFilter(new FileNameExtensionFilter("Image formats", "jpg", "jpeg", "png", "bmp"));
         int rVal = c.showOpenDialog(this);
         if(rVal == JFileChooser.APPROVE_OPTION){
-          areasPanel.setImage(c.getSelectedFile().getName());
+          areasPanel.setImage(c.getSelectedFile().getPath());
         }
       };
       buttonNew.addActionListener(ln);
 
-      JButton buttonSave = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("save.png"))));
+      JButton buttonSave = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/save.png"))));
       ActionListener ls = (e) -> {
-        JFileChooser c = new JFileChooser(".");
+        JFileChooser c = new JFileChooser("./FIT_15206_Pyataev_Egor_Data");
         BufferedImage image = areasPanel.getFilteredImage();
         if(image == null){
           JOptionPane.showMessageDialog(this, "Nothing to save.", "Save warning", JOptionPane.WARNING_MESSAGE);
@@ -104,13 +109,13 @@ public class GUI extends JFrame{
       };
       buttonSave.addActionListener(ls);
 
-      JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("exit.png"))));
+      JButton buttonExit = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/exit.png"))));
       ActionListener le = (e) -> {
         System.exit(0);
       };
       buttonExit.addActionListener(le);
 
-      JToggleButton buttonSelect = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("select.png"))));
+      JToggleButton buttonSelect = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/select.png"))));
       buttonSelect.addItemListener((e) -> {
         if(e.getStateChange() == ItemEvent.SELECTED){
               mFilterSelect.setSelected(true);
@@ -122,49 +127,61 @@ public class GUI extends JFrame{
           }
       });
 
-      JButton buttonReset = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("reset.png"))));
+      JButton buttonReset = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/reset.png"))));
       ActionListener lr = (e) -> {
         areasPanel.reset();
       };
       buttonReset.addActionListener(lr);
 
-      JButton buttonTransfer = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("transfer.png"))));
+      JButton buttonTransfer = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/transfer.png"))));
       ActionListener lt = (e) -> {
         areasPanel.transfer();
       };
       buttonTransfer.addActionListener(lt);
 
-      JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("about.png"))));
+      JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/about.png"))));
       ActionListener la = (e) -> {
         JOptionPane.showMessageDialog(this,  "Filter - The App.\nVersion 0.2.2.8\nBy Egor Pyataev - Group 15206");
       };
       buttonAbout.addActionListener(la);
 
-      JButton blackNwhiteFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("bnw.png"))));
+      JButton blackNwhiteFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/bnw.png"))));
       ActionListener bnwf = (e) -> {
         areasPanel.blackNwhiteFilter();
       };
       blackNwhiteFilter.addActionListener(bnwf);
 
-      JButton negativeFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("negative.png"))));
+      JButton negativeFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/negative.png"))));
       ActionListener nf = (e) -> {
         areasPanel.negativeFilter();
       };
       negativeFilter.addActionListener(nf);
 
-      JButton doubleScaleFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("double.png"))));
+      JButton doubleScaleFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/double.png"))));
       ActionListener df = (e) -> {
         areasPanel.doubleScaleFilter();
       };
       doubleScaleFilter.addActionListener(df);
 
-      JButton embossingFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("stamp.png"))));
+      JButton blurFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/blur.png"))));
+      ActionListener bf = (e) -> {
+        areasPanel.blurFilter();
+      };
+      blurFilter.addActionListener(bf);
+
+      JButton sharpnessFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/sharp.png"))));
+      ActionListener sf = (e) -> {
+        areasPanel.sharpnessFilter();
+      };
+      sharpnessFilter.addActionListener(sf);
+
+      JButton embossingFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/stamp.png"))));
       ActionListener ef = (e) -> {
         areasPanel.embossingFilter();
       };
       embossingFilter.addActionListener(ef);
 
-      JButton watercolorFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("watercolor.png"))));
+      JButton watercolorFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/watercolor.png"))));
       ActionListener wcf = (e) -> {
         areasPanel.watercolorFilter();
       };
@@ -181,6 +198,8 @@ public class GUI extends JFrame{
       toolBar.add(blackNwhiteFilter);
       toolBar.add(negativeFilter);
       toolBar.add(doubleScaleFilter);
+      toolBar.add(blurFilter);
+      toolBar.add(sharpnessFilter);
       toolBar.add(embossingFilter);
       toolBar.add(watercolorFilter);
       toolBar.addSeparator();
@@ -203,6 +222,8 @@ public class GUI extends JFrame{
       mFilterBNWF.addActionListener(bnwf);
       mFilterNF.addActionListener(nf);
       mFilterDouble.addActionListener(df);
+      mFilterBF.addActionListener(bf);
+      mFilterSF.addActionListener(sf);
       mFilterEF.addActionListener(ef);
       mFilterWC.addActionListener(wcf);
 
@@ -313,6 +334,20 @@ class AreasPanel extends JPanel{
     repaint();
   }
 
+  public void blurFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+  }
+
+  public void sharpnessFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+  }
+
   public void embossingFilter(){
     if(subimage == null){
       JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
@@ -387,7 +422,7 @@ class AreasPanel extends JPanel{
 
   public void setImage(String name){
     try{
-      image = ImageIO.read(getClass().getResource(name));
+      image = ImageIO.read(new File(name));
     }
     catch(IOException ex) {
       System.err.println(ex.getMessage());
@@ -449,7 +484,7 @@ class AreasPanel extends JPanel{
             subimage = image.getSubimage(X + shiftX, Y + shiftY, sideX, sideY);
           }
           catch(Exception ex){
-            System.out.println(ex.getMessage());
+            System.err.println(ex.getMessage());
           }
           repaint();
         }
@@ -485,14 +520,13 @@ class AreasPanel extends JPanel{
               shiftY = image.getHeight() - Y - sideY;
             }
             if(X + sideX > image.getWidth()){
-              System.out.println(image.getWidth());
               shiftX = image.getWidth() - X - sideX;
             }
             try{
               subimage = image.getSubimage(X + shiftX, Y + shiftY, sideX, sideY);
             }
             catch(Exception ex){
-              System.out.println(ex.getMessage());
+              System.err.println(ex.getMessage());
             }
             repaint();
           }
