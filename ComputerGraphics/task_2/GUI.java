@@ -339,6 +339,33 @@ class AreasPanel extends JPanel{
       JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
       return;
     }
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    int alpha, red, green, blue;
+
+    for(int i = 1; i < filteredImage.getWidth() - 1; i++){
+      for(int j = 1; j < filteredImage.getHeight() - 1; j++){
+        alpha = (new Color(subimage.getRGB(i - 1, j)).getAlpha() + new Color(subimage.getRGB(i, j - 1)).getAlpha() + new Color(subimage.getRGB(i, j + 1)).getAlpha() + new Color(subimage.getRGB(i + 1, j)).getAlpha() + new Color(subimage.getRGB(i, j)).getAlpha() * 2) / 6;
+        alpha = alpha < 0 ? 0 : alpha;
+        alpha = alpha > 255 ? 255 : alpha;
+
+        red = (new Color(subimage.getRGB(i - 1, j)).getRed() + new Color(subimage.getRGB(i, j - 1)).getRed() + new Color(subimage.getRGB(i, j + 1)).getRed() + new Color(subimage.getRGB(i + 1, j)).getRed() + new Color(subimage.getRGB(i, j)).getRed() * 2) / 6;
+        red = red < 0 ? 0 : red;
+        red = red > 255 ? 255 : red;
+
+        green = (new Color(subimage.getRGB(i - 1, j)).getGreen() + new Color(subimage.getRGB(i, j - 1)).getGreen() + new Color(subimage.getRGB(i, j + 1)).getGreen() + new Color(subimage.getRGB(i + 1, j)).getGreen() + new Color(subimage.getRGB(i, j - 1)).getGreen() * 2) / 6;
+        green = green < 0 ? 0 : green;
+        green = green > 255 ? 255 : green;
+
+        blue = (new Color(subimage.getRGB(i - 1, j)).getBlue() + new Color(subimage.getRGB(i, j - 1)).getBlue() + new Color(subimage.getRGB(i, j + 1)).getBlue() + new Color(subimage.getRGB(i + 1, j)).getBlue() + new Color(subimage.getRGB(i, j - 1)).getBlue() * 2) / 6;
+        blue = blue < 0 ? 0 : blue;
+        blue = blue > 255 ? 255 : blue;
+
+        filteredImage.setRGB(i, j, new Color(red, green, blue, alpha).getRGB());
+      }
+    }
+    repaint();
   }
 
   public void sharpnessFilter(){
@@ -346,6 +373,33 @@ class AreasPanel extends JPanel{
       JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
       return;
     }
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    int alpha, red, green, blue;
+
+    for(int i = 1; i < filteredImage.getWidth() - 1; i++){
+      for(int j = 1; j < filteredImage.getHeight() - 1; j++){
+        alpha = (-new Color(subimage.getRGB(i - 1, j)).getAlpha() - new Color(subimage.getRGB(i, j - 1)).getAlpha() - new Color(subimage.getRGB(i, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j)).getAlpha() + new Color(subimage.getRGB(i, j)).getAlpha() * 5);
+        alpha = alpha < 0 ? 0 : alpha;
+        alpha = alpha > 255 ? 255 : alpha;
+
+        red = (-new Color(subimage.getRGB(i - 1, j)).getRed() - new Color(subimage.getRGB(i, j - 1)).getRed() - new Color(subimage.getRGB(i, j + 1)).getRed() - new Color(subimage.getRGB(i + 1, j)).getRed() + new Color(subimage.getRGB(i, j)).getRed() * 5);
+        red = red < 0 ? 0 : red;
+        red = red > 255 ? 255 : red;
+
+        green = (-new Color(subimage.getRGB(i - 1, j)).getGreen() - new Color(subimage.getRGB(i, j - 1)).getGreen() - new Color(subimage.getRGB(i, j + 1)).getGreen() - new Color(subimage.getRGB(i + 1, j)).getGreen() + new Color(subimage.getRGB(i, j - 1)).getGreen() * 5);
+        green = green < 0 ? 0 : green;
+        green = green > 255 ? 255 : green;
+
+        blue = (-new Color(subimage.getRGB(i - 1, j)).getBlue() - new Color(subimage.getRGB(i, j - 1)).getBlue() - new Color(subimage.getRGB(i, j + 1)).getBlue() - new Color(subimage.getRGB(i + 1, j)).getBlue() + new Color(subimage.getRGB(i, j - 1)).getBlue() * 5);
+        blue = blue < 0 ? 0 : blue;
+        blue = blue > 255 ? 255 : blue;
+
+        filteredImage.setRGB(i, j, new Color(red, green, blue, alpha).getRGB());
+      }
+    }
+    repaint();
   }
 
   public void embossingFilter(){
