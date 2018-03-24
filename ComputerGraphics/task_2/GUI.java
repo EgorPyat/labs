@@ -35,6 +35,7 @@ public class GUI extends JFrame{
     JMenuItem mFilterEF = new JMenuItem("Embossing filter");
     JMenuItem mFilterWC = new JMenuItem("Water color filter");
     JMenuItem mFilterRF = new JMenuItem("Rotate filter");
+    JMenuItem mFilterGCF = new JMenuItem("Gamma correction filter");
 
     JMenuItem mAboutInfo = new JMenuItem("Info");
 
@@ -56,6 +57,7 @@ public class GUI extends JFrame{
     mFilter.add(mFilterEF);
     mFilter.add(mFilterWC);
     mFilter.add(mFilterRF);
+    mFilter.add(mFilterGCF);
 
     mAbout.add(mAboutInfo);
 
@@ -258,6 +260,75 @@ public class GUI extends JFrame{
       };
       rotateFilter.addActionListener(rf);
 
+      JButton gammaCorrectionFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/gamma.png"))));
+      ActionListener gcf = (e) -> {
+        areasPanel.gammaCorrectionFilter();
+
+        if(!areasPanel.canFilter()){
+          return;
+        }
+
+        JDialog dialog = new JDialog(this, "Set gamma", true);
+        JPanel gammaSetter = new JPanel();
+        JSlider gammaSlider = new JSlider(JSlider.HORIZONTAL);
+        TextField gammaField = new TextField("", 10);
+        JButton submit = new JButton("Submit");
+        JButton cancel = new JButton("Cancel");
+        double g = areasPanel.getGamma();
+
+        dialog.setLayout(new BorderLayout());
+        gammaSetter.setLayout(new GridLayout(3, 2));
+
+        gammaSlider.setMinimum(0);
+        gammaSlider.setMaximum(30);
+
+        submit.addActionListener((d) -> {
+          dialog.dispose();
+        });
+
+        cancel.addActionListener((d) -> {
+          areasPanel.setGamma(g);
+          areasPanel.gammaCorrectionFilter();
+          dialog.dispose();
+        });
+
+        gammaField.setText(String.valueOf(g));
+        gammaSlider.setValue((int)(g * 10));
+
+        gammaField.addFocusListener(new FocusListener(){
+          public void focusGained(FocusEvent ev){}
+
+          public void focusLost(FocusEvent ev){
+            gammaSlider.setValue((int)(Double.valueOf(gammaField.getText()) * 10));
+          }
+        });
+
+        gammaSlider.addChangeListener((ev) -> {
+          double t = gammaSlider.getValue() / 10.0;
+          gammaField.setText(String.valueOf(t));
+          areasPanel.setGamma(t);
+          areasPanel.gammaCorrectionFilter();
+        });
+
+        gammaSetter.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Gamma"), BorderFactory.createEmptyBorder(5,5,5,5)));
+
+        gammaSetter.add(gammaSlider);
+        gammaSetter.add(gammaField);
+        gammaSetter.add(new JPanel());
+        gammaSetter.add(new JPanel());
+        gammaSetter.add(submit);
+        gammaSetter.add(cancel);
+
+        dialog.add(gammaSetter);
+
+        dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        dialog.setPreferredSize(new Dimension(300, 130));
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+      };
+      gammaCorrectionFilter.addActionListener(gcf);
+
       toolBar.add(buttonNew);
       toolBar.add(buttonSave);
       toolBar.add(buttonExit);
@@ -274,6 +345,7 @@ public class GUI extends JFrame{
       toolBar.add(embossingFilter);
       toolBar.add(watercolorFilter);
       toolBar.add(rotateFilter);
+      toolBar.add(gammaCorrectionFilter);
       toolBar.addSeparator();
       toolBar.add(buttonAbout);
 
@@ -299,6 +371,7 @@ public class GUI extends JFrame{
       mFilterEF.addActionListener(ef);
       mFilterWC.addActionListener(wcf);
       mFilterRF.addActionListener(rf);
+      mFilterGCF.addActionListener(gcf);
 
       mAboutInfo.addActionListener(la);
     }
@@ -333,6 +406,7 @@ class AreasPanel extends JPanel{
   private boolean visible;
   private boolean selected = false;
   private int angle = 0;
+  private double gamma = 1.0;
 
   public void blackNwhiteFilter(){
     if(subimage == null){
@@ -595,6 +669,30 @@ class AreasPanel extends JPanel{
     repaint();
   }
 
+  public void gammaCorrectionFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+    
+    double alpha, red, green, blue;
+    double newPixel;
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    for(int i = 0; i < subimage.getWidth(); i++){
+      for(int j = 0; j < subimage.getHeight(); j++){
+        alpha = new Color(subimage.getRGB(i, j)).getAlpha();
+        red = 255 * Math.pow(new Color(subimage.getRGB(i, j)).getRed() / 255.0, gamma);
+        green = 255 * Math.pow(new Color(subimage.getRGB(i, j)).getGreen() / 255.0, gamma);
+        blue = 255 * Math.pow(new Color(subimage.getRGB(i, j)).getBlue() / 255.0, gamma);
+        newPixel = (new Color((int)red, (int)green, (int)blue, (int)alpha)).getRGB();
+        filteredImage.setRGB(i, j, (int)newPixel);
+      }
+    }
+    repaint();
+  }
+
   public boolean canFilter(){
     return filteredImage != null;
   }
@@ -611,6 +709,14 @@ class AreasPanel extends JPanel{
     angle = a;
   }
 
+  public double getGamma(){
+    return gamma;
+  }
+
+  public void setGamma(double g){
+    gamma = g;
+  }
+
   public void setSelect(boolean select){
     selected = select;
   }
@@ -623,6 +729,8 @@ class AreasPanel extends JPanel{
 
   public void transfer(){
     subimage = filteredImage;
+    angle = 0;
+    gamma = 1.0;
     repaint();
   }
 
