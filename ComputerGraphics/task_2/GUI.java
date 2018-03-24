@@ -34,6 +34,7 @@ public class GUI extends JFrame{
     JMenuItem mFilterSF = new JMenuItem("Sharpness filter");
     JMenuItem mFilterEF = new JMenuItem("Embossing filter");
     JMenuItem mFilterWC = new JMenuItem("Water color filter");
+    JMenuItem mFilterRF = new JMenuItem("Rotate filter");
 
     JMenuItem mAboutInfo = new JMenuItem("Info");
 
@@ -54,6 +55,7 @@ public class GUI extends JFrame{
     mFilter.add(mFilterSF);
     mFilter.add(mFilterEF);
     mFilter.add(mFilterWC);
+    mFilter.add(mFilterRF);
 
     mAbout.add(mAboutInfo);
 
@@ -187,6 +189,75 @@ public class GUI extends JFrame{
       };
       watercolorFilter.addActionListener(wcf);
 
+      JButton rotateFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/rotate.png"))));
+      ActionListener rf = (e) -> {
+        areasPanel.rotateFilter();
+
+        if(!areasPanel.canFilter()){
+          return;
+        }
+
+        JDialog dialog = new JDialog(this, "Set angle", true);
+        JPanel angleSetter = new JPanel();
+        JSlider angleSlider = new JSlider(JSlider.HORIZONTAL);
+        TextField angleField = new TextField("", 10);
+        JButton submit = new JButton("Submit");
+        JButton cancel = new JButton("Cancel");
+        int a = areasPanel.getAngle();
+
+        dialog.setLayout(new BorderLayout());
+        angleSetter.setLayout(new GridLayout(3, 2));
+
+        angleSlider.setMinimum(-180);
+        angleSlider.setMaximum(180);
+
+        submit.addActionListener((d) -> {
+          dialog.dispose();
+        });
+
+        cancel.addActionListener((d) -> {
+          areasPanel.setAngle(a);
+          areasPanel.rotateFilter();
+          dialog.dispose();
+        });
+
+        angleField.setText(String.valueOf(a));
+        angleSlider.setValue(a);
+
+        angleField.addFocusListener(new FocusListener(){
+          public void focusGained(FocusEvent ev){}
+
+          public void focusLost(FocusEvent ev){
+            angleSlider.setValue(Integer.valueOf(angleField.getText()));
+          }
+        });
+
+        angleSlider.addChangeListener((ev) -> {
+          int t = angleSlider.getValue();
+          angleField.setText(String.valueOf(t));
+          areasPanel.setAngle(t);
+          areasPanel.rotateFilter();
+        });
+
+        angleSetter.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Angle"), BorderFactory.createEmptyBorder(5,5,5,5)));
+
+        angleSetter.add(angleSlider);
+        angleSetter.add(angleField);
+        angleSetter.add(new JPanel());
+        angleSetter.add(new JPanel());
+        angleSetter.add(submit);
+        angleSetter.add(cancel);
+
+        dialog.add(angleSetter);
+
+        dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        dialog.setPreferredSize(new Dimension(300, 130));
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+      };
+      rotateFilter.addActionListener(rf);
+
       toolBar.add(buttonNew);
       toolBar.add(buttonSave);
       toolBar.add(buttonExit);
@@ -202,6 +273,7 @@ public class GUI extends JFrame{
       toolBar.add(sharpnessFilter);
       toolBar.add(embossingFilter);
       toolBar.add(watercolorFilter);
+      toolBar.add(rotateFilter);
       toolBar.addSeparator();
       toolBar.add(buttonAbout);
 
@@ -226,6 +298,7 @@ public class GUI extends JFrame{
       mFilterSF.addActionListener(sf);
       mFilterEF.addActionListener(ef);
       mFilterWC.addActionListener(wcf);
+      mFilterRF.addActionListener(rf);
 
       mAboutInfo.addActionListener(la);
     }
@@ -259,6 +332,7 @@ class AreasPanel extends JPanel{
   private boolean dragging;
   private boolean visible;
   private boolean selected = false;
+  private int angle = 0;
 
   public void blackNwhiteFilter(){
     if(subimage == null){
@@ -455,8 +529,86 @@ class AreasPanel extends JPanel{
     repaint();
   }
 
+  public void rotateFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    int width = subimage.getWidth();
+    int height = subimage.getHeight();
+    double oldIradius = (double)(height - 1) / 2;
+    double oldJradius = (double)(width - 1) / 2;
+
+    double angleRad = -angle * Math.PI / 180;
+    double angleCos = Math.cos( angleRad );
+    double angleSin = Math.sin( angleRad );
+
+    double halfWidth  = (double)subimage.getWidth() / 2;
+    double halfHeight = (double)subimage.getHeight() / 2;
+
+    double cx1 = halfWidth * angleCos;
+    double cy1 = halfWidth * angleSin;
+
+    double cx2 = halfWidth * angleCos - halfHeight * angleSin;
+    double cy2 = halfWidth * angleSin + halfHeight * angleCos;
+
+    double cx3 = -halfHeight * angleSin;
+    double cy3 =  halfHeight * angleCos;
+
+    double cx4 = 0;
+    double cy4 = 0;
+
+    halfWidth  = Math.max(Math.max(cx1, cx2), Math.max(cx3, cx4)) - Math.min(Math.min(cx1, cx2), Math.min(cx3, cx4));
+    halfHeight = Math.max(Math.max(cy1, cy2), Math.max(cy3, cy4)) - Math.min(Math.min(cy1, cy2), Math.min(cy3, cy4));
+
+    int newWidth = (int)(halfWidth * 2 );
+    int newHeight = (int)(halfHeight * 2);
+
+    filteredImage = new BufferedImage(newWidth, newHeight, subimage.getType());
+    double newIradius = (double)(newHeight - 1) / 2;
+    double newJradius = (double)(newWidth - 1) / 2;
+
+    double ci, cj;
+
+    int oi, oj;
+
+    ci = -newIradius;
+    for(int i = 0; i < newHeight; i++){
+      cj = -newJradius;
+      for(int j = 0; j < newWidth; j++){
+        oi = (int)(angleCos * ci + angleSin * cj + oldIradius);
+        oj = (int)(-angleSin * ci + angleCos * cj + oldJradius);
+        if(( oi < 0 ) || ( oj < 0 ) || ( oi >= height ) || ( oj >= width )){
+          filteredImage.setRGB(i, j, new Color(255, 255, 255).getRGB());
+        }
+        else{
+          int r = new Color(subimage.getRGB(oi, oj)).getRed();
+          int g = new Color(subimage.getRGB(oi, oj)).getGreen();
+          int b = new Color(subimage.getRGB(oi, oj)).getBlue();
+          filteredImage.setRGB(i, j, new Color(r, g, b).getRGB());
+        }
+        cj++;
+      }
+      ci++;
+    }
+    repaint();
+  }
+
+  public boolean canFilter(){
+    return filteredImage != null;
+  }
+
   public BufferedImage getFilteredImage(){
     return filteredImage;
+  }
+
+  public int getAngle(){
+    return angle;
+  }
+
+  public void setAngle(int a){
+    angle = a;
   }
 
   public void setSelect(boolean select){
@@ -643,8 +795,8 @@ class AreasPanel extends JPanel{
       else{
         g.drawImage(image, 15, 15, null);
       }
-      g.drawImage(subimage, 380, 15, null);
-      g.drawImage(filteredImage, 745, 15, null);
+      g.drawImage(subimage, 380, 15, 350, 350, null);
+      g.drawImage(filteredImage, 745, 15, 350, 350, null);
 
       g.setXORMode(Color.WHITE);
       Graphics2D g2d = (Graphics2D) g.create();
