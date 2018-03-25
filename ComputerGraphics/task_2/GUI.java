@@ -29,6 +29,7 @@ public class GUI extends JFrame{
     JMenuItem mFilterTransfer = new JMenuItem("Transfer");
     JMenuItem mFilterBNWF = new JMenuItem("BlackNWhite filter");
     JMenuItem mFilterNF = new JMenuItem("Negative filter");
+    JMenuItem mFilterDF = new JMenuItem("Dithering filter");
     JMenuItem mFilterDouble = new JMenuItem("Double scale filter");
     JMenuItem mFilterBF = new JMenuItem("Blur filter");
     JMenuItem mFilterSF = new JMenuItem("Sharpness filter");
@@ -51,6 +52,7 @@ public class GUI extends JFrame{
     mFilter.addSeparator();
     mFilter.add(mFilterBNWF);
     mFilter.add(mFilterNF);
+    mFilter.add(mFilterDF);
     mFilter.add(mFilterDouble);
     mFilter.add(mFilterBF);
     mFilter.add(mFilterSF);
@@ -160,6 +162,85 @@ public class GUI extends JFrame{
         areasPanel.negativeFilter();
       };
       negativeFilter.addActionListener(nf);
+
+      JButton ditheringFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/dither.png"))));
+      ActionListener dtf = (e) -> {
+        areasPanel.orderDitheringFilter();
+
+        if(!areasPanel.canFilter()){
+          return;
+        }
+
+        JDialog dialog = new JDialog(this, "Set dithering settings", true);
+        JPanel ditherSetter = new JPanel();
+        JSlider ditherSlider = new JSlider(JSlider.HORIZONTAL);
+        TextField ditherField = new TextField("", 10);
+        JButton submit = new JButton("Submit");
+        JButton cancel = new JButton("Cancel");
+
+        ButtonGroup group = new ButtonGroup();
+        JRadioButton ordButton = new JRadioButton("Ordered", true);
+        group.add(ordButton);
+        JRadioButton fsButton = new JRadioButton("Floyd-Stanberg", false);
+        group.add(fsButton);
+        ditherSetter.setLayout(new GridLayout(4, 2));
+
+        ditherSlider.setMinimum(2);
+        ditherSlider.setMaximum(16);
+
+        submit.addActionListener((d) -> {
+          dialog.dispose();
+        });
+
+        cancel.addActionListener((d) -> {
+          dialog.dispose();
+        });
+
+        int d = areasPanel.getDither();
+
+        ditherField.setText(String.valueOf(d));
+        ditherSlider.setValue(d);
+
+        ditherField.addFocusListener(new FocusListener(){
+          public void focusGained(FocusEvent ev){}
+
+          public void focusLost(FocusEvent ev){
+            ditherSlider.setValue(Integer.valueOf(ditherField.getText()));
+          }
+        });
+        fsButton.addItemListener((ec) -> {
+          if(fsButton.isSelected()) areasPanel.FloidStendbergDitheringFilter();
+          else areasPanel.orderDitheringFilter();
+        });
+
+        ditherSlider.addChangeListener((ev) -> {
+          int t = ditherSlider.getValue();
+          areasPanel.setDither(t);
+          ditherField.setText(String.valueOf(t));
+          if(ordButton.isSelected()) areasPanel.orderDitheringFilter();
+          else areasPanel.FloidStendbergDitheringFilter();
+        });
+
+        ditherSetter.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Dithering"), BorderFactory.createEmptyBorder(5,5,5,5)));
+
+        ditherSetter.add(ditherSlider);
+        ditherSetter.add(ditherField);
+        ditherSetter.add(ordButton);
+        ditherSetter.add(fsButton);
+        ditherSetter.add(new JPanel());
+        ditherSetter.add(new JPanel());
+        ditherSetter.add(submit);
+        ditherSetter.add(cancel);
+
+        dialog.add(ditherSetter);
+
+        dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        dialog.setPreferredSize(new Dimension(340, 140));
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+      };
+      ditheringFilter.addActionListener(dtf);
 
       JButton doubleScaleFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/double.png"))));
       ActionListener df = (e) -> {
@@ -339,6 +420,7 @@ public class GUI extends JFrame{
       toolBar.addSeparator();
       toolBar.add(blackNwhiteFilter);
       toolBar.add(negativeFilter);
+      toolBar.add(ditheringFilter);
       toolBar.add(doubleScaleFilter);
       toolBar.add(blurFilter);
       toolBar.add(sharpnessFilter);
@@ -365,6 +447,7 @@ public class GUI extends JFrame{
       mFilterTransfer.addActionListener(lt);
       mFilterBNWF.addActionListener(bnwf);
       mFilterNF.addActionListener(nf);
+      mFilterDF.addActionListener(dtf);
       mFilterDouble.addActionListener(df);
       mFilterBF.addActionListener(bf);
       mFilterSF.addActionListener(sf);
@@ -407,6 +490,7 @@ class AreasPanel extends JPanel{
   private boolean selected = false;
   private int angle = 0;
   private double gamma = 1.0;
+  private int dither = 4;
 
   public void blackNwhiteFilter(){
     if(subimage == null){
@@ -439,6 +523,7 @@ class AreasPanel extends JPanel{
       JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
       return;
     }
+
     int pixel, alpha, red, green, blue;
 
     filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
@@ -455,6 +540,134 @@ class AreasPanel extends JPanel{
         blue = 255 - blue;
         pixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
         filteredImage.setRGB(i, j, pixel);
+      }
+    }
+    repaint();
+  }
+
+  public void FloidStendbergDitheringFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    BufferedImage tempImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    int pixel, alpha, red, green, blue;
+    int nred, ngreen, nblue;
+    int ered, egreen, eblue;
+    int d = dither;
+
+    for(int i = 0; i < subimage.getWidth(); i++) {
+      for(int j = 0; j < subimage.getHeight(); j++) {
+        tempImage.setRGB(i, j, subimage.getRGB(i, j));
+      }
+    }
+
+    for(int i = 1; i < subimage.getWidth() - 1; i++) {
+      for(int j = 1; j < subimage.getHeight() - 1; j++) {
+        alpha = new Color(tempImage.getRGB(i, j)).getAlpha();
+        red = new Color(tempImage.getRGB(i, j)).getRed();
+        green = new Color(tempImage.getRGB(i, j)).getGreen();
+        blue = new Color(tempImage.getRGB(i, j)).getBlue();
+
+        nred = 255 * (d * red / 256) / d;
+        ngreen = 255 * (d * green / 256) / d;
+        nblue = 255 * (d * blue / 256) / d;
+
+        ered = red - nred;
+        egreen = green - ngreen;
+        eblue = blue - nblue;
+
+        filteredImage.setRGB(i, j, new Color(nred, ngreen, nblue, alpha).getRGB());
+
+        alpha = new Color(tempImage.getRGB(i + 1, j)).getAlpha();
+        red = new Color(tempImage.getRGB(i + 1, j)).getRed() + ered * 7 / 16;
+        red = red > 255 ? 255 : red;
+        red = red < 0 ? 0 : red;
+        green = new Color(tempImage.getRGB(i + 1, j)).getGreen() + egreen * 7 / 16;
+        green = green > 255 ? 255 : green;
+        green = green < 0 ? 0 : green;
+        blue = new Color(tempImage.getRGB(i + 1, j)).getBlue() + eblue * 7 / 16;
+        blue = blue > 255 ? 255 : blue;
+        blue = blue < 0 ? 0 : blue;
+
+        tempImage.setRGB(i + 1, j, new Color(red, green, blue, alpha).getRGB());
+
+        alpha = new Color(tempImage.getRGB(i - 1, j + 1)).getAlpha();
+        red = new Color(tempImage.getRGB(i - 1, j + 1)).getRed() + ered * 3 / 16;
+        red = red > 255 ? 255 : red;
+        red = red < 0 ? 0 : red;
+        green = new Color(tempImage.getRGB(i - 1, j + 1)).getGreen() + egreen * 3 / 16;
+        green = green > 255 ? 255 : green;
+        green = green < 0 ? 0 : green;
+        blue = new Color(tempImage.getRGB(i - 1, j + 1)).getBlue() + eblue * 3 / 16;
+        blue = blue > 255 ? 255 : blue;
+        blue = blue < 0 ? 0 : blue;
+        tempImage.setRGB(i - 1, j + 1, new Color(red, green, blue, alpha).getRGB());
+
+        alpha = new Color(tempImage.getRGB(i, j + 1)).getAlpha();
+        red = new Color(tempImage.getRGB(i, j + 1)).getRed() + ered * 5 / 16;
+        red = red > 255 ? 255 : red;
+        red = red < 0 ? 0 : red;
+        green = new Color(tempImage.getRGB(i, j + 1)).getGreen() + egreen * 5 / 16;
+        green = green > 255 ? 255 : green;
+        green = green < 0 ? 0 : green;
+        blue = new Color(tempImage.getRGB(i, j + 1)).getBlue() + eblue * 5 / 16;
+        blue = blue > 255 ? 255 : blue;
+        blue = blue < 0 ? 0 : blue;
+        tempImage.setRGB(i, j + 1, new Color(red, green, blue, alpha).getRGB());
+
+        alpha = new Color(tempImage.getRGB(i + 1, j + 1)).getAlpha();
+        red = new Color(tempImage.getRGB(i + 1, j + 1)).getRed() + ered * 1 / 16;
+        red = red > 255 ? 255 : red;
+        red = red < 0 ? 0 : red;
+        green = new Color(tempImage.getRGB(i + 1, j + 1)).getGreen() + egreen * 1 / 16;
+        green = green > 255 ? 255 : green;
+        green = green < 0 ? 0 : green;
+        blue = new Color(tempImage.getRGB(i + 1, j + 1)).getBlue() + eblue * 1 / 16;
+        blue = blue > 255 ? 255 : blue;
+        blue = blue < 0 ? 0 : blue;
+        tempImage.setRGB(i + 1, j + 1, new Color(red, green, blue, alpha).getRGB());
+      }
+    }
+    repaint();
+  }
+
+  public void orderDitheringFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    int N = 4;
+    int[][] matrix = {
+  	 	 {0,  8,  2, 10},
+  		{12,  4, 14,  6},
+  		 {3, 11,  1,  9},
+  		{15,  7, 13,  5}
+	  };
+
+    int pixel, alpha, red, green, blue, x, y;
+    int l = 17;
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+    int d = dither;
+
+    for(int i = 0; i < subimage.getWidth(); i++) {
+      for(int j = 0; j < subimage.getHeight(); j++) {
+        alpha = new Color(subimage.getRGB(i, j)).getAlpha();
+        red = new Color(subimage.getRGB(i, j)).getRed();
+        green = new Color(subimage.getRGB(i, j)).getGreen();
+        blue = new Color(subimage.getRGB(i, j)).getBlue();
+        x = i % N;
+        y = j % N;
+        red = 255 * (red * 17 / 256 > matrix[x][y] ? d * red / 256 + 1 : d * red / 256) / d;
+        green = 255 * (green * 17 / 256 > matrix[x][y] ? d * green / 256 + 1 : d * green / 256) / d;
+        blue = 255 * (blue * 17 / 256 > matrix[x][y] ? d * blue / 256 + 1 : d * blue / 256) / d;
+
+        filteredImage.setRGB(i, j, new Color(red, green, blue, alpha).getRGB());
       }
     }
     repaint();
@@ -674,7 +887,7 @@ class AreasPanel extends JPanel{
       JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
       return;
     }
-    
+
     double alpha, red, green, blue;
     double newPixel;
 
@@ -715,6 +928,14 @@ class AreasPanel extends JPanel{
 
   public void setGamma(double g){
     gamma = g;
+  }
+
+  public int getDither(){
+    return dither;
+  }
+
+  public void setDither(int d){
+    dither = d;
   }
 
   public void setSelect(boolean select){
@@ -903,8 +1124,10 @@ class AreasPanel extends JPanel{
       else{
         g.drawImage(image, 15, 15, null);
       }
-      g.drawImage(subimage, 380, 15, 350, 350, null);
-      g.drawImage(filteredImage, 745, 15, 350, 350, null);
+      if(subimage != null && subimage.getWidth() > 350) g.drawImage(subimage, 380, 15, 350, 350, null);
+      else g.drawImage(subimage, 380, 15, null);
+      if(filteredImage != null && filteredImage.getWidth() > 350) g.drawImage(filteredImage, 745, 15, 350, 350, null);
+      else g.drawImage(filteredImage, 745, 15, null);
 
       g.setXORMode(Color.WHITE);
       Graphics2D g2d = (Graphics2D) g.create();
