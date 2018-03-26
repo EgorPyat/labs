@@ -178,7 +178,6 @@ public class GUI extends JFrame{
         JSlider ditherSlider = new JSlider(JSlider.HORIZONTAL);
         TextField ditherField = new TextField("", 10);
         JButton submit = new JButton("Submit");
-        JButton cancel = new JButton("Cancel");
 
         ButtonGroup group = new ButtonGroup();
         JRadioButton ordButton = new JRadioButton("Ordered", true);
@@ -191,10 +190,6 @@ public class GUI extends JFrame{
         ditherSlider.setMaximum(16);
 
         submit.addActionListener((d) -> {
-          dialog.dispose();
-        });
-
-        cancel.addActionListener((d) -> {
           dialog.dispose();
         });
 
@@ -231,8 +226,8 @@ public class GUI extends JFrame{
         ditherSetter.add(fsButton);
         ditherSetter.add(new JPanel());
         ditherSetter.add(new JPanel());
+        ditherSetter.add(new JPanel());
         ditherSetter.add(submit);
-        ditherSetter.add(cancel);
 
         dialog.add(ditherSetter);
 
@@ -263,23 +258,21 @@ public class GUI extends JFrame{
         JSlider contourSlider = new JSlider(JSlider.HORIZONTAL);
         TextField contourField = new TextField("", 10);
         JButton submit = new JButton("Submit");
-        JButton cancel = new JButton("Cancel");
 
         ButtonGroup group = new ButtonGroup();
-        JRadioButton thrButton = new JRadioButton("Threshold", true);
+        JRadioButton thrButton = new JRadioButton("Laplas", true);
         group.add(thrButton);
+        JRadioButton robButton = new JRadioButton("Roberts", false);
+        group.add(robButton);
         JRadioButton sobButton = new JRadioButton("Sobel", false);
         group.add(sobButton);
-        contourSetter.setLayout(new GridLayout(4, 2));
+
+        contourSetter.setLayout(new GridLayout(4, 3));
 
         contourSlider.setMinimum(0);
         contourSlider.setMaximum(255);
 
         submit.addActionListener((d) -> {
-          dialog.dispose();
-        });
-
-        cancel.addActionListener((d) -> {
           dialog.dispose();
         });
 
@@ -297,7 +290,14 @@ public class GUI extends JFrame{
         });
         thrButton.addItemListener((ec) -> {
           if(thrButton.isSelected()) areasPanel.contourFilter();
-          else areasPanel.contourRobertsFilter();
+        });
+
+        robButton.addItemListener((ec) -> {
+          if(robButton.isSelected()) areasPanel.contourRobertsFilter();
+        });
+
+        sobButton.addItemListener((ec) -> {
+          if(sobButton.isSelected()) areasPanel.contourSobelFilter();
         });
 
         contourSlider.addChangeListener((ev) -> {
@@ -305,19 +305,24 @@ public class GUI extends JFrame{
           areasPanel.setThreshold(t);
           contourField.setText(String.valueOf(t));
           if(thrButton.isSelected()) areasPanel.contourFilter();
-          else areasPanel.contourRobertsFilter();
+          if(robButton.isSelected()) areasPanel.contourRobertsFilter();
+          if(sobButton.isSelected()) areasPanel.contourSobelFilter();
         });
 
         contourSetter.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Threshold"), BorderFactory.createEmptyBorder(5,5,5,5)));
 
         contourSetter.add(contourSlider);
         contourSetter.add(contourField);
+        contourSetter.add(new JPanel());
         contourSetter.add(thrButton);
+        contourSetter.add(robButton);
         contourSetter.add(sobButton);
         contourSetter.add(new JPanel());
         contourSetter.add(new JPanel());
+        contourSetter.add(new JPanel());
+        contourSetter.add(new JPanel());
         contourSetter.add(submit);
-        contourSetter.add(cancel);
+        contourSetter.add(new JPanel());
 
         dialog.add(contourSetter);
 
@@ -787,28 +792,33 @@ class AreasPanel extends JPanel{
 
     filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
 
-    int alpha, red, green, blue;
+    int alpha, red, green = 0 , blue;
     int t = 0;
     int threshold1 = threshold;
 
     for(int i = 1; i < filteredImage.getWidth() - 1; i++){
       for(int j = 1; j < filteredImage.getHeight() - 1; j++){
-        alpha = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getAlpha() - new Color(subimage.getRGB(i, j - 1)).getAlpha() - new Color(subimage.getRGB(i, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j)).getAlpha() + new Color(subimage.getRGB(i, j)).getAlpha() * 4) + t;
+        // alpha = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getAlpha() - new Color(subimage.getRGB(i, j - 1)).getAlpha() - new Color(subimage.getRGB(i, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j)).getAlpha() + new Color(subimage.getRGB(i, j)).getAlpha() * 4) + t;
+        // alpha = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getAlpha() - new Color(subimage.getRGB(i, j - 1)).getAlpha() - new Color(subimage.getRGB(i, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j)).getAlpha() - new Color(subimage.getRGB(i + 1, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j - 1)).getAlpha() - new Color(subimage.getRGB(i - 1, j - 1)).getAlpha() - new Color(subimage.getRGB(i - 1, j + 1)).getAlpha() + new Color(subimage.getRGB(i, j)).getAlpha() * 8);
+        alpha = new Color(subimage.getRGB(i, j)).getAlpha();
         alpha = alpha > threshold ? alpha : 0;
         alpha = alpha < 0 ? 0 : alpha;
         alpha = alpha > 255 ? 255 : alpha;
 
-        red = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getRed() - new Color(subimage.getRGB(i, j - 1)).getRed() - new Color(subimage.getRGB(i, j + 1)).getRed() - new Color(subimage.getRGB(i + 1, j)).getRed() + new Color(subimage.getRGB(i, j)).getRed() * 4) + t;
+        // red = (-new Color(subimage.getRGB(i - 1, j)).getRed() - new Color(subimage.getRGB(i, j - 1)).getRed() - new Color(subimage.getRGB(i, j + 1)).getRed() - new Color(subimage.getRGB(i + 1, j)).getRed() + new Color(subimage.getRGB(i, j)).getRed() * 4) + t;
+        red = (-new Color(subimage.getRGB(i - 1, j)).getRed() - new Color(subimage.getRGB(i, j - 1)).getRed() - new Color(subimage.getRGB(i, j + 1)).getRed() - new Color(subimage.getRGB(i + 1, j)).getRed() - new Color(subimage.getRGB(i + 1, j + 1)).getRed() - new Color(subimage.getRGB(i + 1, j - 1)).getRed() - new Color(subimage.getRGB(i - 1, j - 1)).getRed() - new Color(subimage.getRGB(i - 1, j + 1)).getRed() + new Color(subimage.getRGB(i, j)).getRed() * 8);
         red = red > threshold1 ? red : 0;
         red = red < 0 ? 0 : red;
         red = red > 255 ? 255 : red;
 
-        green = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getGreen() - new Color(subimage.getRGB(i, j - 1)).getGreen() - new Color(subimage.getRGB(i, j + 1)).getGreen() - new Color(subimage.getRGB(i + 1, j)).getGreen() + new Color(subimage.getRGB(i, j)).getGreen() * 4)  + t;
+        // green = (-new Color(subimage.getRGB(i - 1, j)).getGreen() - new Color(subimage.getRGB(i, j - 1)).getGreen() - new Color(subimage.getRGB(i, j + 1)).getGreen() - new Color(subimage.getRGB(i + 1, j)).getGreen() + new Color(subimage.getRGB(i, j)).getGreen() * 4)  + t;
+        green = (-new Color(subimage.getRGB(i - 1, j)).getGreen() - new Color(subimage.getRGB(i, j - 1)).getGreen() - new Color(subimage.getRGB(i, j + 1)).getGreen() - new Color(subimage.getRGB(i + 1, j)).getGreen() - new Color(subimage.getRGB(i + 1, j + 1)).getGreen() - new Color(subimage.getRGB(i + 1, j - 1)).getGreen() - new Color(subimage.getRGB(i - 1, j - 1)).getGreen() - new Color(subimage.getRGB(i - 1, j + 1)).getGreen() + new Color(subimage.getRGB(i, j)).getGreen() * 8);
         green = green > threshold1 ? green : 0;
         green = green < 0 ? 0 : green;
         green = green > 255 ? 255 : green;
 
-        blue = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getBlue() - new Color(subimage.getRGB(i, j - 1)).getBlue() - new Color(subimage.getRGB(i, j + 1)).getBlue() - new Color(subimage.getRGB(i + 1, j)).getBlue() + new Color(subimage.getRGB(i, j)).getBlue() * 4) + t;
+        // blue = (-new Color(subimage.getRGB(i - 1, j)).getBlue() - new Color(subimage.getRGB(i, j - 1)).getBlue() - new Color(subimage.getRGB(i, j + 1)).getBlue() - new Color(subimage.getRGB(i + 1, j)).getBlue() + new Color(subimage.getRGB(i, j)).getBlue() * 4) + t;
+        blue = (-new Color(subimage.getRGB(i - 1, j)).getBlue() - new Color(subimage.getRGB(i, j - 1)).getBlue() - new Color(subimage.getRGB(i, j + 1)).getBlue() - new Color(subimage.getRGB(i + 1, j)).getBlue() - new Color(subimage.getRGB(i + 1, j + 1)).getBlue() - new Color(subimage.getRGB(i + 1, j - 1)).getBlue() - new Color(subimage.getRGB(i - 1, j - 1)).getBlue() - new Color(subimage.getRGB(i - 1, j + 1)).getBlue() + new Color(subimage.getRGB(i, j)).getBlue() * 8);
         blue = blue > threshold1 ? blue : 0;
         blue = blue < 0 ? 0 : blue;
         blue = blue > 255 ? 255 : blue;
@@ -820,7 +830,48 @@ class AreasPanel extends JPanel{
   }
 
   public void contourSobelFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
 
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    int alpha, red, green, blue;
+    int threshold1 = threshold;
+
+    for(int i = 1; i < filteredImage.getWidth() - 1; i++){
+      for(int j = 1; j < filteredImage.getHeight() - 1; j++){
+        // alpha = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getAlpha() - new Color(subimage.getRGB(i, j - 1)).getAlpha() - new Color(subimage.getRGB(i, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j)).getAlpha() + new Color(subimage.getRGB(i, j)).getAlpha() * 4) + t;
+        // alpha = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getAlpha() - new Color(subimage.getRGB(i, j - 1)).getAlpha() - new Color(subimage.getRGB(i, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j)).getAlpha() - new Color(subimage.getRGB(i + 1, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j - 1)).getAlpha() - new Color(subimage.getRGB(i - 1, j - 1)).getAlpha() - new Color(subimage.getRGB(i - 1, j + 1)).getAlpha() + new Color(subimage.getRGB(i, j)).getAlpha() * 8);
+        alpha = new Color(subimage.getRGB(i, j)).getAlpha();
+        alpha = alpha > threshold ? alpha : 0;
+        alpha = alpha < 0 ? 0 : alpha;
+        alpha = alpha > 255 ? 255 : alpha;
+
+        red = Math.abs(-new Color(subimage.getRGB(i - 1, j - 1)).getRed() - new Color(subimage.getRGB(i, j - 1)).getRed() * 2 - new Color(subimage.getRGB(i + 1, j - 1)).getRed() + new Color(subimage.getRGB(i + 1, j + 1)).getRed() + new Color(subimage.getRGB(i, j + 1)).getRed() * 2  + new Color(subimage.getRGB(i - 1, j + 1)).getRed()) / 4;
+        red += Math.abs(-new Color(subimage.getRGB(i - 1, j - 1)).getRed() - new Color(subimage.getRGB(i - 1, j)).getRed() * 2 - new Color(subimage.getRGB(i - 1, j + 1)).getRed() + new Color(subimage.getRGB(i + 1, j - 1)).getRed() + new Color(subimage.getRGB(i + 1, j)).getRed() * 2 + new Color(subimage.getRGB(i + 1, j + 1)).getRed()) / 4;
+        red = red > threshold1 ? red : 0;
+        red = red < 0 ? 0 : red;
+        red = red > 255 ? 255 : red;
+
+        green = Math.abs(-new Color(subimage.getRGB(i - 1, j - 1)).getGreen() - new Color(subimage.getRGB(i, j - 1)).getGreen() * 2 - new Color(subimage.getRGB(i + 1, j - 1)).getGreen() + new Color(subimage.getRGB(i + 1, j + 1)).getGreen() + new Color(subimage.getRGB(i, j + 1)).getGreen() * 2  + new Color(subimage.getRGB(i - 1, j + 1)).getGreen()) / 4;
+        green += Math.abs(-new Color(subimage.getRGB(i - 1, j - 1)).getGreen() - new Color(subimage.getRGB(i - 1, j)).getGreen() * 2 - new Color(subimage.getRGB(i - 1, j + 1)).getGreen() + new Color(subimage.getRGB(i + 1, j - 1)).getGreen() + new Color(subimage.getRGB(i + 1, j)).getGreen() * 2 + new Color(subimage.getRGB(i + 1, j + 1)).getGreen()) / 4;
+        green = green > threshold1 ? green : 0;
+        green = green < 0 ? 0 : green;
+        green = green > 255 ? 255 : green;
+
+        blue = Math.abs(-new Color(subimage.getRGB(i - 1, j - 1)).getBlue() - new Color(subimage.getRGB(i, j - 1)).getBlue() * 2 - new Color(subimage.getRGB(i + 1, j - 1)).getBlue() + new Color(subimage.getRGB(i + 1, j + 1)).getBlue() + new Color(subimage.getRGB(i, j + 1)).getBlue() * 2  + new Color(subimage.getRGB(i - 1, j + 1)).getBlue()) / 4;
+        blue += Math.abs(-new Color(subimage.getRGB(i - 1, j - 1)).getBlue() - new Color(subimage.getRGB(i - 1, j)).getBlue() * 2 - new Color(subimage.getRGB(i - 1, j + 1)).getBlue() + new Color(subimage.getRGB(i + 1, j - 1)).getBlue() + new Color(subimage.getRGB(i + 1, j)).getBlue() * 2 + new Color(subimage.getRGB(i + 1, j + 1)).getBlue()) / 4;
+        blue = blue > threshold1 ? blue : 0;
+        blue = blue < 0 ? 0 : blue;
+        blue = blue > 255 ? 255 : blue;
+
+        filteredImage.setRGB(i, j, new Color(red, green, blue, alpha).getRGB());
+      }
+    }
+
+    repaint();
   }
 
   public void contourRobertsFilter(){
