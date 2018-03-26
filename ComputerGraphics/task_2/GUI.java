@@ -31,6 +31,7 @@ public class GUI extends JFrame{
     JMenuItem mFilterNF = new JMenuItem("Negative filter");
     JMenuItem mFilterDF = new JMenuItem("Dithering filter");
     JMenuItem mFilterDouble = new JMenuItem("Double scale filter");
+    JMenuItem mFilterCF = new JMenuItem("Contour filter");
     JMenuItem mFilterBF = new JMenuItem("Blur filter");
     JMenuItem mFilterSF = new JMenuItem("Sharpness filter");
     JMenuItem mFilterEF = new JMenuItem("Embossing filter");
@@ -54,6 +55,7 @@ public class GUI extends JFrame{
     mFilter.add(mFilterNF);
     mFilter.add(mFilterDF);
     mFilter.add(mFilterDouble);
+    mFilter.add(mFilterCF);
     mFilter.add(mFilterBF);
     mFilter.add(mFilterSF);
     mFilter.add(mFilterEF);
@@ -248,6 +250,85 @@ public class GUI extends JFrame{
       };
       doubleScaleFilter.addActionListener(df);
 
+      JButton contourFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/contour.png"))));
+      ActionListener cf = (e) -> {
+        areasPanel.contourFilter();
+
+        if(!areasPanel.canFilter()){
+          return;
+        }
+
+        JDialog dialog = new JDialog(this, "Set contour settings", true);
+        JPanel contourSetter = new JPanel();
+        JSlider contourSlider = new JSlider(JSlider.HORIZONTAL);
+        TextField contourField = new TextField("", 10);
+        JButton submit = new JButton("Submit");
+        JButton cancel = new JButton("Cancel");
+
+        ButtonGroup group = new ButtonGroup();
+        JRadioButton thrButton = new JRadioButton("Threshold", true);
+        group.add(thrButton);
+        JRadioButton sobButton = new JRadioButton("Sobel", false);
+        group.add(sobButton);
+        contourSetter.setLayout(new GridLayout(4, 2));
+
+        contourSlider.setMinimum(0);
+        contourSlider.setMaximum(255);
+
+        submit.addActionListener((d) -> {
+          dialog.dispose();
+        });
+
+        cancel.addActionListener((d) -> {
+          dialog.dispose();
+        });
+
+        int d = areasPanel.getThreshold();
+
+        contourField.setText(String.valueOf(d));
+        contourSlider.setValue(d);
+
+        contourField.addFocusListener(new FocusListener(){
+          public void focusGained(FocusEvent ev){}
+
+          public void focusLost(FocusEvent ev){
+            contourSlider.setValue(Integer.valueOf(contourField.getText()));
+          }
+        });
+        thrButton.addItemListener((ec) -> {
+          if(thrButton.isSelected()) areasPanel.contourFilter();
+          else areasPanel.contourRobertsFilter();
+        });
+
+        contourSlider.addChangeListener((ev) -> {
+          int t = contourSlider.getValue();
+          areasPanel.setThreshold(t);
+          contourField.setText(String.valueOf(t));
+          if(thrButton.isSelected()) areasPanel.contourFilter();
+          else areasPanel.contourRobertsFilter();
+        });
+
+        contourSetter.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Threshold"), BorderFactory.createEmptyBorder(5,5,5,5)));
+
+        contourSetter.add(contourSlider);
+        contourSetter.add(contourField);
+        contourSetter.add(thrButton);
+        contourSetter.add(sobButton);
+        contourSetter.add(new JPanel());
+        contourSetter.add(new JPanel());
+        contourSetter.add(submit);
+        contourSetter.add(cancel);
+
+        dialog.add(contourSetter);
+
+        dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        dialog.setPreferredSize(new Dimension(340, 140));
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+      };
+      contourFilter.addActionListener(cf);
+
       JButton blurFilter = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/blur.png"))));
       ActionListener bf = (e) -> {
         areasPanel.blurFilter();
@@ -422,6 +503,7 @@ public class GUI extends JFrame{
       toolBar.add(negativeFilter);
       toolBar.add(ditheringFilter);
       toolBar.add(doubleScaleFilter);
+      toolBar.add(contourFilter);
       toolBar.add(blurFilter);
       toolBar.add(sharpnessFilter);
       toolBar.add(embossingFilter);
@@ -449,6 +531,7 @@ public class GUI extends JFrame{
       mFilterNF.addActionListener(nf);
       mFilterDF.addActionListener(dtf);
       mFilterDouble.addActionListener(df);
+      mFilterCF.addActionListener(cf);
       mFilterBF.addActionListener(bf);
       mFilterSF.addActionListener(sf);
       mFilterEF.addActionListener(ef);
@@ -491,6 +574,7 @@ class AreasPanel extends JPanel{
   private int angle = 0;
   private double gamma = 1.0;
   private int dither = 4;
+  private int threshold = 10;
 
   public void blackNwhiteFilter(){
     if(subimage == null){
@@ -695,6 +779,90 @@ class AreasPanel extends JPanel{
     repaint();
   }
 
+  public void contourFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    int alpha, red, green, blue;
+    int t = 0;
+    int threshold1 = threshold;
+
+    for(int i = 1; i < filteredImage.getWidth() - 1; i++){
+      for(int j = 1; j < filteredImage.getHeight() - 1; j++){
+        alpha = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getAlpha() - new Color(subimage.getRGB(i, j - 1)).getAlpha() - new Color(subimage.getRGB(i, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j)).getAlpha() + new Color(subimage.getRGB(i, j)).getAlpha() * 4) + t;
+        alpha = alpha > threshold ? alpha : 0;
+        alpha = alpha < 0 ? 0 : alpha;
+        alpha = alpha > 255 ? 255 : alpha;
+
+        red = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getRed() - new Color(subimage.getRGB(i, j - 1)).getRed() - new Color(subimage.getRGB(i, j + 1)).getRed() - new Color(subimage.getRGB(i + 1, j)).getRed() + new Color(subimage.getRGB(i, j)).getRed() * 4) + t;
+        red = red > threshold1 ? red : 0;
+        red = red < 0 ? 0 : red;
+        red = red > 255 ? 255 : red;
+
+        green = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getGreen() - new Color(subimage.getRGB(i, j - 1)).getGreen() - new Color(subimage.getRGB(i, j + 1)).getGreen() - new Color(subimage.getRGB(i + 1, j)).getGreen() + new Color(subimage.getRGB(i, j)).getGreen() * 4)  + t;
+        green = green > threshold1 ? green : 0;
+        green = green < 0 ? 0 : green;
+        green = green > 255 ? 255 : green;
+
+        blue = Math.abs(-new Color(subimage.getRGB(i - 1, j)).getBlue() - new Color(subimage.getRGB(i, j - 1)).getBlue() - new Color(subimage.getRGB(i, j + 1)).getBlue() - new Color(subimage.getRGB(i + 1, j)).getBlue() + new Color(subimage.getRGB(i, j)).getBlue() * 4) + t;
+        blue = blue > threshold1 ? blue : 0;
+        blue = blue < 0 ? 0 : blue;
+        blue = blue > 255 ? 255 : blue;
+
+        filteredImage.setRGB(i, j, new Color(red, green, blue, alpha).getRGB());
+      }
+    }
+    repaint();
+  }
+
+  public void contourSobelFilter(){
+
+  }
+
+  public void contourRobertsFilter(){
+    if(subimage == null){
+      JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    filteredImage = new BufferedImage(subimage.getWidth(), subimage.getHeight(), subimage.getType());
+
+    int alpha, red, green, blue;
+    int t = 0;
+    int threshold1 = threshold;
+
+    for(int i = 1; i < filteredImage.getWidth() - 1; i++){
+      for(int j = 1; j < filteredImage.getHeight() - 1; j++){
+        alpha = (Math.abs(new Color(subimage.getRGB(i + 1, j + 1)).getAlpha() - new Color(subimage.getRGB(i, j)).getAlpha()) + Math.abs(new Color(subimage.getRGB(i, j + 1)).getAlpha() - new Color(subimage.getRGB(i + 1, j)).getAlpha())) + t;
+        alpha = alpha > threshold ? alpha : 0;
+        alpha = alpha < 0 ? 0 : alpha;
+        alpha = alpha > 255 ? 255 : alpha;
+
+        red = (Math.abs(new Color(subimage.getRGB(i + 1, j + 1)).getRed() - new Color(subimage.getRGB(i, j)).getRed()) + Math.abs(new Color(subimage.getRGB(i, j + 1)).getRed() - new Color(subimage.getRGB(i + 1, j)).getRed())) + t;
+        red = red > threshold1 ? red : 0;
+        red = red < 0 ? 0 : red;
+        red = red > 255 ? 255 : red;
+
+        green = (Math.abs(new Color(subimage.getRGB(i + 1, j + 1)).getGreen() - new Color(subimage.getRGB(i, j)).getGreen()) + Math.abs(new Color(subimage.getRGB(i, j + 1)).getGreen() - new Color(subimage.getRGB(i + 1, j)).getGreen()))  + t;
+        green = green > threshold1 ? green : 0;
+        green = green < 0 ? 0 : green;
+        green = green > 255 ? 255 : green;
+
+        blue = (Math.abs(new Color(subimage.getRGB(i + 1, j + 1)).getBlue() - new Color(subimage.getRGB(i, j)).getBlue()) + Math.abs(new Color(subimage.getRGB(i, j + 1)).getBlue() - new Color(subimage.getRGB(i + 1, j)).getBlue())) + t;
+        blue = blue > threshold1 ? blue : 0;
+        blue = blue < 0 ? 0 : blue;
+        blue = blue > 255 ? 255 : blue;
+
+        filteredImage.setRGB(i, j, new Color(red, green, blue, alpha).getRGB());
+      }
+    }
+    repaint();
+  }
+
   public void blurFilter(){
     if(subimage == null){
       JOptionPane.showMessageDialog(this, "Nothing to filter.", "Filter warning", JOptionPane.WARNING_MESSAGE);
@@ -715,11 +883,11 @@ class AreasPanel extends JPanel{
         red = red < 0 ? 0 : red;
         red = red > 255 ? 255 : red;
 
-        green = (new Color(subimage.getRGB(i - 1, j)).getGreen() + new Color(subimage.getRGB(i, j - 1)).getGreen() + new Color(subimage.getRGB(i, j + 1)).getGreen() + new Color(subimage.getRGB(i + 1, j)).getGreen() + new Color(subimage.getRGB(i, j - 1)).getGreen() * 2) / 6;
+        green = (new Color(subimage.getRGB(i - 1, j)).getGreen() + new Color(subimage.getRGB(i, j - 1)).getGreen() + new Color(subimage.getRGB(i, j + 1)).getGreen() + new Color(subimage.getRGB(i + 1, j)).getGreen() + new Color(subimage.getRGB(i, j)).getGreen() * 2) / 6;
         green = green < 0 ? 0 : green;
         green = green > 255 ? 255 : green;
 
-        blue = (new Color(subimage.getRGB(i - 1, j)).getBlue() + new Color(subimage.getRGB(i, j - 1)).getBlue() + new Color(subimage.getRGB(i, j + 1)).getBlue() + new Color(subimage.getRGB(i + 1, j)).getBlue() + new Color(subimage.getRGB(i, j - 1)).getBlue() * 2) / 6;
+        blue = (new Color(subimage.getRGB(i - 1, j)).getBlue() + new Color(subimage.getRGB(i, j - 1)).getBlue() + new Color(subimage.getRGB(i, j + 1)).getBlue() + new Color(subimage.getRGB(i + 1, j)).getBlue() + new Color(subimage.getRGB(i, j)).getBlue() * 2) / 6;
         blue = blue < 0 ? 0 : blue;
         blue = blue > 255 ? 255 : blue;
 
@@ -936,6 +1104,14 @@ class AreasPanel extends JPanel{
 
   public void setDither(int d){
     dither = d;
+  }
+
+  public int getThreshold(){
+    return threshold;
+  }
+
+  public void setThreshold(int t){
+    threshold = t;
   }
 
   public void setSelect(boolean select){
