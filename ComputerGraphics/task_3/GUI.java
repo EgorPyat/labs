@@ -14,7 +14,7 @@ public class GUI extends JFrame{
   public GUI(){
     super("Filter - The Graphs.");
 
-    IsolinePane panel = new IsolinePane();
+    IsolinePane panel = new IsolinePane(10 + 700 + 10, 10 + 550 + 10 + 40 + 10);
     JMenuBar menu = new JMenuBar();
 
     JMenu mFile = new JMenu("File");
