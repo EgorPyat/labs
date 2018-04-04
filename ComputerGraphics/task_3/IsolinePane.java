@@ -17,6 +17,7 @@ class IsolinePane extends JPanel{
   private int[] leftUpCorner = {-100, -150};
   private int[] rightDownCorner = {600, 400};
 
+  private int[] km;
   private int[] colors = {
     Color.RED.getRGB(),
     Color.ORANGE.getRGB(),
@@ -25,22 +26,26 @@ class IsolinePane extends JPanel{
     Color.CYAN.getRGB(),
     Color.BLUE.getRGB(),
     Color.MAGENTA.getRGB(),
+    Color.BLACK.getRGB()
   };
 
   private int N = 6;
 
   private Function f;
 
-  public IsolinePane(int width, int height){
-    setPreferredSize(new Dimension(width, height));
+  public void setGraphSettings(int[] km, int[][] colors){
+    this.km = km;
+    this.colors = new int[colors.length];
+    for(int i = 0; i < colors.length; i++){
+      this.colors[i] = new Color(colors[i][0], colors[i][1], colors[i][2]).getRGB();
+    }
+    this.N = colors.length - 2;
 
-    f = new Function(){
-      @Override
-      public double function(int x, int y){
-        return x * x + y * y;
-      }
-    };
+    drawGraph();
+    repaint();
+  }
 
+  public void drawGraph(){
     portrait = new BufferedImage(rightDownCorner[0] - leftUpCorner[0] + 1, rightDownCorner[1] - leftUpCorner[1] + 1, BufferedImage.TYPE_INT_ARGB);
 
     double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1]);
@@ -51,7 +56,6 @@ class IsolinePane extends JPanel{
 
     for(int i = 0; i < N + 1; i++) {
       levels[i] = min + div * i;
-      System.out.println(levels[i]);
     }
 
     double level;
@@ -73,10 +77,23 @@ class IsolinePane extends JPanel{
     Graphics g = legend.createGraphics();
     for(int i = 0; i < N + 1; i++){
       g.setColor(new Color(colors[i]));
-      g.fillRect(i * 700 / (N + 1), 0, 700 / (N + 1), 40);
+      g.fillRect(i * (portrait.getWidth()) / (N + 1), 0, portrait.getWidth() / (N + 1), 40);
       g.setColor(Color.BLACK);
-      g.drawRect(i * 700 / (N + 1), 0, 700 / (N + 1), 40);
+      g.drawRect(i * portrait.getWidth() / (N + 1), 0, portrait.getWidth() / (N + 1), 40);
     }
+  }
+  public IsolinePane(int width, int height){
+    setPreferredSize(new Dimension(width, height));
+
+    f = new Function(){
+      @Override
+      public double function(int x, int y){
+        return x * x + y * y;
+      }
+    };
+
+    drawGraph();
+
     addMouseListener(new MouseAdapter(){
       @Override
       public void mousePressed(MouseEvent e){
@@ -100,8 +117,25 @@ class IsolinePane extends JPanel{
   @Override
   public void paint(Graphics g){
     super.paint(g);
-
-    g.drawImage(portrait, 10, 10, null);
-    g.drawImage(legend, 10, 10 + 550 + 10, null);
+    int wG = portrait.getWidth();
+    int hG = portrait.getHeight();
+    int wL = legend.getWidth();
+    int hL = legend.getHeight();
+    int width = 10 + wG + 10;
+    int height = 10 + hG + 10 + hL + 10;
+    double scale1;
+    double scale2;
+    double scale = 1;
+    setPreferredSize(new Dimension(0,0));
+    // if(width > getWidth() || height > getHeight()){
+    System.out.println(getWidth() + " " + getHeight());
+    System.out.println(width + " " + height);
+      scale1 = /*width > getWidth() ? */(double)getWidth() / width /*: 1*/;
+      scale2 = /*height > getHeight() ? */(double)getHeight() / height /*: 1*/;
+      scale = scale1 < scale2 ? scale1 : scale2;
+      System.out.println(scale);
+    // }
+    g.drawImage(portrait, 10, 10, (int)(wG * scale) - 10, (int)(hG * scale), null);
+    g.drawImage(legend, 10, 10 + (int)(hG * scale) + 10, (int)(wL * scale) - 10, (int)(hL) - 10, null);
   }
 }
