@@ -14,8 +14,8 @@ class IsolinePane extends JPanel{
   private BufferedImage portrait;
   private BufferedImage legend;
 
-  private int[] leftUpCorner = {-100, -150};
-  private int[] rightDownCorner = {600, 400};
+  private double[] leftUpCorner = {-6, -4};
+  private double[] rightDownCorner = {6, 4};
 
   private int[] km;
   private int[] colors = {
@@ -46,10 +46,12 @@ class IsolinePane extends JPanel{
   }
 
   public void drawGraph(){
-    portrait = new BufferedImage(rightDownCorner[0] - leftUpCorner[0] + 1, rightDownCorner[1] - leftUpCorner[1] + 1, BufferedImage.TYPE_INT_ARGB);
+    portrait = new BufferedImage(600, 400, BufferedImage.TYPE_INT_ARGB);
+    double stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
+    double stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
 
-    double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1]);
-    double max = f.getMaximum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1]);
+    double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
+    double max = f.getMaximum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
 
     double[] levels = new double[N + 1];
     double div = (max - min) / (N + 1);
@@ -60,20 +62,20 @@ class IsolinePane extends JPanel{
 
     double level;
     double val;
-    for(int i = leftUpCorner[0]; i < rightDownCorner[0] + 1; i++){
-      for(int j = leftUpCorner[1]; j < rightDownCorner[1] + 1; j++){
-        val = f.function(i, j);
+    for(int i = 0; i < portrait.getWidth(); i++){
+      for(int j = 0; j < portrait.getHeight(); j++){
+        val = f.function(i * stepX + leftUpCorner[0], j * stepY + leftUpCorner[1]);
         for(int c = 0; c < N + 1; c++){
           level = levels[N - c];
           if(val > level){
-            portrait.setRGB(i - leftUpCorner[0], j - leftUpCorner[1], colors[N - c]);
+            portrait.setRGB(i, j, colors[N - c]);
             break;
           }
         }
       }
     }
 
-    legend = new BufferedImage(rightDownCorner[0] - leftUpCorner[0] + 1, 40, BufferedImage.TYPE_INT_ARGB);
+    legend = new BufferedImage((int)((rightDownCorner[0] - leftUpCorner[0]) / stepX), 40, BufferedImage.TYPE_INT_ARGB);
     Graphics g = legend.createGraphics();
     for(int i = 0; i < N + 1; i++){
       g.setColor(new Color(colors[i]));
@@ -82,13 +84,15 @@ class IsolinePane extends JPanel{
       g.drawRect(i * portrait.getWidth() / (N + 1), 0, portrait.getWidth() / (N + 1), 40);
     }
   }
+
   public IsolinePane(int width, int height){
     setPreferredSize(new Dimension(width, height));
 
     f = new Function(){
       @Override
-      public double function(int x, int y){
-        return x * x + y * y;
+      public double function(double x, double y){
+        // Ackley function
+        return -20 * Math.exp(-0.2 * Math.sqrt(0.5 * (x * x + y * y))) - Math.exp(0.5 * (Math.cos(2 * Math.PI * x) + Math.cos(2 * Math.PI * y))) + Math.E + 20;
       }
     };
 
@@ -126,15 +130,15 @@ class IsolinePane extends JPanel{
     double scale1;
     double scale2;
     double scale = 1;
-    setPreferredSize(new Dimension(0,0));
-    // if(width > getWidth() || height > getHeight()){
-    System.out.println(getWidth() + " " + getHeight());
-    System.out.println(width + " " + height);
-      scale1 = /*width > getWidth() ? */(double)getWidth() / width /*: 1*/;
-      scale2 = /*height > getHeight() ? */(double)getHeight() / height /*: 1*/;
-      scale = scale1 < scale2 ? scale1 : scale2;
-      System.out.println(scale);
-    // }
+    // setPreferredSize(new Dimension(0,0));
+    // // if(width > getWidth() || height > getHeight()){
+    // System.out.println(getWidth() + " " + getHeight());
+    // System.out.println(width + " " + height);
+    //   scale1 = /*width > getWidth() ? */(double)getWidth() / width /*: 1*/;
+    //   scale2 = /*height > getHeight() ? */(double)getHeight() / height /*: 1*/;
+    //   scale = scale1 < scale2 ? scale1 : scale2;
+    //   System.out.println(scale);
+    // // }
     g.drawImage(portrait, 10, 10, (int)(wG * scale) - 10, (int)(hG * scale), null);
     g.drawImage(legend, 10, 10 + (int)(hG * scale) + 10, (int)(wL * scale) - 10, (int)(hL) - 10, null);
   }

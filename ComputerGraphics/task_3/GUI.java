@@ -109,6 +109,12 @@ public class GUI extends JFrame{
       };
       buttonExit.addActionListener(le);
 
+      JButton buttonInterpolation = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/interpolation.png"))));
+      JButton buttonIsolines = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/isoline.png"))));
+      JButton buttonMouseIsoline = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/select.png"))));
+      JButton buttonGrid = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/grid.png"))));
+      JButton buttonEntryPoints = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/entry-point.png"))));
+
       JButton buttonGraphConfig = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/config.png"))));
       ActionListener lc = (e) -> {
         System.out.println("config");
@@ -124,6 +130,11 @@ public class GUI extends JFrame{
       toolBar.add(buttonNew);
       toolBar.add(buttonExit);
       toolBar.addSeparator();
+      toolBar.add(buttonInterpolation);
+      toolBar.add(buttonIsolines);
+      toolBar.add(buttonMouseIsoline);
+      toolBar.add(buttonGrid);
+      toolBar.add(buttonEntryPoints);
       toolBar.add(buttonGraphConfig);
       toolBar.addSeparator();
       toolBar.add(buttonAbout);
