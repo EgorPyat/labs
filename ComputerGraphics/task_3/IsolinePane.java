@@ -19,7 +19,7 @@ class IsolinePane extends JPanel{
   private double[] leftUpCorner = {-5.75, -3};
   private double[] rightDownCorner = {5.75, 3};
   private double stepX, stepY;
-  private int[] km;
+  private int[] km = {10, 8};
   private int[] colors = {
     Color.RED.getRGB(),
     Color.ORANGE.getRGB(),
@@ -89,6 +89,34 @@ class IsolinePane extends JPanel{
     }
   }
 
+  public void drawGrid(){
+    grid = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    Graphics g = grid.createGraphics();
+    g.setColor(Color.BLACK);
+    int numX = grid.getWidth() / km[0];
+    int remX = grid.getWidth() % km[0];
+    int numY = grid.getHeight() / km[1];
+    int remY = grid.getHeight() % km[1];
+    System.out.println(remX + " " + remY);
+    int n = -1;
+    for(int i = 1; i < km[0]; i++){
+      drawDashedLine(g, numX * i + (remX > 0 ? 1 : 0) + n, 0, numX * i + (remX > 0 ? 1 : 0) + n, grid.getHeight());
+      --remX;
+      ++n;
+    }
+    n = -1;
+    for(int i = 1; i < km[1]; i++){
+      drawDashedLine(g, 0, numY * i + (remY > 0 ? 1 : 0) + n, grid.getWidth(), numY * i + (remY > 0 ? 1 : 0) + n);
+      --remY;
+      ++n;
+    }
+  }
+
+  public void setShowGrid(boolean grid){
+    showGrid = grid;
+    repaint();
+  }
+
   public void interpolate(){
     int x1 = 0;
     int y1 = 0;
@@ -147,6 +175,7 @@ class IsolinePane extends JPanel{
     add(statusBar, BorderLayout.SOUTH);
 
     drawGraph();
+    drawGrid();
     // interpolate();
     addMouseListener(new MouseAdapter(){
       @Override
@@ -189,6 +218,13 @@ class IsolinePane extends JPanel{
     });
   }
 
+  public void drawDashedLine(Graphics g, int x1, int y1, int x2, int y2){
+    Graphics2D g2d = (Graphics2D)g;
+    Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{5}, 0);
+    g2d.setStroke(dashed);
+    g2d.drawLine(x1, y1, x2, y2);
+  }
+
   @Override
   public void paint(Graphics g){
     super.paint(g);
@@ -212,5 +248,6 @@ class IsolinePane extends JPanel{
     // // }
     g.drawImage(portrait, 10, 10, (int)(wG * scale) - 10, (int)(hG * scale), null);
     g.drawImage(legend, 10, 10 + (int)(hG * scale) + 10, (int)(wL * scale) - 10, (int)(hL) - 10, null);
+    if(showGrid) g.drawImage(grid, 10, 10, (int)(wG * scale) - 10, (int)(hG * scale), null);
   }
 }

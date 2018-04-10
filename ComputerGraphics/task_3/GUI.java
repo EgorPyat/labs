@@ -155,9 +155,11 @@ public class GUI extends JFrame{
       buttonGrid.addItemListener((e) -> {
         if(e.getStateChange() == ItemEvent.SELECTED){
             mGraphGrid.setSelected(true);
+            panel.setShowGrid(true);
         }
         else if(e.getStateChange() == ItemEvent.DESELECTED){
             mGraphGrid.setSelected(false);
+            panel.setShowGrid(false);
         }
       });
 
@@ -254,6 +256,7 @@ public class GUI extends JFrame{
     pack();
     setLocationRelativeTo(null);
     setVisible(true);
+    setResizable(false);
     System.out.println(menu.getHeight());
   }
 }
