@@ -9,14 +9,17 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.Arrays;
+import javax.swing.border.*;
 
 class IsolinePane extends JPanel{
   private BufferedImage portrait;
+  private Rectangle portraitBounds;
   private BufferedImage legend;
 
-  private double[] leftUpCorner = {-6, -4};
-  private double[] rightDownCorner = {6, 4};
+  private double[] leftUpCorner = {-5.75, -3};
+  private double[] rightDownCorner = {5.75, 3};
 
+  private double stepX, stepY;
   private int[] km;
   private int[] colors = {
     Color.RED.getRGB(),
@@ -46,9 +49,12 @@ class IsolinePane extends JPanel{
   }
 
   public void drawGraph(){
-    portrait = new BufferedImage(600, 400, BufferedImage.TYPE_INT_ARGB);
-    double stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
-    double stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
+    portrait = new BufferedImage(777, 405, BufferedImage.TYPE_INT_ARGB);
+
+    portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
+
+    stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
+    stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
 
     double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
     double max = f.getMaximum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
@@ -79,7 +85,7 @@ class IsolinePane extends JPanel{
     Graphics g = legend.createGraphics();
     for(int i = 0; i < N + 1; i++){
       g.setColor(new Color(colors[i]));
-      g.fillRect(i * (portrait.getWidth()) / (N + 1), 0, portrait.getWidth() / (N + 1), 40);
+      g.fillRect(i * portrait.getWidth() / (N + 1), 0, portrait.getWidth() / (N + 1), 40);
       g.setColor(Color.BLACK);
       g.drawRect(i * portrait.getWidth() / (N + 1), 0, portrait.getWidth() / (N + 1), 40);
     }
@@ -87,7 +93,7 @@ class IsolinePane extends JPanel{
 
   public IsolinePane(int width, int height){
     setPreferredSize(new Dimension(width, height));
-
+    setLayout(new BorderLayout());
     f = new Function(){
       @Override
       public double function(double x, double y){
@@ -95,6 +101,22 @@ class IsolinePane extends JPanel{
         return -20 * Math.exp(-0.2 * Math.sqrt(0.5 * (x * x + y * y))) - Math.exp(0.5 * (Math.cos(2 * Math.PI * x) + Math.cos(2 * Math.PI * y))) + Math.E + 20;
       }
     };
+
+    JPanel statusBar = new JPanel();
+
+    TextField x = new TextField(" x: none", 7);
+    TextField y = new TextField(" y: none", 7);
+    TextField func = new TextField(" f: none", 7);
+
+    x.setEnabled(false);
+    y.setEnabled(false);
+    func.setEnabled(false);
+
+    statusBar.add(x);
+    statusBar.add(y);
+    statusBar.add(func);
+
+    add(statusBar, BorderLayout.SOUTH);
 
     drawGraph();
 
@@ -112,8 +134,29 @@ class IsolinePane extends JPanel{
 
     addMouseMotionListener(new MouseMotionAdapter(){
       @Override
-      public void mouseDragged(MouseEvent e){
+      public void mouseMoved(MouseEvent e){
+        Point p = e.getPoint();
+        if(portraitBounds.contains(p)){
+          double xc = leftUpCorner[0] + (p.getX() - 10) * stepX;
+          double yc = leftUpCorner[1] + (p.getY() - 10) * stepY;
 
+          x.setText(String.format(" x: %.2f", xc));
+          y.setText(String.format(" y: %.2f", yc));
+          func.setText(String.format(" f: %.2f", f.function(xc, yc)));
+        }
+      }
+
+      @Override
+      public void mouseDragged(MouseEvent e){
+        Point p = e.getPoint();
+        if(portraitBounds.contains(p)){
+          double xc = leftUpCorner[0] + (p.getX() - 10) * stepX;
+          double yc = leftUpCorner[1] + (p.getY() - 10) * stepY;
+
+          x.setText(String.format(" x: %.2f", xc));
+          y.setText(String.format(" y: %.2f", yc));
+          func.setText(String.format(" f: %.2f", f.function(xc, yc)));
+        }
       }
     });
   }
