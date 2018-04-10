@@ -16,10 +16,11 @@ class IsolinePane extends JPanel{
   private Rectangle portraitBounds;
   private BufferedImage legend;
   private BufferedImage grid;
+  private short[][] cells;
   private double[] leftUpCorner = {-5.75, -3};
   private double[] rightDownCorner = {5.75, 3};
   private double stepX, stepY;
-  private int[] km = {10, 8};
+  private short[] km = {20, 8};
   private int[] colors = {
     Color.RED.getRGB(),
     Color.ORANGE.getRGB(),
@@ -32,9 +33,11 @@ class IsolinePane extends JPanel{
   };
   private int N = 6;
   private Function f;
+  private Function leg;
   private boolean showGrid = false;
+  private boolean isInterpolation = false;
 
-  public void setGraphSettings(int[] km, int[][] colors){
+  public void setGraphSettings(short[] km, int[][] colors){
     this.km = km;
     this.colors = new int[colors.length];
     for(int i = 0; i < colors.length; i++){
@@ -42,17 +45,18 @@ class IsolinePane extends JPanel{
     }
     this.N = colors.length - 2;
 
-    drawGraph();
+    drawGraph(this.portrait, f);
+    drawGraph(this.legend, leg);
     repaint();
   }
 
-  public void drawGraph(){
-    portrait = new BufferedImage(777, 405, BufferedImage.TYPE_INT_ARGB);
+  public void drawGraph(BufferedImage portrait, Function f){
+    // portrait = new BufferedImage(777, 405, BufferedImage.TYPE_INT_ARGB);
 
-    portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
+    // portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
 
-    stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
-    stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
+    // stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
+    // stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
 
     double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
     double max = f.getMaximum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
@@ -62,53 +66,97 @@ class IsolinePane extends JPanel{
 
     for(int i = 0; i < N + 1; i++) {
       levels[i] = min + div * i;
+      if(isInterpolation){
+        if(i != 0){
+          levels[i] += div / 2;
+        }
+      }
     }
 
-    double level;
-    double val;
+    double llevel, level, rlevel;
+    int lcolor, color, rcolor;
+    double val, interval;
+    int p, la, ra, lr, rr, lg, rg, lb, rb, a, r, g, b;
+
     for(int i = 0; i < portrait.getWidth(); i++){
       for(int j = 0; j < portrait.getHeight(); j++){
         val = f.function(i * stepX + leftUpCorner[0], j * stepY + leftUpCorner[1]);
         for(int c = 0; c < N + 1; c++){
-          level = levels[N - c];
-          if(val > level){
-            portrait.setRGB(i, j, colors[N - c]);
+          lcolor = N - c;
+          llevel = levels[lcolor];
+
+          if(val > llevel){
+            if(!isInterpolation){
+              portrait.setRGB(i, j, colors[N - c]);
+            }
+            else{
+              la = (colors[lcolor] >> 24) & 0xff;
+              lr = (colors[lcolor] >> 16) & 0xff;
+              lg = (colors[lcolor] >>  8) & 0xff;
+              lb = (colors[lcolor]      ) & 0xff;
+
+              rcolor = c == 0 ? N - c : N - c + 1;
+              rlevel = levels[rcolor];
+
+              ra = (colors[rcolor] >> 24) & 0xff;
+              rr = (colors[rcolor] >> 16) & 0xff;
+              rg = (colors[rcolor] >>  8) & 0xff;
+              rb = (colors[rcolor]      ) & 0xff;
+
+              interval = rlevel - llevel;
+
+              a = (int)((double)la * (rlevel - val) / interval + (double)ra * (val - llevel) / interval);
+              r = (int)((double)lr * (rlevel - val) / interval + (double)rr * (val - llevel) / interval);
+              g = (int)((double)lg * (rlevel - val) / interval + (double)rg * (val - llevel) / interval);
+              b = (int)((double)lb * (rlevel - val) / interval + (double)rb * (val - llevel) / interval);
+              p = (a << 24) | (r << 16) | (g << 8) | b;
+              if(rlevel == llevel){
+                p = colors[lcolor];
+              }
+              portrait.setRGB(i, j, p);
+            }
             break;
           }
         }
       }
     }
-
-    legend = new BufferedImage((int)((rightDownCorner[0] - leftUpCorner[0]) / stepX), 40, BufferedImage.TYPE_INT_ARGB);
-    Graphics g = legend.createGraphics();
-    for(int i = 0; i < N + 1; i++){
-      g.setColor(new Color(colors[i]));
-      g.fillRect(i * portrait.getWidth() / (N + 1), 0, portrait.getWidth() / (N + 1), 40);
-      g.setColor(Color.BLACK);
-      g.drawRect(i * portrait.getWidth() / (N + 1), 0, portrait.getWidth() / (N + 1), 40);
-    }
   }
 
   public void drawGrid(){
     grid = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+    cells = new short[(km[0]) * (km[1])][4];
+
     Graphics g = grid.createGraphics();
     g.setColor(Color.BLACK);
-    int numX = grid.getWidth() / km[0];
-    int remX = grid.getWidth() % km[0];
-    int numY = grid.getHeight() / km[1];
-    int remY = grid.getHeight() % km[1];
-    System.out.println(remX + " " + remY);
-    int n = -1;
+    short numX = (short)(grid.getWidth() / km[0]);
+    short remX = (short)(grid.getWidth() % km[0]);
+    short numY = (short)(grid.getHeight() / km[1]);
+    short remY = (short)(grid.getHeight() % km[1]);
+    // System.out.println(numX + " " + numY);
+    // System.out.println(remX + " " + remY);
+    int n = 0;
     for(int i = 1; i < km[0]; i++){
-      drawDashedLine(g, numX * i + (remX > 0 ? 1 : 0) + n, 0, numX * i + (remX > 0 ? 1 : 0) + n, grid.getHeight());
-      --remX;
-      ++n;
+      drawDashedLine(g, remX / 2 + numX * i, 0, remX / 2 + numX * i, grid.getHeight());
     }
-    n = -1;
+    n = 0;
     for(int i = 1; i < km[1]; i++){
-      drawDashedLine(g, 0, numY * i + (remY > 0 ? 1 : 0) + n, grid.getWidth(), numY * i + (remY > 0 ? 1 : 0) + n);
-      --remY;
-      ++n;
+      drawDashedLine(g, 0, remY / 2 + numY * i, grid.getWidth(), remY / 2 + numY * i);
+    }
+    short k = 0;
+    short m = 0;
+    for(int i = 0; i < cells.length; i++){
+      cells[i][0] = (short)(numX * k       + (k == 0 ? 0 : remX / 2) + ((k) == km[0]? remX / 2 : 0));
+      cells[i][1] = (short)(numY * m       + (m == 0 ? 0 : remY / 2) + ((m) == km[1]? remY / 2 : 0));
+      cells[i][2] = (short)(numX * (k + 1) + remX / 2 + ((k + 1) == km[0] ? remX / 2 : 0));
+      cells[i][3] = (short)(numY * (m + 1) + remY / 2 + ((m + 1) == km[1] ? remY / 2 : 0));
+      k++;
+      if(k == km[0]){
+        k = 0;
+        ++m;
+      }
+      // drawCenteredCircle((Graphics2D)g, cells[i][0], cells[i][1], 10);
+      // drawCenteredCircle((Graphics2D)g, cells[i][2], cells[i][3], 10);
     }
   }
 
@@ -117,34 +165,11 @@ class IsolinePane extends JPanel{
     repaint();
   }
 
-  public void interpolate(){
-    int x1 = 0;
-    int y1 = 0;
-
-    int x2 = 776 / 4;
-    int y2 = 404;
-
-    for(int i = 0; i < portrait.getWidth() / 4; i++){
-      for(int j = 0; j < portrait.getHeight(); j++){
-        int p1 = portrait.getRGB(x1, j);
-        int p2 = portrait.getRGB(x2, j);
-        int p = portrait.getRGB(i, j);
-
-        int a = (p >> 24) & 0xff;
-        int r = (int)((double)((p1 >> 16) & 0xff) * ((double)(x2 - i) / (x2 - x1)) + (double)((p2 >> 16) & 0xff) * ((double)(i - x1) / (x2 - x1)));
-        r = r > 255 ? 255 : r;
-        int g = (int)((double)((p1 >> 8) & 0xff) * ((double)(x2 - i) / (x2 - x1)) + (double)((p2 >> 8) & 0xff) * ((double)(i - x1) / (x2 - x1)));
-        g = g > 255 ? 255 : g;
-        int b = (int)((double)((p1) & 0xff) * ((double)(x2 - i) / (x2 - x1)) + (double)((p2) & 0xff) * ((double)(i - x1) / (x2 - x1)));
-        b = b > 255 ? 255 : b;
-
-        System.out.println(r + " " + g + " " + b);
-        int pixel = (a << 24) | (r << 16) | (g << 8) | b;
-        System.out.println(pixel);
-        portrait.setRGB(i, j, pixel);
-
-      }
-    }
+  public void setInterpolation(boolean interpolation){
+    isInterpolation = interpolation;
+    drawGraph(this.portrait, f);
+    drawGraph(this.legend, leg);
+    repaint();
   }
 
   public IsolinePane(int width, int height){
@@ -154,7 +179,17 @@ class IsolinePane extends JPanel{
       @Override
       public double function(double x, double y){
         // Ackley function
-        return -20 * Math.exp(-0.2 * Math.sqrt(0.5 * (x * x + y * y))) - Math.exp(0.5 * (Math.cos(2 * Math.PI * x) + Math.cos(2 * Math.PI * y))) + Math.E + 20;
+        // return -20 * Math.exp(-0.2 * Math.sqrt(0.5 * (x * x + y * y))) - Math.exp(0.5 * (Math.cos(2 * Math.PI * x) + Math.cos(2 * Math.PI * y))) + Math.E + 20;
+        // return x * x + y * y;
+        return Math.sin(x) + Math.cos(y);
+        // return x;
+      }
+    };
+
+    leg = new Function(){
+      @Override
+      public double function(double x, double y){
+        return x;
       }
     };
 
@@ -174,7 +209,16 @@ class IsolinePane extends JPanel{
 
     add(statusBar, BorderLayout.SOUTH);
 
-    drawGraph();
+    portrait = new BufferedImage(777, 405, BufferedImage.TYPE_INT_ARGB);
+    portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
+
+    stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
+    stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
+
+    legend = new BufferedImage((int)((rightDownCorner[0] - leftUpCorner[0]) / stepX), 40, BufferedImage.TYPE_INT_ARGB);
+
+    drawGraph(this.portrait, f);
+    drawGraph(this.legend, leg);
     drawGrid();
     // interpolate();
     addMouseListener(new MouseAdapter(){
@@ -223,6 +267,13 @@ class IsolinePane extends JPanel{
     Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{5}, 0);
     g2d.setStroke(dashed);
     g2d.drawLine(x1, y1, x2, y2);
+  }
+
+  public void drawCenteredCircle(Graphics2D g, int x, int y, int r) {
+    x = x - (r / 2);
+    y = y - (r / 2);
+    g.setColor(Color.BLACK);
+    g.fillOval(x,y,r,r);
   }
 
   @Override

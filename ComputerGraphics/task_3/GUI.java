@@ -66,7 +66,7 @@ public class GUI extends JFrame{
             boolean colorsFlag = false;
             int count = -1;
             int colors[][] = null;
-            int km[] = null;
+            short km[] = null;
             while(true){
               String line = br.readLine();
               if(line == null){
@@ -83,9 +83,9 @@ public class GUI extends JFrame{
                   if(ars.length != 2){
                     throw new Exception("Incorrect file format");
                   }
-                  km = new int[2];
-                  km[0] = Integer.valueOf(ars[0]);
-                  km[1] = Integer.valueOf(ars[1]);
+                  km = new short[2];
+                  km[0] = Short.valueOf(ars[0]);
+                  km[1] = Short.valueOf(ars[1]);
                   continue;
                 }
                 if(ars.length != 1){
@@ -125,9 +125,11 @@ public class GUI extends JFrame{
       buttonInterpolation.addItemListener((e) -> {
         if(e.getStateChange() == ItemEvent.SELECTED){
             mGraphInterpolation.setSelected(true);
+            panel.setInterpolation(true);
         }
         else if(e.getStateChange() == ItemEvent.DESELECTED){
-            mGraphInterpolation.setSelected(false);
+          mGraphInterpolation.setSelected(false);
+          panel.setInterpolation(false);
         }
       });
 
