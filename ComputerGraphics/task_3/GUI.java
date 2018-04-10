@@ -26,12 +26,24 @@ public class GUI extends JFrame{
 
     JMenuItem mAboutInfo = new JMenuItem("Info");
 
+    JRadioButtonMenuItem mGraphInterpolation = new JRadioButtonMenuItem("Interpolate");
+    JRadioButtonMenuItem mGraphIsolines = new JRadioButtonMenuItem("Show isolines");
+    JRadioButtonMenuItem mGraphDIsolines = new JRadioButtonMenuItem("Enable dinamic isolines");
+    JRadioButtonMenuItem mGraphGrid = new JRadioButtonMenuItem("Show grid");
+    JRadioButtonMenuItem mGraphEntryPoints = new JRadioButtonMenuItem("Show isolines entry points");
+
     JMenuItem mGraphConfig = new JMenuItem("Config");
 
     mFile.add(mFileNew);
     mFile.addSeparator();
     mFile.add(mFileQuit);
 
+    mGraph.add(mGraphInterpolation);
+    mGraph.add(mGraphIsolines);
+    mGraph.add(mGraphDIsolines);
+    mGraph.add(mGraphGrid);
+    mGraph.add(mGraphEntryPoints);
+    mGraph.addSeparator();
     mGraph.add(mGraphConfig);
 
     mAbout.add(mAboutInfo);
@@ -109,11 +121,55 @@ public class GUI extends JFrame{
       };
       buttonExit.addActionListener(le);
 
-      JButton buttonInterpolation = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/interpolation.png"))));
-      JButton buttonIsolines = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/isoline.png"))));
-      JButton buttonMouseIsoline = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/select.png"))));
-      JButton buttonGrid = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/grid.png"))));
-      JButton buttonEntryPoints = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/entry-point.png"))));
+      JToggleButton buttonInterpolation = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/interpolation.png"))));
+      buttonInterpolation.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+            mGraphInterpolation.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+            mGraphInterpolation.setSelected(false);
+        }
+      });
+
+      JToggleButton buttonIsolines = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/isoline.png"))));
+      buttonIsolines.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+            mGraphIsolines.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+            mGraphIsolines.setSelected(false);
+        }
+      });
+
+      JToggleButton buttonMouseIsoline = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/select.png"))));
+      buttonMouseIsoline.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+            mGraphDIsolines.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+            mGraphDIsolines.setSelected(false);
+        }
+      });
+
+      JToggleButton buttonGrid = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/grid.png"))));
+      buttonGrid.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+            mGraphGrid.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+            mGraphGrid.setSelected(false);
+        }
+      });
+
+      JToggleButton buttonEntryPoints = new JToggleButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/entry-point.png"))));
+      buttonEntryPoints.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+            mGraphEntryPoints.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+            mGraphEntryPoints.setSelected(false);
+        }
+      });
 
       JButton buttonGraphConfig = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/config.png"))));
       ActionListener lc = (e) -> {
@@ -142,6 +198,46 @@ public class GUI extends JFrame{
       mFileNew.addActionListener(ln);
       mFileQuit.addActionListener(le);
       mAboutInfo.addActionListener(la);
+      mGraphInterpolation.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+          buttonInterpolation.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+          buttonInterpolation.setSelected(false);
+        }
+      });
+      mGraphIsolines.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+          buttonIsolines.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+          buttonIsolines.setSelected(false);
+        }
+      });
+      mGraphDIsolines.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+          buttonMouseIsoline.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+          buttonMouseIsoline.setSelected(false);
+        }
+      });
+      mGraphGrid.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+          buttonGrid.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+          buttonGrid.setSelected(false);
+        }
+      });
+      mGraphEntryPoints.addItemListener((e) -> {
+        if(e.getStateChange() == ItemEvent.SELECTED){
+          buttonEntryPoints.setSelected(true);
+        }
+        else if(e.getStateChange() == ItemEvent.DESELECTED){
+          buttonEntryPoints.setSelected(false);
+        }
+      });
       mGraphConfig.addActionListener(lc);
     }
     catch(Exception ex){

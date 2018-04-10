@@ -15,10 +15,9 @@ class IsolinePane extends JPanel{
   private BufferedImage portrait;
   private Rectangle portraitBounds;
   private BufferedImage legend;
-
+  private BufferedImage grid;
   private double[] leftUpCorner = {-5.75, -3};
   private double[] rightDownCorner = {5.75, 3};
-
   private double stepX, stepY;
   private int[] km;
   private int[] colors = {
@@ -31,10 +30,9 @@ class IsolinePane extends JPanel{
     Color.MAGENTA.getRGB(),
     Color.BLACK.getRGB()
   };
-
   private int N = 6;
-
   private Function f;
+  private boolean showGrid = false;
 
   public void setGraphSettings(int[] km, int[][] colors){
     this.km = km;
@@ -91,6 +89,36 @@ class IsolinePane extends JPanel{
     }
   }
 
+  public void interpolate(){
+    int x1 = 0;
+    int y1 = 0;
+
+    int x2 = 776 / 4;
+    int y2 = 404;
+
+    for(int i = 0; i < portrait.getWidth() / 4; i++){
+      for(int j = 0; j < portrait.getHeight(); j++){
+        int p1 = portrait.getRGB(x1, j);
+        int p2 = portrait.getRGB(x2, j);
+        int p = portrait.getRGB(i, j);
+
+        int a = (p >> 24) & 0xff;
+        int r = (int)((double)((p1 >> 16) & 0xff) * ((double)(x2 - i) / (x2 - x1)) + (double)((p2 >> 16) & 0xff) * ((double)(i - x1) / (x2 - x1)));
+        r = r > 255 ? 255 : r;
+        int g = (int)((double)((p1 >> 8) & 0xff) * ((double)(x2 - i) / (x2 - x1)) + (double)((p2 >> 8) & 0xff) * ((double)(i - x1) / (x2 - x1)));
+        g = g > 255 ? 255 : g;
+        int b = (int)((double)((p1) & 0xff) * ((double)(x2 - i) / (x2 - x1)) + (double)((p2) & 0xff) * ((double)(i - x1) / (x2 - x1)));
+        b = b > 255 ? 255 : b;
+
+        System.out.println(r + " " + g + " " + b);
+        int pixel = (a << 24) | (r << 16) | (g << 8) | b;
+        System.out.println(pixel);
+        portrait.setRGB(i, j, pixel);
+
+      }
+    }
+  }
+
   public IsolinePane(int width, int height){
     setPreferredSize(new Dimension(width, height));
     setLayout(new BorderLayout());
@@ -119,7 +147,7 @@ class IsolinePane extends JPanel{
     add(statusBar, BorderLayout.SOUTH);
 
     drawGraph();
-
+    // interpolate();
     addMouseListener(new MouseAdapter(){
       @Override
       public void mousePressed(MouseEvent e){
