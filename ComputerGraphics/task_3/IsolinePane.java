@@ -16,11 +16,13 @@ class IsolinePane extends JPanel{
   private Rectangle portraitBounds;
   private BufferedImage legend;
   private BufferedImage grid;
+  private BufferedImage isolines;
+  private BufferedImage entryPoints;
   private short[][] cells;
   private double[] leftUpCorner = {-5.75, -3};
   private double[] rightDownCorner = {5.75, 3};
   private double stepX, stepY;
-  private short[] km = {20, 8};
+  private short[] km = {25, 25};
   private int[] colors = {
     Color.RED.getRGB(),
     Color.ORANGE.getRGB(),
@@ -35,6 +37,8 @@ class IsolinePane extends JPanel{
   private Function f;
   private Function leg;
   private boolean showGrid = false;
+  private boolean showIsolines = false;
+  private boolean showEntries = false;
   private boolean isInterpolation = false;
 
   public void setGraphSettings(short[] km, int[][] colors){
@@ -51,21 +55,15 @@ class IsolinePane extends JPanel{
   }
 
   public void drawGraph(BufferedImage portrait, Function f){
-    // portrait = new BufferedImage(777, 405, BufferedImage.TYPE_INT_ARGB);
-
-    // portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
-
-    // stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
-    // stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
-
     double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
     double max = f.getMaximum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
 
     double[] levels = new double[N + 1];
     double div = (max - min) / (N + 1);
-
+    System.out.println("min " + min);
     for(int i = 0; i < N + 1; i++) {
       levels[i] = min + div * i;
+      System.out.println(levels[i]);
       if(isInterpolation){
         if(i != 0){
           levels[i] += div / 2;
@@ -165,6 +163,157 @@ class IsolinePane extends JPanel{
     repaint();
   }
 
+  public void drawIsolines(){
+    isolines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    entryPoints = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    Graphics g = (isolines.createGraphics());
+    g.setColor(new Color(colors[colors.length - 1]));
+    Graphics2D g1 = (Graphics2D)(entryPoints.createGraphics());
+    g1.setColor(new Color(colors[colors.length - 1]));
+    int entries = 0;
+    Point[] p = new Point[4];
+    p[0] = null;
+    p[1] = null;
+    p[2] = null;
+    p[3] = null;
+    double f1, f2, t;
+    int x, dx, y, dy;
+    double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
+    double max = f.getMaximum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
+
+    double[] levels = new double[N + 1];
+    double div = (max - min) / (N + 1);
+
+    for(int i = 0; i < N + 1; i++) {
+      levels[i] = min + div * i;
+      System.out.println(levels[i]);
+      // if(isInterpolation){
+      //   if(i != 0){
+      //     levels[i] += div / 2;
+      //   }
+      // }
+    }
+
+    for(int i = 0; i < cells.length; i++){
+      dx = cells[i][2] - cells[i][0];
+      dy = cells[i][3] - cells[i][1];
+      for(int l = 1; l < levels.length; l++){
+        double z = levels[l];
+        p[0] = null;
+        p[1] = null;
+        p[2] = null;
+        p[3] = null;
+        f1 = f.function(cells[i][0] * stepX + leftUpCorner[0], cells[i][1] * stepY + leftUpCorner[1]);
+        f2 = f.function(cells[i][2] * stepX + leftUpCorner[0], cells[i][1] * stepY + leftUpCorner[1]);
+
+        if((z < f1 && z < f2) || (z > f1 && z > f2)){
+          entries = entries;
+        }
+        else{
+          ++entries;
+          if(f2 > f1){
+            x = cells[i][0] + (int)((double)dx * (z - f1) / (f2 - f1));
+          }
+          else{
+            x = cells[i][2] - (int)((double)dx * (z - f2) / (f1 - f2));
+          }
+          y = cells[i][1];
+          p[0] = new Point(x, y);
+          drawCenteredCircle(g1, x, y, 5);
+        }
+
+        f1 = f.function(cells[i][2] * stepX + leftUpCorner[0], cells[i][1] * stepY + leftUpCorner[1]);
+        f2 = f.function(cells[i][2] * stepX + leftUpCorner[0], cells[i][3] * stepY + leftUpCorner[1]);
+
+        if((z < f1 && z < f2) || (z > f1 && z > f2)){
+          entries = entries;
+        }
+        else{
+          ++entries;
+          x = cells[i][2];
+          if(f2 > f1){
+            y = cells[i][1] + (int)((double)dy * (z - f1) / (f2 - f1));
+          }
+          else{
+            y = cells[i][3] - (int)((double)dy * (z - f2) / (f1 - f2));
+          }
+          p[1] = new Point(x, y);
+          drawCenteredCircle(g1, x, y, 5);
+        }
+
+        f1 = f.function(cells[i][2] * stepX + leftUpCorner[0], cells[i][3] * stepY + leftUpCorner[1]);
+        f2 = f.function(cells[i][0] * stepX + leftUpCorner[0], cells[i][3] * stepY + leftUpCorner[1]);
+
+        if((z < f1 && z < f2) || (z > f1 && z > f2)){
+          entries = entries;
+        }
+        else{
+          ++entries;
+          if(f2 > f1){
+            x = cells[i][2] - (int)((double)dx * (z - f1) / (f2 - f1));
+          }
+          else{
+            x = cells[i][0] + (int)((double)dx * (z - f2) / (f1 - f2));
+          }
+          y = cells[i][3];
+          p[2] = new Point(x, y);
+          drawCenteredCircle(g1, x, y, 5);
+
+        }
+
+        f1 = f.function(cells[i][0] * stepX + leftUpCorner[0], cells[i][3] * stepY + leftUpCorner[1]);
+        f2 = f.function(cells[i][0] * stepX + leftUpCorner[0], cells[i][1] * stepY + leftUpCorner[1]);
+
+        if((z < f1 && z < f2) || (z > f1 && z > f2)){
+          entries = entries;
+        }
+        else{
+          ++entries;
+          x = cells[i][0];
+          if(f2 > f1){
+            y = cells[i][3] - (int)((double)dy * (z - f1) / (f2 - f1));
+          }
+          else{
+            y = cells[i][1] + (int)((double)dy * (z - f2) / (f1 - f2));
+          }
+          p[3] = new Point(x, y);
+          drawCenteredCircle(g1, x, y, 5);
+        }
+        int count = 0;
+        Point p1[] = new Point[2];
+
+        for(int q = 0; q < p.length; q++){
+          // System.out.println(p[q]);
+          if(p[q] != null){
+            p1[count] = new Point((int)p[q].getX(), (int)p[q].getY());
+            ++count;
+          }
+          if(count == 2){
+            break;
+          }
+        }
+        Graphics2D g2d = (Graphics2D)g;
+        g2d.setColor(new Color(colors[colors.length - 1]));
+        g2d.setStroke(new BasicStroke(2));
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        ((Graphics2D)g1).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        System.out.println(p1[0] + " " + p1[1]);
+        if(!(p1[0] == null || p1[1] == null)) g2d.drawLine(p1[0].x, p1[0].y, p1[1].x, p1[1].y);
+      }
+    }
+  }
+
+  public void setShowIsolines(boolean iso){
+    showIsolines = iso;
+    repaint();
+  }
+
+  public void setShowEntries(boolean en){
+    showEntries = en;
+    repaint();
+  }
+
   public void setInterpolation(boolean interpolation){
     isInterpolation = interpolation;
     drawGraph(this.portrait, f);
@@ -180,8 +329,8 @@ class IsolinePane extends JPanel{
       public double function(double x, double y){
         // Ackley function
         // return -20 * Math.exp(-0.2 * Math.sqrt(0.5 * (x * x + y * y))) - Math.exp(0.5 * (Math.cos(2 * Math.PI * x) + Math.cos(2 * Math.PI * y))) + Math.E + 20;
-        // return x * x + y * y;
-        return Math.sin(x) + Math.cos(y);
+        return x * x + y * y;
+        // return Math.sin(x) + Math.cos(y);
         // return x;
       }
     };
@@ -209,17 +358,18 @@ class IsolinePane extends JPanel{
 
     add(statusBar, BorderLayout.SOUTH);
 
-    portrait = new BufferedImage(777, 405, BufferedImage.TYPE_INT_ARGB);
+    portrait = new BufferedImage(767, 395, BufferedImage.TYPE_INT_ARGB);
     portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
 
     stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
     stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
 
-    legend = new BufferedImage((int)((rightDownCorner[0] - leftUpCorner[0]) / stepX), 40, BufferedImage.TYPE_INT_ARGB);
+    legend = new BufferedImage(portrait.getWidth(), 40, BufferedImage.TYPE_INT_ARGB);
 
     drawGraph(this.portrait, f);
     drawGraph(this.legend, leg);
     drawGrid();
+    drawIsolines();
     // interpolate();
     addMouseListener(new MouseAdapter(){
       @Override
@@ -264,7 +414,7 @@ class IsolinePane extends JPanel{
 
   public void drawDashedLine(Graphics g, int x1, int y1, int x2, int y2){
     Graphics2D g2d = (Graphics2D)g;
-    Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{5}, 0);
+    Stroke dashed = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{1}, 0);
     g2d.setStroke(dashed);
     g2d.drawLine(x1, y1, x2, y2);
   }
@@ -272,7 +422,7 @@ class IsolinePane extends JPanel{
   public void drawCenteredCircle(Graphics2D g, int x, int y, int r) {
     x = x - (r / 2);
     y = y - (r / 2);
-    g.setColor(Color.BLACK);
+    g.setColor(new Color(colors[colors.length - 1]));
     g.fillOval(x,y,r,r);
   }
 
@@ -297,8 +447,10 @@ class IsolinePane extends JPanel{
     //   scale = scale1 < scale2 ? scale1 : scale2;
     //   System.out.println(scale);
     // // }
-    g.drawImage(portrait, 10, 10, (int)(wG * scale) - 10, (int)(hG * scale), null);
-    g.drawImage(legend, 10, 10 + (int)(hG * scale) + 10, (int)(wL * scale) - 10, (int)(hL) - 10, null);
-    if(showGrid) g.drawImage(grid, 10, 10, (int)(wG * scale) - 10, (int)(hG * scale), null);
+    g.drawImage(portrait, 10, 10, (int)(wG * scale), (int)(hG * scale), null);
+    g.drawImage(legend, 10, 10 + (int)(hG * scale) + 10, (int)(wL * scale), (int)(hL), null);
+    if(showGrid) g.drawImage(grid, 10, 10, (int)(wG * scale), (int)(hG * scale), null);
+    if(showIsolines) g.drawImage(isolines, 10, 10, (int)(wG * scale), (int)(hG * scale), null);
+    if(showEntries) g.drawImage(entryPoints, 10, 10, (int)(wG * scale), (int)(hG * scale), null);
   }
 }

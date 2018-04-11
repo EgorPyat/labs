@@ -137,9 +137,11 @@ public class GUI extends JFrame{
       buttonIsolines.addItemListener((e) -> {
         if(e.getStateChange() == ItemEvent.SELECTED){
             mGraphIsolines.setSelected(true);
+            panel.setShowIsolines(true);
         }
         else if(e.getStateChange() == ItemEvent.DESELECTED){
             mGraphIsolines.setSelected(false);
+            panel.setShowIsolines(false);
         }
       });
 
@@ -169,9 +171,11 @@ public class GUI extends JFrame{
       buttonEntryPoints.addItemListener((e) -> {
         if(e.getStateChange() == ItemEvent.SELECTED){
             mGraphEntryPoints.setSelected(true);
+            panel.setShowEntries(true);
         }
         else if(e.getStateChange() == ItemEvent.DESELECTED){
             mGraphEntryPoints.setSelected(false);
+            panel.setShowEntries(false);
         }
       });
 
