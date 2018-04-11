@@ -60,10 +60,10 @@ class IsolinePane extends JPanel{
 
     double[] levels = new double[N + 1];
     double div = (max - min) / (N + 1);
-    System.out.println("min " + min);
+    // System.out.println("min " + min);
     for(int i = 0; i < N + 1; i++) {
       levels[i] = min + div * i;
-      System.out.println(levels[i]);
+      // System.out.println(levels[i]);
       if(isInterpolation){
         if(i != 0){
           levels[i] += div / 2;
@@ -186,7 +186,7 @@ class IsolinePane extends JPanel{
 
     for(int i = 0; i < N + 1; i++) {
       levels[i] = min + div * i;
-      System.out.println(levels[i]);
+      // System.out.println(levels[i]);
       // if(isInterpolation){
       //   if(i != 0){
       //     levels[i] += div / 2;
@@ -298,7 +298,7 @@ class IsolinePane extends JPanel{
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         ((Graphics2D)g1).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        System.out.println(p1[0] + " " + p1[1]);
+        // System.out.println(p1[0] + " " + p1[1]);
         if(!(p1[0] == null || p1[1] == null)) g2d.drawLine(p1[0].x, p1[0].y, p1[1].x, p1[1].y);
       }
     }
