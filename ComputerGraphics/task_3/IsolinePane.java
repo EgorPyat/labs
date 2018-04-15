@@ -18,6 +18,9 @@ class IsolinePane extends JPanel{
   private BufferedImage grid;
   private BufferedImage isolines;
   private BufferedImage entryPoints;
+  private BufferedImage dinamicLines;
+  private boolean dinamic = false;
+  private double curLevel = 0;
   private short[][] cells;
   private double[] leftUpCorner = {-5.75, -3};
   private double[] rightDownCorner = {5.75, 3};
@@ -161,6 +164,134 @@ class IsolinePane extends JPanel{
   public void setShowGrid(boolean grid){
     showGrid = grid;
     repaint();
+  }
+
+  public void drawDinamicLines(double level){
+    // dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    Graphics g = (dinamicLines.createGraphics());
+    g.setColor(new Color(colors[colors.length - 1]));
+    int entries = 0;
+    Point[] p = new Point[4];
+    p[0] = null;
+    p[1] = null;
+    p[2] = null;
+    p[3] = null;
+    double f1, f2, t;
+    int x, dx, y, dy;
+    double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
+    double max = f.getMaximum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
+
+    double[] levels = new double[N + 1];
+    double div = (max - min) / (N + 1);
+
+    for(int i = 0; i < N + 1; i++) {
+      levels[i] = min + div * i;
+    }
+
+    for(int i = 0; i < cells.length; i++){
+      dx = cells[i][2] - cells[i][0];
+      dy = cells[i][3] - cells[i][1];
+      double z = level;
+      p[0] = null;
+      p[1] = null;
+      p[2] = null;
+      p[3] = null;
+      f1 = f.function(cells[i][0] * stepX + leftUpCorner[0], cells[i][1] * stepY + leftUpCorner[1]);
+      f2 = f.function(cells[i][2] * stepX + leftUpCorner[0], cells[i][1] * stepY + leftUpCorner[1]);
+
+      if((z < f1 && z < f2) || (z > f1 && z > f2)){
+        entries = entries;
+      }
+      else{
+        ++entries;
+        if(f2 > f1){
+          x = cells[i][0] + (int)((double)dx * (z - f1) / (f2 - f1));
+        }
+        else{
+          x = cells[i][2] - (int)((double)dx * (z - f2) / (f1 - f2));
+        }
+        y = cells[i][1];
+        p[0] = new Point(x, y);
+      }
+
+      f1 = f.function(cells[i][2] * stepX + leftUpCorner[0], cells[i][1] * stepY + leftUpCorner[1]);
+      f2 = f.function(cells[i][2] * stepX + leftUpCorner[0], cells[i][3] * stepY + leftUpCorner[1]);
+
+      if((z < f1 && z < f2) || (z > f1 && z > f2)){
+        entries = entries;
+      }
+      else{
+        ++entries;
+        x = cells[i][2];
+        if(f2 > f1){
+          y = cells[i][1] + (int)((double)dy * (z - f1) / (f2 - f1));
+        }
+        else{
+          y = cells[i][3] - (int)((double)dy * (z - f2) / (f1 - f2));
+        }
+        p[1] = new Point(x, y);
+      }
+
+      f1 = f.function(cells[i][2] * stepX + leftUpCorner[0], cells[i][3] * stepY + leftUpCorner[1]);
+      f2 = f.function(cells[i][0] * stepX + leftUpCorner[0], cells[i][3] * stepY + leftUpCorner[1]);
+
+      if((z < f1 && z < f2) || (z > f1 && z > f2)){
+        entries = entries;
+      }
+      else{
+        ++entries;
+        if(f2 > f1){
+          x = cells[i][2] - (int)((double)dx * (z - f1) / (f2 - f1));
+        }
+        else{
+          x = cells[i][0] + (int)((double)dx * (z - f2) / (f1 - f2));
+        }
+        y = cells[i][3];
+        p[2] = new Point(x, y);
+
+      }
+
+      f1 = f.function(cells[i][0] * stepX + leftUpCorner[0], cells[i][3] * stepY + leftUpCorner[1]);
+      f2 = f.function(cells[i][0] * stepX + leftUpCorner[0], cells[i][1] * stepY + leftUpCorner[1]);
+
+      if((z < f1 && z < f2) || (z > f1 && z > f2)){
+        entries = entries;
+      }
+      else{
+        ++entries;
+        x = cells[i][0];
+        if(f2 > f1){
+          y = cells[i][3] - (int)((double)dy * (z - f1) / (f2 - f1));
+        }
+        else{
+          y = cells[i][1] + (int)((double)dy * (z - f2) / (f1 - f2));
+        }
+        p[3] = new Point(x, y);
+      }
+      int count = 0;
+      Point p1[] = new Point[2];
+
+      for(int q = 0; q < p.length; q++){
+        // System.out.println(p[q]);
+        if(p[q] != null){
+          p1[count] = new Point((int)p[q].getX(), (int)p[q].getY());
+          ++count;
+        }
+        if(count == 2){
+          break;
+        }
+      }
+      Graphics2D g2d = (Graphics2D)g;
+      g2d.setColor(new Color(colors[colors.length - 1]));
+      g2d.setStroke(new BasicStroke(2));
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+      if(!(p1[0] == null || p1[1] == null)) g2d.drawLine(p1[0].x, p1[0].y, p1[1].x, p1[1].y);
+    }
+  }
+
+  public void setDinamic(boolean d){
+    dinamic = d;
   }
 
   public void drawIsolines(){
@@ -329,8 +460,8 @@ class IsolinePane extends JPanel{
       public double function(double x, double y){
         // Ackley function
         // return -20 * Math.exp(-0.2 * Math.sqrt(0.5 * (x * x + y * y))) - Math.exp(0.5 * (Math.cos(2 * Math.PI * x) + Math.cos(2 * Math.PI * y))) + Math.E + 20;
-        return x * x + y * y;
-        // return Math.sin(x) + Math.cos(y);
+        // return x * x + y * y;
+        return Math.sin(x) + Math.cos(y);
         // return x;
       }
     };
@@ -365,6 +496,7 @@ class IsolinePane extends JPanel{
     stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
 
     legend = new BufferedImage(portrait.getWidth(), 40, BufferedImage.TYPE_INT_ARGB);
+    dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
     drawGraph(this.portrait, f);
     drawGraph(this.legend, leg);
@@ -374,12 +506,16 @@ class IsolinePane extends JPanel{
     addMouseListener(new MouseAdapter(){
       @Override
       public void mousePressed(MouseEvent e){
-
+        if(portraitBounds.contains(e.getPoint())){
+          drawDinamicLines(f.function((e.getX() - 10) * stepX + leftUpCorner[0], (e.getY() - 10) * stepY + leftUpCorner[1]));
+          repaint();
+        }
       }
 
       @Override
       public void mouseReleased(MouseEvent e){
-
+        dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        repaint();
       }
     });
 
@@ -404,9 +540,20 @@ class IsolinePane extends JPanel{
           double xc = leftUpCorner[0] + (p.getX() - 10) * stepX;
           double yc = leftUpCorner[1] + (p.getY() - 10) * stepY;
 
+          double level = f.function((e.getX() - 10) * stepX + leftUpCorner[0], (e.getY() - 10) * stepY + leftUpCorner[1]);
+
           x.setText(String.format(" x: %.2f", xc));
           y.setText(String.format(" y: %.2f", yc));
           func.setText(String.format(" f: %.2f", f.function(xc, yc)));
+
+          if(dinamic){
+            if(curLevel != level){
+              // repaint();
+              dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            }
+            drawDinamicLines(level);
+            repaint();
+          }
         }
       }
     });
@@ -452,5 +599,6 @@ class IsolinePane extends JPanel{
     if(showGrid) g.drawImage(grid, 10, 10, (int)(wG * scale), (int)(hG * scale), null);
     if(showIsolines) g.drawImage(isolines, 10, 10, (int)(wG * scale), (int)(hG * scale), null);
     if(showEntries) g.drawImage(entryPoints, 10, 10, (int)(wG * scale), (int)(hG * scale), null);
+    if(dinamic) g.drawImage(dinamicLines, 10, 10, (int)(wG * scale), (int)(hG * scale), null);
   }
 }

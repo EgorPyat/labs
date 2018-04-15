@@ -149,9 +149,11 @@ public class GUI extends JFrame{
       buttonMouseIsoline.addItemListener((e) -> {
         if(e.getStateChange() == ItemEvent.SELECTED){
             mGraphDIsolines.setSelected(true);
+            panel.setDinamic(true);
         }
         else if(e.getStateChange() == ItemEvent.DESELECTED){
             mGraphDIsolines.setSelected(false);
+            panel.setDinamic(false);
         }
       });
 
