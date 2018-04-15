@@ -14,6 +14,8 @@ import javax.swing.border.*;
 class IsolinePane extends JPanel{
   private BufferedImage portrait;
   private Rectangle portraitBounds;
+  private Dimension curSize;
+  private Dimension curPanelSize;
   private BufferedImage legend;
   private BufferedImage grid;
   private BufferedImage isolines;
@@ -489,20 +491,23 @@ class IsolinePane extends JPanel{
 
     add(statusBar, BorderLayout.SOUTH);
 
-    portrait = new BufferedImage(767, 395, BufferedImage.TYPE_INT_ARGB);
-    portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
-
-    stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
-    stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
-
-    legend = new BufferedImage(portrait.getWidth(), 40, BufferedImage.TYPE_INT_ARGB);
-    dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
-
-    drawGraph(this.portrait, f);
-    drawGraph(this.legend, leg);
-    drawGrid();
-    drawIsolines();
-    // interpolate();
+    curSize = new Dimension(767, 395);
+    // setMinimumSize(curSize);
+    curPanelSize = new Dimension(width, height);
+    // drawImages(curSize);
+    // portrait = new BufferedImage(curSize.width, curSize.height, BufferedImage.TYPE_INT_ARGB);
+    // portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
+    //
+    // stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
+    // stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
+    //
+    // legend = new BufferedImage(portrait.getWidth(), 40, BufferedImage.TYPE_INT_ARGB);
+    // dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    //
+    // drawGraph(this.portrait, f);
+    // drawGraph(this.legend, leg);
+    // drawGrid();
+    // drawIsolines();
     addMouseListener(new MouseAdapter(){
       @Override
       public void mousePressed(MouseEvent e){
@@ -548,7 +553,6 @@ class IsolinePane extends JPanel{
 
           if(dinamic){
             if(curLevel != level){
-              // repaint();
               dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
             }
             drawDinamicLines(level);
@@ -557,6 +561,36 @@ class IsolinePane extends JPanel{
         }
       }
     });
+
+    addComponentListener(new ComponentAdapter() {
+        @Override
+        public void componentResized(ComponentEvent e){
+          Dimension newPanelSize = getSize();
+          // System.out.println(newPanelSize);
+          // System.out.println(curPanelSize);
+          curSize = new Dimension(curSize.width + newPanelSize.width - curPanelSize.width, curSize.height + newPanelSize.height - curPanelSize.height);
+          // System.out.println(curSize);
+          curPanelSize = newPanelSize;
+          drawImages(curSize);
+          repaint();
+        }
+    });
+  }
+
+  public void drawImages(Dimension size){
+    portrait = new BufferedImage(curSize.width, curSize.height, BufferedImage.TYPE_INT_ARGB);
+    portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
+
+    stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
+    stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
+
+    legend = new BufferedImage(portrait.getWidth(), 40, BufferedImage.TYPE_INT_ARGB);
+    dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+    drawGraph(this.portrait, f);
+    drawGraph(this.legend, leg);
+    drawGrid();
+    drawIsolines();
   }
 
   public void drawDashedLine(Graphics g, int x1, int y1, int x2, int y2){
@@ -585,15 +619,7 @@ class IsolinePane extends JPanel{
     double scale1;
     double scale2;
     double scale = 1;
-    // setPreferredSize(new Dimension(0,0));
-    // // if(width > getWidth() || height > getHeight()){
-    // System.out.println(getWidth() + " " + getHeight());
-    // System.out.println(width + " " + height);
-    //   scale1 = /*width > getWidth() ? */(double)getWidth() / width /*: 1*/;
-    //   scale2 = /*height > getHeight() ? */(double)getHeight() / height /*: 1*/;
-    //   scale = scale1 < scale2 ? scale1 : scale2;
-    //   System.out.println(scale);
-    // // }
+
     g.drawImage(portrait, 10, 10, (int)(wG * scale), (int)(hG * scale), null);
     g.drawImage(legend, 10, 10 + (int)(hG * scale) + 10, (int)(wL * scale), (int)(hL), null);
     if(showGrid) g.drawImage(grid, 10, 10, (int)(wG * scale), (int)(hG * scale), null);

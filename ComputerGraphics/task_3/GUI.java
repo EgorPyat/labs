@@ -264,7 +264,7 @@ public class GUI extends JFrame{
     pack();
     setLocationRelativeTo(null);
     setVisible(true);
-    setResizable(false);
+    // setResizable(false);
     System.out.println(menu.getHeight());
   }
 }
