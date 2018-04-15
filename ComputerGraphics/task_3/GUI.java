@@ -182,8 +182,56 @@ public class GUI extends JFrame{
       });
 
       JButton buttonGraphConfig = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/config.png"))));
-      ActionListener lc = (e) -> {
-        System.out.println("config");
+      ActionListener lc = (ex) -> {
+        JDialog dialog = new JDialog(this, "Settings", true);
+        JPanel pane = new JPanel();
+        pane.setLayout(new GridLayout(6, 2));
+        double[] s = panel.getSettings();
+
+        TextField k = new TextField("", 5);
+        k.setText(String.valueOf(s[0]));
+        TextField m = new TextField("", 5);
+        m.setText(String.valueOf(s[1]));
+        TextField a = new TextField("", 5);
+        a.setText(String.valueOf(s[2]));
+        TextField b = new TextField("", 5);
+        b.setText(String.valueOf(s[3]));
+        TextField c = new TextField("", 5);
+        c.setText(String.valueOf(s[4]));
+        TextField d = new TextField("", 5);
+        d.setText(String.valueOf(s[5]));
+        JButton submit = new JButton("Sumbit");
+        submit.addActionListener((e) -> {
+          dialog.dispose();
+          s[0] = Double.valueOf(k.getText());
+          s[1] = Double.valueOf(m.getText());
+          s[2] = Double.valueOf(a.getText());
+          s[3] = Double.valueOf(b.getText());
+          s[4] = Double.valueOf(c.getText());
+          s[5] = Double.valueOf(d.getText());
+          panel.setSettings(s);
+        });
+
+        pane.add(new JLabel("k"));
+        pane.add(k);
+        pane.add(new JLabel("m"));
+        pane.add(m);
+        pane.add(new JLabel("a"));
+        pane.add(a);
+        pane.add(new JLabel("b"));
+        pane.add(b);
+        pane.add(new JLabel("c"));
+        pane.add(c);
+        pane.add(new JLabel("d"));
+        pane.add(d);
+
+        dialog.add(pane, BorderLayout.NORTH);
+        dialog.add(submit, BorderLayout.SOUTH);
+        dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+
       };
       buttonGraphConfig.addActionListener(lc);
 

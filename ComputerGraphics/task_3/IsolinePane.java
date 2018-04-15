@@ -27,7 +27,7 @@ class IsolinePane extends JPanel{
   private double[] leftUpCorner = {-5.75, -3};
   private double[] rightDownCorner = {5.75, 3};
   private double stepX, stepY;
-  private short[] km = {25, 25};
+  private short[] km = {5, 5};
   private int[] colors = {
     Color.RED.getRGB(),
     Color.ORANGE.getRGB(),
@@ -492,22 +492,8 @@ class IsolinePane extends JPanel{
     add(statusBar, BorderLayout.SOUTH);
 
     curSize = new Dimension(767, 395);
-    // setMinimumSize(curSize);
     curPanelSize = new Dimension(width, height);
-    // drawImages(curSize);
-    // portrait = new BufferedImage(curSize.width, curSize.height, BufferedImage.TYPE_INT_ARGB);
-    // portraitBounds = new Rectangle(10, 10, portrait.getWidth(), portrait.getHeight());
-    //
-    // stepX = (rightDownCorner[0] - leftUpCorner[0]) / portrait.getWidth();
-    // stepY = (rightDownCorner[1] - leftUpCorner[1]) / portrait.getHeight();
-    //
-    // legend = new BufferedImage(portrait.getWidth(), 40, BufferedImage.TYPE_INT_ARGB);
-    // dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
-    //
-    // drawGraph(this.portrait, f);
-    // drawGraph(this.legend, leg);
-    // drawGrid();
-    // drawIsolines();
+
     addMouseListener(new MouseAdapter(){
       @Override
       public void mousePressed(MouseEvent e){
@@ -566,15 +552,35 @@ class IsolinePane extends JPanel{
         @Override
         public void componentResized(ComponentEvent e){
           Dimension newPanelSize = getSize();
-          // System.out.println(newPanelSize);
-          // System.out.println(curPanelSize);
           curSize = new Dimension(curSize.width + newPanelSize.width - curPanelSize.width, curSize.height + newPanelSize.height - curPanelSize.height);
-          // System.out.println(curSize);
           curPanelSize = newPanelSize;
           drawImages(curSize);
           repaint();
         }
     });
+  }
+
+  public double[] getSettings(){
+    double[] s = new double[6];
+
+    for(int i = 0; i < 2; i++){
+      s[i] = km[i];
+      s[i + 2] = leftUpCorner[i];
+      s[i + 4] = rightDownCorner[i];
+    }
+
+    return s;
+  }
+
+  public void setSettings(double[] s){
+    km[0] = (short)s[0];
+    km[1] = (short)s[1];
+    leftUpCorner[0] = s[2];
+    leftUpCorner[1] = s[3];
+    rightDownCorner[0] = s[4];
+    rightDownCorner[1] = s[5];
+    drawImages(curSize);
+    repaint();
   }
 
   public void drawImages(Dimension size){
