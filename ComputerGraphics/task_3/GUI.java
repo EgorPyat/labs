@@ -313,6 +313,6 @@ public class GUI extends JFrame{
     setLocationRelativeTo(null);
     setVisible(true);
     // setResizable(false);
-    System.out.println(menu.getHeight());
+    // System.out.println(menu.getHeight());
   }
 }

@@ -27,7 +27,7 @@ class IsolinePane extends JPanel{
   private double[] leftUpCorner = {-5.75, -3};
   private double[] rightDownCorner = {5.75, 3};
   private double stepX, stepY;
-  private short[] km = {5, 5};
+  private short[] km = {30, 30};
   private int[] colors = {
     Color.RED.getRGB(),
     Color.ORANGE.getRGB(),
@@ -54,18 +54,23 @@ class IsolinePane extends JPanel{
     }
     this.N = colors.length - 2;
 
-    drawGraph(this.portrait, f);
-    drawGraph(this.legend, leg);
+    // drawGraph(this.portrait, f, false);
+    // drawGraph(this.legend, leg, true);
+    drawImages(curSize);
     repaint();
   }
 
-  public void drawGraph(BufferedImage portrait, Function f){
+  public void drawGraph(BufferedImage portrait, Function f, boolean isLegend){
     double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
     double max = f.getMaximum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
+
+    Graphics gh = portrait.createGraphics();
 
     double[] levels = new double[N + 1];
     double div = (max - min) / (N + 1);
     // System.out.println("min " + min);
+    // System.out.println("max " + max);
+
     for(int i = 0; i < N + 1; i++) {
       levels[i] = min + div * i;
       // System.out.println(levels[i]);
@@ -80,9 +85,9 @@ class IsolinePane extends JPanel{
     int lcolor, color, rcolor;
     double val, interval;
     int p, la, ra, lr, rr, lg, rg, lb, rb, a, r, g, b;
-
+    int l = 1;
     for(int i = 0; i < portrait.getWidth(); i++){
-      for(int j = 0; j < portrait.getHeight(); j++){
+      for(int j = 0; j < portrait.getHeight() - (isLegend ? 16 : 0); j++){
         val = f.function(i * stepX + leftUpCorner[0], j * stepY + leftUpCorner[1]);
         for(int c = 0; c < N + 1; c++){
           lcolor = N - c;
@@ -449,8 +454,8 @@ class IsolinePane extends JPanel{
 
   public void setInterpolation(boolean interpolation){
     isInterpolation = interpolation;
-    drawGraph(this.portrait, f);
-    drawGraph(this.legend, leg);
+    drawGraph(this.portrait, f, false);
+    drawGraph(this.legend, leg, true);
     repaint();
   }
 
@@ -593,8 +598,30 @@ class IsolinePane extends JPanel{
     legend = new BufferedImage(portrait.getWidth(), 40, BufferedImage.TYPE_INT_ARGB);
     dinamicLines = new BufferedImage(portrait.getWidth(), portrait.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
-    drawGraph(this.portrait, f);
-    drawGraph(this.legend, leg);
+    drawGraph(this.portrait, f, false);
+    drawGraph(this.legend, leg, true);
+    double min = f.getMinimum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
+    double max = f.getMaximum(leftUpCorner[0], leftUpCorner[1], rightDownCorner[0], rightDownCorner[1], stepX, stepY);
+
+    Graphics gh = legend.createGraphics();
+
+    double[] levels = new double[N + 1];
+    double div = (max - min) / (N + 1);
+    // System.out.println("min " + min);
+    // System.out.println("max " + max);
+
+    for(int i = 0; i < N + 1; i++) {
+      levels[i] = min + div * i;
+      // System.out.println(levels[i]);
+    }
+    int l = 1;
+    for(int i = legend.getWidth() / (N + 1); i < legend.getWidth(); i++){
+      if(i % (legend.getWidth() / (N + 1)) == 0 && l < levels.length){
+        gh.setColor(Color.BLACK);
+        // System.out.println(i);
+        gh.drawString(String.format("%.2f", levels[l++]), i, legend.getHeight());
+      }
+    }
     drawGrid();
     drawIsolines();
   }
