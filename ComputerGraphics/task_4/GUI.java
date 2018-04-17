@@ -11,8 +11,12 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.Arrays;
 
 public class GUI extends JFrame{
+  private JPanel bsplinePanel;
+
   public GUI(){
     super("Wireframe - 3D Graphics.");
+
+    bsplinePanel = new BSplinePanel();
 
     JMenuBar menu = new JMenuBar();
 
@@ -57,7 +61,12 @@ public class GUI extends JFrame{
 
       JButton buttonWireframeBSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/spline.png"))));
       ActionListener wbs = (e) -> {
-        System.out.println("WBS");
+        JDialog dialog = new JDialog(this, "B-Spline settings", true);
+        dialog.add(bsplinePanel);
+        dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
       };
       buttonWireframeBSettings.addActionListener(wbs);
 
