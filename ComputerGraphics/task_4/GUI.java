@@ -65,6 +65,7 @@ public class GUI extends JFrame{
         dialog.add(bsplinePanel);
         dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         dialog.pack();
+        dialog.setResizable(false);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
       };
