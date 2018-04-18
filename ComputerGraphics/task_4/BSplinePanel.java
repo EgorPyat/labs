@@ -19,6 +19,7 @@ class BSplinePanel extends JPanel{
   private int cx, cy;
 
   private Rectangle[] P;
+  // private Point[] points;
 
   public BSplinePanel(Rectangle[] points){
     P = points;
@@ -39,6 +40,79 @@ class BSplinePanel extends JPanel{
         repaint();
       }
     });
+    addMouseListener(new MouseAdapter(){
+      @Override
+      public void mousePressed(MouseEvent e){
+        Point ep = e.getPoint();
+        for(int i = 0; i < P.length; i++){
+          if(P[i].contains(ep)){
+            System.out.println(ep.x + " " + ep.y);
+          }
+        }
+      }
+    });
+  }
+
+  private Point calcBSplineInPoint(int t, Point[] points) throws Exception{
+    int ORDER = 3;
+    int N = points.length;
+    int[] result = {0, 0};
+    int[] knots = new int[N + ORDER + 1];
+    int[] domain = {ORDER, knots.length - 1 - ORDER};
+    int low  = knots[domain[0]];
+    int high = knots[domain[1]];
+
+    int[] weights = new int[N];
+    for(int i = 0; i < N; i++) {
+      weights[i] = 1;
+    }
+
+    t = t * (high - low) + low;
+    t = t * (high - low) + low;
+
+    if(t < low || t > high) throw new Exception("Out of bounds!");
+
+    for(int i = 0; i < knots.length; i++){
+      knots[i] = i;
+    }
+
+    int s;
+
+    for(s = domain[0]; s < domain[1]; s++){
+      if(t >= knots[s] && t <= knots[s + 1]){
+        break;
+      }
+    }
+
+    int[][] v = new int[N][3];
+    for(int i = 0; i < N; i++) {
+      // v[i] = [];
+      // for(int j = 0; j < 2; j++) {
+      //   v[i][j] = points[i][j] * weights[i];
+      // }
+      v[i][0] = points[i].x * weights[i];
+      v[i][1] = points[i].y * weights[i];
+      v[i][2] = weights[i];
+    }
+
+    int alpha;
+    for(int l = 1; l <= ORDER + 1; l++) {
+      // build level l of the pyramid
+      for(int i = s; i > s - ORDER - 1 + l; i--) {
+        alpha = (t - knots[i]) / (knots[i + ORDER + 1 - l] - knots[i]);
+
+        // interpolate each component
+        for(int j = 0; j < 2 + 1; j++) {
+          v[i][j] = (1 - alpha) * v[i-1][j] + alpha * v[i][j];
+        }
+      }
+    }
+
+    for(int i = 0; i < 2; i++) {
+      result[i] = v[s][i] / v[s][2];
+    }
+
+    return new Point(result[0], result[1]);
   }
 
   @Override
@@ -48,7 +122,9 @@ class BSplinePanel extends JPanel{
     g.setColor(new Color(98, 68, 109));
     g.drawLine(X0, 0, X0, getHeight());
     g.drawLine(0, Y0, getWidth(), Y0);
-
+    // for(double t = 0; t < 1.; t += 0.01){
+    //   calcBSplineInPoint(t, )
+    // }
     g.setColor(Color.RED);
 
     Point p = P[0].getLocation();

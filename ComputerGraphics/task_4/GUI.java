@@ -19,7 +19,7 @@ public class GUI extends JFrame{
     Rectangle[] points = new Rectangle[5];
 
     for(int i = 0; i < points.length; i++){
-      points[i] = new Rectangle(600 / 2 - 6, 450 / 2 - 6, 12, 12);
+      points[i] = new Rectangle(600 / 2 - 6 + 12 * i, 450 / 2 - 6, 12, 12);
     }
 
     bsplinePanel = new BSplinePanel(points);
