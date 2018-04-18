@@ -45,17 +45,17 @@ class BSplinePanel extends JPanel{
         repaint();
       }
     });
-    addMouseListener(new MouseAdapter(){
-      @Override
-      public void mousePressed(MouseEvent e){
-        Point ep = e.getPoint();
-        for(int i = 0; i < P.length; i++){
-          if(P[i].contains(ep)){
-            System.out.println(ep.x + " " + ep.y);
-          }
-        }
-      }
-    });
+    // addMouseListener(new MouseAdapter(){
+    //   @Override
+    //   public void mousePressed(MouseEvent e){
+    //     Point ep = e.getPoint();
+    //     for(int i = 0; i < P.length; i++){
+    //       if(P[i].contains(ep)){
+    //         System.out.println(ep.x + " " + ep.y);
+    //       }
+    //     }
+    //   }
+    // });
   }
 
   private Point2D.Double calcBSplineInPoint(double t, Point2D.Double[] points) throws Exception{
@@ -94,14 +94,10 @@ class BSplinePanel extends JPanel{
       v[i][1] = points[i].y * weights[i];
       v[i][2] = weights[i];
     }
-    System.out.println((s));
     double alpha;
     for(int l = 1; l <= ORDER + 1; l++) {
-      // build level l of the pyramid
       for(int i = s; i > s - ORDER - 1 + l; i--) {
         alpha = (t - knots[i]) / (knots[i + ORDER + 1 - l] - knots[i]);
-
-        // interpolate each component
         for(int j = 0; j < 2 + 1; j++) {
           v[i][j] = (1. - alpha) * v[i-1][j] + alpha * v[i][j];
         }
@@ -123,16 +119,20 @@ class BSplinePanel extends JPanel{
     g.drawLine(X0, 0, X0, getHeight());
     g.drawLine(0, Y0, getWidth(), Y0);
     try{
+      Graphics2D g2d = (Graphics2D)g;
+      g2d.setColor(new Color(138, 99, 255));
+      g2d.setStroke(new BasicStroke(2));
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
       Point2D.Double y1 = calcBSplineInPoint(0, ps);
       for(double t = 0.01; t < 1.; t += 0.01){
         Point2D.Double y2 = calcBSplineInPoint(t, ps);
-        g.drawLine((int)y1.x, (int)y1.y, (int)y2.x, (int)y2.y);
+        g2d.drawLine((int)y1.x, (int)y1.y, (int)y2.x, (int)y2.y);
         y1 = y2;
       }
+      g2d.setStroke(new BasicStroke(1));
     }
-    catch (Exception e) {
-      // e.printStackTrace();
-      // System.out.println(e.getMessage());
+    catch(Exception e){
+      System.out.println(e.getMessage());
     }
 
     g.setColor(Color.RED);
