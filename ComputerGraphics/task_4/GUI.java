@@ -16,7 +16,7 @@ public class GUI extends JFrame{
   public GUI(){
     super("Wireframe - 3D Graphics.");
 
-    Rectangle[] points = new Rectangle[5];
+    Rectangle[] points = new Rectangle[8];
 
     for(int i = 0; i < points.length; i++){
       points[i] = new Rectangle(600 / 2 - 6 + 12 * i, 450 / 2 - 6, 12, 12);

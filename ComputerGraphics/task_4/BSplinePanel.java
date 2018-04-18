@@ -19,11 +19,14 @@ class BSplinePanel extends JPanel{
   private int cx, cy;
 
   private Rectangle[] P;
-  // private Point[] points;
+  private Point2D.Double[] ps;
 
   public BSplinePanel(Rectangle[] points){
     P = points;
-
+    ps = new Point2D.Double[P.length];
+    for(int i = 0; i < P.length; i++){
+      ps[i] = new Point2D.Double(P[i].x + 6, P[i].y + 6);
+    }
     setPreferredSize(new Dimension(600, 450));
     setBackground(new Color(221, 224, 220));
 
@@ -34,6 +37,8 @@ class BSplinePanel extends JPanel{
         for(int i = 0; i < P.length; i++){
           if(P[i].contains(ep)){
             P[i].setLocation(ep.x - 7, ep.y - 7);
+            ps[i].x = ep.x;
+            ps[i].y = ep.y;
             break;
           }
         }
@@ -53,49 +58,44 @@ class BSplinePanel extends JPanel{
     });
   }
 
-  private Point calcBSplineInPoint(int t, Point[] points) throws Exception{
+  private Point2D.Double calcBSplineInPoint(double t, Point2D.Double[] points) throws Exception{
     int ORDER = 3;
     int N = points.length;
-    int[] result = {0, 0};
-    int[] knots = new int[N + ORDER + 1];
-    int[] domain = {ORDER, knots.length - 1 - ORDER};
-    int low  = knots[domain[0]];
-    int high = knots[domain[1]];
+    double[] result = {0, 0};
 
     int[] weights = new int[N];
     for(int i = 0; i < N; i++) {
       weights[i] = 1;
     }
 
-    t = t * (high - low) + low;
-    t = t * (high - low) + low;
-
-    if(t < low || t > high) throw new Exception("Out of bounds!");
-
+    double[] knots = new double[N + ORDER + 1];
     for(int i = 0; i < knots.length; i++){
       knots[i] = i;
     }
 
-    int s;
+    int[] domain = {ORDER, knots.length - 1 - ORDER};
 
+    double low  = knots[domain[0]];
+    double high = knots[domain[1]];
+
+    t = t * (high - low) + low;
+    if(t < low || t > high) throw new Exception("Out of bounds!");
+
+    int s;
     for(s = domain[0]; s < domain[1]; s++){
       if(t >= knots[s] && t <= knots[s + 1]){
         break;
       }
     }
 
-    int[][] v = new int[N][3];
+    double[][] v = new double[N][3];
     for(int i = 0; i < N; i++) {
-      // v[i] = [];
-      // for(int j = 0; j < 2; j++) {
-      //   v[i][j] = points[i][j] * weights[i];
-      // }
       v[i][0] = points[i].x * weights[i];
       v[i][1] = points[i].y * weights[i];
       v[i][2] = weights[i];
     }
-
-    int alpha;
+    System.out.println((s));
+    double alpha;
     for(int l = 1; l <= ORDER + 1; l++) {
       // build level l of the pyramid
       for(int i = s; i > s - ORDER - 1 + l; i--) {
@@ -103,7 +103,7 @@ class BSplinePanel extends JPanel{
 
         // interpolate each component
         for(int j = 0; j < 2 + 1; j++) {
-          v[i][j] = (1 - alpha) * v[i-1][j] + alpha * v[i][j];
+          v[i][j] = (1. - alpha) * v[i-1][j] + alpha * v[i][j];
         }
       }
     }
@@ -112,7 +112,7 @@ class BSplinePanel extends JPanel{
       result[i] = v[s][i] / v[s][2];
     }
 
-    return new Point(result[0], result[1]);
+    return new Point2D.Double(result[0], result[1]);
   }
 
   @Override
@@ -122,9 +122,19 @@ class BSplinePanel extends JPanel{
     g.setColor(new Color(98, 68, 109));
     g.drawLine(X0, 0, X0, getHeight());
     g.drawLine(0, Y0, getWidth(), Y0);
-    // for(double t = 0; t < 1.; t += 0.01){
-    //   calcBSplineInPoint(t, )
-    // }
+    try{
+      Point2D.Double y1 = calcBSplineInPoint(0, ps);
+      for(double t = 0.01; t < 1.; t += 0.01){
+        Point2D.Double y2 = calcBSplineInPoint(t, ps);
+        g.drawLine((int)y1.x, (int)y1.y, (int)y2.x, (int)y2.y);
+        y1 = y2;
+      }
+    }
+    catch (Exception e) {
+      // e.printStackTrace();
+      // System.out.println(e.getMessage());
+    }
+
     g.setColor(Color.RED);
 
     Point p = P[0].getLocation();
