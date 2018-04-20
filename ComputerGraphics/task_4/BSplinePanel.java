@@ -45,17 +45,6 @@ class BSplinePanel extends JPanel{
         repaint();
       }
     });
-    // addMouseListener(new MouseAdapter(){
-    //   @Override
-    //   public void mousePressed(MouseEvent e){
-    //     Point ep = e.getPoint();
-    //     for(int i = 0; i < P.length; i++){
-    //       if(P[i].contains(ep)){
-    //         System.out.println(ep.x + " " + ep.y);
-    //       }
-    //     }
-    //   }
-    // });
   }
 
   private Point2D.Double calcBSplineInPoint(double t, Point2D.Double[] points) throws Exception{
@@ -111,6 +100,21 @@ class BSplinePanel extends JPanel{
     return new Point2D.Double(result[0], result[1]);
   }
 
+  public Point2D.Double[] getBSpline() throws Exception{
+    Point2D.Double[] points = new Point2D.Double[100];
+
+    int i = 1;
+
+    points[0] = calcBSplineInPoint(0, ps);
+
+    for(double t = 0.01; t < 1.; t += 0.01){
+      points[i] = calcBSplineInPoint(t, ps);
+      ++i;
+    }
+
+    return points;
+  }
+
   @Override
   public void paint(Graphics g){
     super.paint(g);
@@ -123,12 +127,12 @@ class BSplinePanel extends JPanel{
       g2d.setColor(new Color(138, 99, 255));
       g2d.setStroke(new BasicStroke(2));
       g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-      Point2D.Double y1 = calcBSplineInPoint(0, ps);
-      for(double t = 0.01; t < 1.; t += 0.01){
-        Point2D.Double y2 = calcBSplineInPoint(t, ps);
-        g2d.drawLine((int)y1.x, (int)y1.y, (int)y2.x, (int)y2.y);
-        y1 = y2;
+
+      Point2D.Double[] po = getBSpline();
+      for(int i = 1; i < po.length; i++){
+        g2d.drawLine((int)po[i - 1].x, (int)po[i - 1].y, (int)po[i].x, (int)po[i].y);
       }
+
       g2d.setStroke(new BasicStroke(1));
     }
     catch(Exception e){
