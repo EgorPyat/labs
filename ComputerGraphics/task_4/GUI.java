@@ -111,7 +111,7 @@ public class GUI extends JFrame{
     toolBar.setRollover(true);
 
     add(toolBar, BorderLayout.PAGE_START);
-    JScrollPane scrollpane = new JScrollPane(new JPanel());
+    JScrollPane scrollpane = new JScrollPane(new RotatingFigure());
     setPreferredSize(new Dimension(800, 600));
     add(scrollpane, BorderLayout.CENTER);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

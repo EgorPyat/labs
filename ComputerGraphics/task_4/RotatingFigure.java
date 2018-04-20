@@ -15,7 +15,7 @@ public class RotatingFigure extends JPanel {
   int[][] edges;
 
   public RotatingFigure(){
-    setPreferredSize(new Dimension(640, 640));
+    setPreferredSize(new Dimension(787, 498));
     setBackground(Color.white);
 
     nodes = new double[N][nodesN][3];
@@ -143,16 +143,16 @@ public class RotatingFigure extends JPanel {
     drawFigure(g);
   }
 
-  public static void main(String[] args) {
-    SwingUtilities.invokeLater(() -> {
-      JFrame f = new JFrame();
-      f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      f.setTitle("Rotating Figure");
-      f.setResizable(false);
-      f.add(new RotatingFigure(), BorderLayout.CENTER);
-      f.pack();
-      f.setLocationRelativeTo(null);
-      f.setVisible(true);
-    });
-  }
+  // public static void main(String[] args) {
+  //   SwingUtilities.invokeLater(() -> {
+  //     JFrame f = new JFrame();
+  //     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+  //     f.setTitle("Rotating Figure");
+  //     f.setResizable(false);
+  //     f.add(new RotatingFigure(), BorderLayout.CENTER);
+  //     f.pack();
+  //     f.setLocationRelativeTo(null);
+  //     f.setVisible(true);
+  //   });
+  // }
 }
