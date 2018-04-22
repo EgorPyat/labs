@@ -28,7 +28,6 @@ class BSplinePanel extends JPanel{
       ps[i] = new Point2D.Double(P[i].x + 6, P[i].y + 6);
     }
     setPreferredSize(new Dimension(600, 450));
-    setBackground(new Color(221, 224, 220));
 
     addMouseMotionListener(new MouseMotionAdapter(){
       @Override

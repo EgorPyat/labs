@@ -10,7 +10,7 @@ public class RotatingFigure extends JPanel {
   int edgesN = nodesN - 1;
   double ox = 0, dx = 0;
   double oy = 0, dy = 0;
-  double[][] startNodes = {{2, 0, -2}, {2 / Math.sqrt(2), 0, -1}, {2 / Math.sqrt(2), 0, 1}, {2, 0, 2}};
+  double[][] startNodes = {{2, 0, 4}, {2 / Math.sqrt(2), 0, 3}, {2 / Math.sqrt(2), 0, 1}, {2, 0, 0}};
   double[][][] nodes;
   double[][][] nodesWorld;
   int[][] edges;
@@ -24,13 +24,25 @@ public class RotatingFigure extends JPanel {
     double rads = Math.toRadians(90 / 2);
     double f = 1.0 / Math.tan(rads);
     double aspect = 1;
-    double zNear = 1.;
-    double zFar = 2.;
-    perspecMatrix[0][0] = f / aspect;
-    perspecMatrix[1][1] = f;
-    perspecMatrix[2][2] = (+zNear + zFar) / (zNear - zFar);
-    perspecMatrix[2][3] = (2 * zNear * zFar) / (zNear - zFar);
-    perspecMatrix[3][2] = -1;
+
+    double sw = 2;
+    double sh = 2;
+    double zf = 2.;
+    double zb = 10.;
+
+    // double zNear = 1.;
+    // double zFar = 10.;
+
+    // perspecMatrix[0][0] = f / aspect;
+    // perspecMatrix[1][1] = f;
+    // perspecMatrix[2][2] = (+zNear + zFar) / (zNear - zFar);
+    // perspecMatrix[2][3] = (2 * zNear * zFar) / (zNear - zFar);
+    // perspecMatrix[3][2] = -1;
+    perspecMatrix[0][0] = 2. * zf / sw;
+    perspecMatrix[1][1] = 2. * zf / sh;
+    perspecMatrix[2][2] = zb / (zb - zf);
+    perspecMatrix[2][3] = -(zf * zb) / (zb - zf);
+    perspecMatrix[3][2] = 1;
 
     nodes = new double[N][nodesN][3];
     nodes[0] = startNodes;
@@ -132,7 +144,7 @@ public class RotatingFigure extends JPanel {
       for(int j = 0; j < nodesN; j++){
         double x = nodes[i][j][0];
         double y = nodes[i][j][1];
-        double z = nodes[i][j][2] + 5;
+        double z = nodes[i][j][2] + 7;
         nodesWorld[i][j][0] = x * perspecMatrix[0][0];
         nodesWorld[i][j][1] = y * perspecMatrix[1][1];
         nodesWorld[i][j][2] = z * perspecMatrix[2][2] + perspecMatrix[2][3];
