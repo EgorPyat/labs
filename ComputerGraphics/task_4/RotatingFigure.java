@@ -6,17 +6,31 @@ import java.awt.event.*;
 
 public class RotatingFigure extends JPanel {
   int N = 6;
-  int nodesN = 3;
+  int nodesN = 4;
   int edgesN = nodesN - 1;
   double ox = 0, dx = 0;
   double oy = 0, dy = 0;
-  double[][] startNodes = {{0, -0.25, 1}, {0, -0.6, 0}, {0, -0.25, -1}};
+  double[][] startNodes = {{2, 0, -2}, {2 / Math.sqrt(2), 0, -1}, {2 / Math.sqrt(2), 0, 1}, {2, 0, 2}};
   double[][][] nodes;
+  double[][][] nodesWorld;
   int[][] edges;
-
+  double[][] perspecMatrix;
   public RotatingFigure(){
     setPreferredSize(new Dimension(787, 498));
     setBackground(Color.white);
+
+    perspecMatrix = new double[4][4];
+
+    double rads = Math.toRadians(90 / 2);
+    double f = 1.0 / Math.tan(rads);
+    double aspect = 1;
+    double zNear = 1.;
+    double zFar = 2.;
+    perspecMatrix[0][0] = f / aspect;
+    perspecMatrix[1][1] = f;
+    perspecMatrix[2][2] = (+zNear + zFar) / (zNear - zFar);
+    perspecMatrix[2][3] = (2 * zNear * zFar) / (zNear - zFar);
+    perspecMatrix[3][2] = -1;
 
     nodes = new double[N][nodesN][3];
     nodes[0] = startNodes;
@@ -34,6 +48,16 @@ public class RotatingFigure extends JPanel {
         nodes[i][j][0] = startNodes[j][0] * cosa - startNodes[j][1] * sina;
         nodes[i][j][1] = startNodes[j][0] * sina + startNodes[j][1] * cosa;
         nodes[i][j][2] = startNodes[j][2];
+      }
+    }
+
+    nodesWorld = new double[N][nodesN][3];
+
+    for(int i = 0; i < N; i++){
+      for(int j = 0; j < nodesN; j++){
+        nodesWorld[i][j][0] = nodes[i][j][0];
+        nodesWorld[i][j][1] = nodes[i][j][1];
+        nodesWorld[i][j][2] = nodes[i][j][2];
       }
     }
 
@@ -67,7 +91,7 @@ public class RotatingFigure extends JPanel {
   }
 
   final void scale(double s) {
-    for(double[][] edge : nodes) {
+    for(double[][] edge : nodesWorld) {
       for(double[] node : edge) {
         node[0] *= s;
         node[1] *= s;
@@ -82,7 +106,6 @@ public class RotatingFigure extends JPanel {
 
     double sinY = sin(angleY);
     double cosY = cos(angleY);
-
     for(double[][] edge : nodes) {
       for(double[] node : edge) {
         double x = node[0];
@@ -98,36 +121,59 @@ public class RotatingFigure extends JPanel {
         node[2] = z * cosY + y * sinY;
       }
     }
+    for(int i = 0; i < N; i++){
+      for(int j = 0; j < nodesN; j++){
+        nodesWorld[i][j][0] = nodes[i][j][0];
+        nodesWorld[i][j][1] = nodes[i][j][1];
+        nodesWorld[i][j][2] = nodes[i][j][2];
+      }
+    }
+    for(int i = 0; i < N; i++){
+      for(int j = 0; j < nodesN; j++){
+        double x = nodes[i][j][0];
+        double y = nodes[i][j][1];
+        double z = nodes[i][j][2] + 5;
+        nodesWorld[i][j][0] = x * perspecMatrix[0][0];
+        nodesWorld[i][j][1] = y * perspecMatrix[1][1];
+        nodesWorld[i][j][2] = z * perspecMatrix[2][2] + perspecMatrix[2][3];
+        double w = z * perspecMatrix[3][2];
+        nodesWorld[i][j][0] /= w;
+        nodesWorld[i][j][1] /= w;
+        nodesWorld[i][j][2] /= w;
+      }
+    }
+    scale(100);
+
   }
 
   void drawFigure(Graphics2D g) {
     g.translate(getWidth() / 2, getHeight() / 2);
 
     for(int[] edge : edges) {
-      double[] xy1 = nodes[0][edge[0]];
-      double[] xy2 = nodes[0][edge[1]];
+      double[] xy1 = nodesWorld[0][edge[0]];
+      double[] xy2 = nodesWorld[0][edge[1]];
       g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
       for(int j = 0; j < nodesN; j++){
-        xy1 = nodes[N - 1][j];
-        xy2 = nodes[0][j];
+        xy1 = nodesWorld[N - 1][j];
+        xy2 = nodesWorld[0][j];
         g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
       }
     }
 
     for(int[] edge : edges) {
       for(int i = 1; i < N; i++){
-        double[] xy1 = nodes[i][edge[0]];
-        double[] xy2 = nodes[i][edge[1]];
+        double[] xy1 = nodesWorld[i][edge[0]];
+        double[] xy2 = nodesWorld[i][edge[1]];
         g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
         for(int j = 0; j < nodesN; j++){
-          xy1 = nodes[i - 1][j];
-          xy2 = nodes[i]    [j];
+          xy1 = nodesWorld[i - 1][j];
+          xy2 = nodesWorld[i]    [j];
           g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
         }
       }
     }
 
-    for (double[][] edge : nodes){
+    for (double[][] edge : nodesWorld){
       for(double[] node : edge){
         g.fillOval((int) round(node[0]) - 4, (int) round(node[1]) - 4, 8, 8);
       }
@@ -143,16 +189,4 @@ public class RotatingFigure extends JPanel {
     drawFigure(g);
   }
 
-  // public static void main(String[] args) {
-  //   SwingUtilities.invokeLater(() -> {
-  //     JFrame f = new JFrame();
-  //     f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-  //     f.setTitle("Rotating Figure");
-  //     f.setResizable(false);
-  //     f.add(new RotatingFigure(), BorderLayout.CENTER);
-  //     f.pack();
-  //     f.setLocationRelativeTo(null);
-  //     f.setVisible(true);
-  //   });
-  // }
 }
