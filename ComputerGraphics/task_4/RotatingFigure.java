@@ -1,5 +1,4 @@
 import java.awt.*;
-// import java.awt.event.ActionEvent;
 import static java.lang.Math.*;
 import javax.swing.*;
 import java.awt.event.*;
@@ -10,9 +9,10 @@ public class RotatingFigure extends JPanel {
   int edgesN = nodesN - 1;
   double ox = 0, dx = 0;
   double oy = 0, dy = 0;
-  double[][] startNodes = {{2, 0, 4}, {2 / Math.sqrt(2), 0, 3}, {2 / Math.sqrt(2), 0, 1}, {2, 0, 0}};
+  double[][] startNodes = {{2, 0, 2}, {2 / Math.sqrt(2), 0, 1}, {2 / Math.sqrt(2), 0, -1}, {2, 0, -2}};
   double[][][] nodes;
   double[][][] nodesWorld;
+  double[][][] nodesCamera;
   int[][] edges;
   double[][] perspecMatrix;
   public RotatingFigure(){
@@ -21,15 +21,9 @@ public class RotatingFigure extends JPanel {
 
     perspecMatrix = new double[4][4];
 
-    double rads = Math.toRadians(90 / 2);
-    double f = 1.0 / Math.tan(rads);
-    double aspect = 1;
-
-    double sw = 2;
-    double sh = 2;
-    double zf = 2.;
-    double zb = 10.;
-
+    // double rads = Math.toRadians(90 / 2);
+    // double f = 1.0 / Math.tan(rads);
+    // double aspect = 1;
     // double zNear = 1.;
     // double zFar = 10.;
 
@@ -38,6 +32,12 @@ public class RotatingFigure extends JPanel {
     // perspecMatrix[2][2] = (+zNear + zFar) / (zNear - zFar);
     // perspecMatrix[2][3] = (2 * zNear * zFar) / (zNear - zFar);
     // perspecMatrix[3][2] = -1;
+
+    double sw = 1;
+    double sh = 1;
+    double zf = 3.;
+    double zb = 10.;
+
     perspecMatrix[0][0] = 2. * zf / sw;
     perspecMatrix[1][1] = 2. * zf / sh;
     perspecMatrix[2][2] = zb / (zb - zf);
@@ -64,16 +64,8 @@ public class RotatingFigure extends JPanel {
     }
 
     nodesWorld = new double[N][nodesN][3];
+    nodesCamera = new double[N][nodesN][3];
 
-    for(int i = 0; i < N; i++){
-      for(int j = 0; j < nodesN; j++){
-        nodesWorld[i][j][0] = nodes[i][j][0];
-        nodesWorld[i][j][1] = nodes[i][j][1];
-        nodesWorld[i][j][2] = nodes[i][j][2];
-      }
-    }
-
-    scale(100);
     rotateFigure(0, 0);
 
     addMouseListener(new MouseAdapter(){
@@ -103,7 +95,7 @@ public class RotatingFigure extends JPanel {
   }
 
   final void scale(double s) {
-    for(double[][] edge : nodesWorld) {
+    for(double[][] edge : nodesCamera) {
       for(double[] node : edge) {
         node[0] *= s;
         node[1] *= s;
@@ -118,6 +110,7 @@ public class RotatingFigure extends JPanel {
 
     double sinY = sin(angleY);
     double cosY = cos(angleY);
+
     for(double[][] edge : nodes) {
       for(double[] node : edge) {
         double x = node[0];
@@ -133,59 +126,61 @@ public class RotatingFigure extends JPanel {
         node[2] = z * cosY + y * sinY;
       }
     }
+
     for(int i = 0; i < N; i++){
       for(int j = 0; j < nodesN; j++){
         nodesWorld[i][j][0] = nodes[i][j][0];
         nodesWorld[i][j][1] = nodes[i][j][1];
-        nodesWorld[i][j][2] = nodes[i][j][2];
+        nodesWorld[i][j][2] = nodes[i][j][2] + 10;
       }
     }
+
     for(int i = 0; i < N; i++){
       for(int j = 0; j < nodesN; j++){
-        double x = nodes[i][j][0];
-        double y = nodes[i][j][1];
-        double z = nodes[i][j][2] + 7;
-        nodesWorld[i][j][0] = x * perspecMatrix[0][0];
-        nodesWorld[i][j][1] = y * perspecMatrix[1][1];
-        nodesWorld[i][j][2] = z * perspecMatrix[2][2] + perspecMatrix[2][3];
+        double x = nodesWorld[i][j][0];
+        double y = nodesWorld[i][j][1];
+        double z = nodesWorld[i][j][2] + 10;
+        nodesCamera[i][j][0] = x * perspecMatrix[0][0];
+        nodesCamera[i][j][1] = y * perspecMatrix[1][1];
+        nodesCamera[i][j][2] = z * perspecMatrix[2][2] + perspecMatrix[2][3];
         double w = z * perspecMatrix[3][2];
-        nodesWorld[i][j][0] /= w;
-        nodesWorld[i][j][1] /= w;
-        nodesWorld[i][j][2] /= w;
+        nodesCamera[i][j][0] /= w;
+        nodesCamera[i][j][1] /= w;
+        nodesCamera[i][j][2] /= w;
       }
     }
-    scale(100);
 
+    scale(100);
   }
 
   void drawFigure(Graphics2D g) {
     g.translate(getWidth() / 2, getHeight() / 2);
 
     for(int[] edge : edges) {
-      double[] xy1 = nodesWorld[0][edge[0]];
-      double[] xy2 = nodesWorld[0][edge[1]];
+      double[] xy1 = nodesCamera[0][edge[0]];
+      double[] xy2 = nodesCamera[0][edge[1]];
       g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
       for(int j = 0; j < nodesN; j++){
-        xy1 = nodesWorld[N - 1][j];
-        xy2 = nodesWorld[0][j];
+        xy1 = nodesCamera[N - 1][j];
+        xy2 = nodesCamera[0][j];
         g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
       }
     }
 
     for(int[] edge : edges) {
       for(int i = 1; i < N; i++){
-        double[] xy1 = nodesWorld[i][edge[0]];
-        double[] xy2 = nodesWorld[i][edge[1]];
+        double[] xy1 = nodesCamera[i][edge[0]];
+        double[] xy2 = nodesCamera[i][edge[1]];
         g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
         for(int j = 0; j < nodesN; j++){
-          xy1 = nodesWorld[i - 1][j];
-          xy2 = nodesWorld[i]    [j];
+          xy1 = nodesCamera[i - 1][j];
+          xy2 = nodesCamera[i]    [j];
           g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
         }
       }
     }
 
-    for (double[][] edge : nodesWorld){
+    for (double[][] edge : nodesCamera){
       for(double[] node : edge){
         g.fillOval((int) round(node[0]) - 4, (int) round(node[1]) - 4, 8, 8);
       }
