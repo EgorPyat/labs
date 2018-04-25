@@ -4,12 +4,12 @@ import javax.swing.*;
 import java.awt.event.*;
 
 public class RotatingFigure extends JPanel {
-  int N = 6;
+  int N = 8;
   int nodesN = 4;
   int edgesN = nodesN - 1;
   double ox = 0, dx = 0;
   double oy = 0, dy = 0;
-  double[][] startNodes = {{2, 0, 2}, {2 / Math.sqrt(2), 0, 1}, {2 / Math.sqrt(2), 0, -1}, {2, 0, -2}};
+  double[][] startNodes = {{2, 0, 2}, {2 / Math.sqrt(2), 0, 0}, {2 / Math.sqrt(2), 0, -1}, {2, 0, -2}};
   double[][][] nodes;
   double[][][] nodesWorld;
   double[][][] nodesCamera;
@@ -33,9 +33,9 @@ public class RotatingFigure extends JPanel {
     // perspecMatrix[2][3] = (2 * zNear * zFar) / (zNear - zFar);
     // perspecMatrix[3][2] = -1;
 
-    double sw = 1;
-    double sh = 1;
-    double zf = 3.;
+    double sw = 1.5;
+    double sh = 1.5;
+    double zf = 5.;
     double zb = 10.;
 
     perspecMatrix[0][0] = 2. * zf / sw;
@@ -180,11 +180,11 @@ public class RotatingFigure extends JPanel {
       }
     }
 
-    for (double[][] edge : nodesCamera){
-      for(double[] node : edge){
-        g.fillOval((int) round(node[0]) - 4, (int) round(node[1]) - 4, 8, 8);
-      }
-    }
+    // for (double[][] edge : nodesCamera){
+    //   for(double[] node : edge){
+    //     g.fillOval((int) round(node[0]) - 4, (int) round(node[1]) - 4, 8, 8);
+    //   }
+    // }
   }
 
   @Override
