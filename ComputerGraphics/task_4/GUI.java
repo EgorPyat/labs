@@ -11,18 +11,19 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.Arrays;
 
 public class GUI extends JFrame{
-  private JPanel bsplinePanel;
+  private BSplinePanel bsplinePanel;
 
   public GUI(){
     super("Wireframe - 3D Graphics.");
 
     Rectangle[] points = new Rectangle[8];
-
+    int sign = -1;
     for(int i = 0; i < points.length; i++){
-      points[i] = new Rectangle(600 / 2 - 6 + 12 * i, 450 / 2 - 6, 12, 12);
+      points[i] = new Rectangle(14 + 80 * i, 120 + i * 30, 12, 12);
     }
 
     bsplinePanel = new BSplinePanel(points);
+    RotatingFigure rotatePane = new RotatingFigure();
 
     JMenuBar menu = new JMenuBar();
 
@@ -33,7 +34,7 @@ public class GUI extends JFrame{
     JMenuItem mFileNew = new JMenuItem("New");
     JMenuItem mFileQuit = new JMenuItem("Quit");
     JMenuItem mWireframeBSettings = new JMenuItem("B-Spline settings");
-    JMenuItem mWireframeCSettings = new JMenuItem("Common settings");
+    // JMenuItem mWireframeCSettings = new JMenuItem("Common settings");
     JMenuItem mAboutInfo = new JMenuItem("Info");
 
     mFile.add(mFileNew);
@@ -41,7 +42,7 @@ public class GUI extends JFrame{
     mFile.add(mFileQuit);
 
     mWireframe.add(mWireframeBSettings);
-    mWireframe.add(mWireframeCSettings);
+    // mWireframe.add(mWireframeCSettings);
 
     mAbout.add(mAboutInfo);
 
@@ -68,7 +69,25 @@ public class GUI extends JFrame{
       JButton buttonWireframeBSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/spline.png"))));
       ActionListener wbs = (e) -> {
         JDialog dialog = new JDialog(this, "B-Spline settings", true);
+        JButton submit = new JButton("submit");
+        JPanel settings = new JPanel();
+        bsplinePanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("B - Spline"), BorderFactory.createEmptyBorder(1,1,1,1)));
+        settings.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Settings"), BorderFactory.createEmptyBorder(1,1,1,1)));
+        submit.addActionListener((ex) -> {
+          int n = 5;
+          int m = 8;
+          int k = 5;
+          Point2D.Double[] ps = bsplinePanel.getFigurePoints(n, k);
+          rotatePane.setFigureParams(ps, m, k);
+          // for(int i = 0; i < ps.length; i++){
+          //   System.out.println(ps[i]);
+          // }
+
+          dialog.dispose();
+        });
+        settings.add(submit);
         dialog.add(bsplinePanel);
+        dialog.add(settings, BorderLayout.SOUTH);
         dialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         dialog.pack();
         dialog.setResizable(false);
@@ -77,11 +96,11 @@ public class GUI extends JFrame{
       };
       buttonWireframeBSettings.addActionListener(wbs);
 
-      JButton buttonWireframeCSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/settings.png"))));
-      ActionListener wcs = (e) -> {
-        System.out.println("WCS");
-      };
-      buttonWireframeCSettings.addActionListener(wcs);
+      // JButton buttonWireframeCSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/settings.png"))));
+      // ActionListener wcs = (e) -> {
+      //   System.out.println("WCS");
+      // };
+      // buttonWireframeCSettings.addActionListener(wcs);
 
       JButton buttonAbout = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/about.png"))));
       ActionListener la = (e) -> {
@@ -93,14 +112,14 @@ public class GUI extends JFrame{
       toolBar.add(buttonExit);
       toolBar.addSeparator();
       toolBar.add(buttonWireframeBSettings);
-      toolBar.add(buttonWireframeCSettings);
+      // toolBar.add(buttonWireframeCSettings);
       toolBar.addSeparator();
       toolBar.add(buttonAbout);
 
       mFileNew.addActionListener(ln);
       mFileQuit.addActionListener(le);
       mWireframeBSettings.addActionListener(wbs);
-      mWireframeCSettings.addActionListener(wcs);
+      // mWireframeCSettings.addActionListener(wcs);
       mAboutInfo.addActionListener(la);
     }
     catch(Exception ex){
@@ -111,7 +130,7 @@ public class GUI extends JFrame{
     toolBar.setRollover(true);
 
     add(toolBar, BorderLayout.PAGE_START);
-    JScrollPane scrollpane = new JScrollPane(new RotatingFigure());
+    JScrollPane scrollpane = new JScrollPane(rotatePane);
     setPreferredSize(new Dimension(800, 600));
     add(scrollpane, BorderLayout.CENTER);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

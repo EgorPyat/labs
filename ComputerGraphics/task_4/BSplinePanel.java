@@ -20,6 +20,8 @@ class BSplinePanel extends JPanel{
 
   private Rectangle[] P;
   private Point2D.Double[] ps;
+  private Point2D.Double[] po;
+  private Point2D.Double[] psNk;
 
   public BSplinePanel(Rectangle[] points){
     P = points;
@@ -95,11 +97,11 @@ class BSplinePanel extends JPanel{
     for(int i = 0; i < 2; i++) {
       result[i] = v[s][i] / v[s][2];
     }
-
-    return new Point2D.Double(result[0], result[1]);
+    // System.out.println(result[0] + " " + result[1]);
+    return new Point2D.Double((result[0] - X0) / 100, (result[1] - Y0) / 100);
   }
 
-  public Point2D.Double[] getBSpline() throws Exception{
+  private Point2D.Double[] getBSpline() throws Exception{
     Point2D.Double[] points = new Point2D.Double[100];
 
     int i = 1;
@@ -114,27 +116,41 @@ class BSplinePanel extends JPanel{
     return points;
   }
 
+  public Point2D.Double[] getFigurePoints(int N, int k){
+    psNk = new Point2D.Double[(N * k) + 1];
+    int c = 0;
+    for(int i = 0; i < 100; i++){
+      if(i == 0 || ((i + 1) % (100 / (N * k)) == 0)){
+        psNk[c++] = po[i];
+      }
+    }
+
+    return psNk;
+  }
+
   @Override
   public void paint(Graphics g){
     super.paint(g);
 
     g.setColor(new Color(98, 68, 109));
-    g.drawLine(X0, 0, X0, getHeight());
-    g.drawLine(0, Y0, getWidth(), Y0);
+    g.drawLine(X0, 8, X0, getHeight() - 4);
+    g.drawLine(3, Y0, getWidth() - 4, Y0);
     try{
       Graphics2D g2d = (Graphics2D)g;
       g2d.setColor(new Color(138, 99, 255));
       g2d.setStroke(new BasicStroke(2));
       g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-      Point2D.Double[] po = getBSpline();
+      po = getBSpline();
+
       for(int i = 1; i < po.length; i++){
-        g2d.drawLine((int)po[i - 1].x, (int)po[i - 1].y, (int)po[i].x, (int)po[i].y);
+        g2d.drawLine((int)(po[i - 1].x * 100. + X0), (int)(po[i - 1].y * 100. + Y0), (int)(po[i].x * 100. + X0), (int)(po[i].y * 100. + Y0));
       }
 
       g2d.setStroke(new BasicStroke(1));
     }
     catch(Exception e){
+      e.printStackTrace();
       System.out.println(e.getMessage());
     }
 
@@ -149,6 +165,5 @@ class BSplinePanel extends JPanel{
       Point p1 = P[i - 1].getLocation();
       g.drawLine(p.x + 6, p.y + 6, p1.x + 6, p1.y + 6);
     }
-
   }
 }

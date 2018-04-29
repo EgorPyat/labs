@@ -1,40 +1,35 @@
 import java.awt.*;
+import java.awt.geom.*;
 import static java.lang.Math.*;
 import javax.swing.*;
 import java.awt.event.*;
 
 public class RotatingFigure extends JPanel {
-  int N = 8;
-  int nodesN = 4;
-  int edgesN = nodesN - 1;
-  double ox = 0, dx = 0;
-  double oy = 0, dy = 0;
-  double[][] startNodes = {{2, 0, 2}, {2 / Math.sqrt(2), 0, 0}, {2 / Math.sqrt(2), 0, -1}, {2, 0, -2}};
-  double[][][] nodes;
-  double[][][] nodesWorld;
-  double[][][] nodesCamera;
-  int[][] edges;
-  double[][] perspecMatrix;
+  // int N = 8;
+  private int N;
+  private int K;
+  // int nodesN = 4;
+  private int nodesN;
+  // int edgesN = nodesN - 1;
+  private int edgesN;
+  private double ox = 0, dx = 0;
+  private double oy = 0, dy = 0;
+  // double[][] startNodes = {{2, 0, 2}, {2 / Math.sqrt(2), 0, 0}, {2 / Math.sqrt(2), 0, -1}, {2, 0, -2}};4
+  private double[][] startNodes = null;
+  private double[][][] nodes;
+  private double[][][] nodesWorld;
+  private double[][][] nodesCamera;
+  private int[][] edges;
+  private double[][] perspecMatrix;
+
   public RotatingFigure(){
     setPreferredSize(new Dimension(787, 498));
     setBackground(Color.white);
 
     perspecMatrix = new double[4][4];
 
-    // double rads = Math.toRadians(90 / 2);
-    // double f = 1.0 / Math.tan(rads);
-    // double aspect = 1;
-    // double zNear = 1.;
-    // double zFar = 10.;
-
-    // perspecMatrix[0][0] = f / aspect;
-    // perspecMatrix[1][1] = f;
-    // perspecMatrix[2][2] = (+zNear + zFar) / (zNear - zFar);
-    // perspecMatrix[2][3] = (2 * zNear * zFar) / (zNear - zFar);
-    // perspecMatrix[3][2] = -1;
-
-    double sw = 1.5;
-    double sh = 1.5;
+    double sw = 0.8;
+    double sh = 0.8;
     double zf = 5.;
     double zb = 10.;
 
@@ -44,57 +39,53 @@ public class RotatingFigure extends JPanel {
     perspecMatrix[2][3] = -(zf * zb) / (zb - zf);
     perspecMatrix[3][2] = 1;
 
-    nodes = new double[N][nodesN][3];
-    nodes[0] = startNodes;
-    edges = new int[edgesN][2];
+    // nodes = new double[N][nodesN][3];
+    // nodes[0] = startNodes;
+    // edges = new int[edgesN][2];
+    //
+    // for(int i = 0; i < edgesN; i++){
+    //   edges[i][0] = i;
+    //   edges[i][1] = i + 1;
+    // }
 
-    for(int i = 0; i < edgesN; i++){
-      edges[i][0] = i;
-      edges[i][1] = i + 1;
-    }
+    // rotateAroundZ();
 
-    for(int i = 1; i < N; i++){
-      double sina = sin(PI * i * (360. / N) / 180);
-      double cosa = cos(PI * i * (360. / N) / 180);
-      for(int j = 0; j < nodesN; j++){
-        nodes[i][j][0] = startNodes[j][0] * cosa - startNodes[j][1] * sina;
-        nodes[i][j][1] = startNodes[j][0] * sina + startNodes[j][1] * cosa;
-        nodes[i][j][2] = startNodes[j][2];
-      }
-    }
+    // nodesWorld = new double[N][nodesN][3];
+    // nodesCamera = new double[N][nodesN][3];
 
-    nodesWorld = new double[N][nodesN][3];
-    nodesCamera = new double[N][nodesN][3];
-
-    rotateFigure(0, 0);
+    // rotateFigure(0, 0);
 
     addMouseListener(new MouseAdapter(){
       @Override
       public void mousePressed(MouseEvent e){
-        dx = e.getX();
-        dy = e.getY();
-        ox = dx;
-        oy = dy;
+        if(startNodes != null){
+          dx = e.getX();
+          dy = e.getY();
+          ox = dx;
+          oy = dy;
+        }
       }
     });
 
     addMouseMotionListener(new MouseMotionAdapter(){
       @Override
       public void mouseDragged(MouseEvent e){
-        int x = e.getX();
-        int y = e.getY();
-        dx = x - ox;
-        dy = y - oy;
+        if(startNodes != null){
+          int x = e.getX();
+          int y = e.getY();
+          dx = x - ox;
+          dy = y - oy;
 
-        rotateFigure(PI * (dx) / 180, PI * (dy) / 180);
-        ox = x;
-        oy = y;
-        repaint();
+          rotateFigure(PI * (dx) / 180, PI * (dy) / 180);
+          ox = x;
+          oy = y;
+          repaint();
+        }
       }
     });
   }
 
-  final void scale(double s) {
+  private final void scale(double s) {
     for(double[][] edge : nodesCamera) {
       for(double[] node : edge) {
         node[0] *= s;
@@ -104,7 +95,48 @@ public class RotatingFigure extends JPanel {
     }
   }
 
-  final void rotateFigure(double angleX, double angleY) {
+  public void setFigureParams(Point2D.Double[] ps, int n, int k){
+    N = n;
+    K = k;
+    nodesN = ps.length;
+    edgesN = nodesN - 1;
+    startNodes = new double[nodesN][3];
+    nodesWorld = new double[N * K][nodesN][3];
+    nodesCamera = new double[N * K][nodesN][3];
+
+    for(int i = 0; i < nodesN; i++){
+      startNodes[i][0] = 0;
+      startNodes[i][1] = ps[i].y;
+      startNodes[i][2] = ps[i].x;
+    }
+
+    rotateAroundZ();
+    rotateFigure(0, 0);
+    repaint();
+  }
+
+  private void rotateAroundZ(){
+    nodes = new double[N * K][nodesN][3];
+    nodes[0] = startNodes;
+    edges = new int[edgesN][2];
+
+    for(int i = 0; i < edgesN; i++){
+      edges[i][0] = i;
+      edges[i][1] = i + 1;
+    }
+
+    for(int i = 1; i < N * K; i++){
+      double sina = sin(PI * i * (360. / (N * K)) / 180);
+      double cosa = cos(PI * i * (360. / (N * K)) / 180);
+      for(int j = 0; j < nodesN; j++){
+        nodes[i][j][0] = startNodes[j][0] * cosa - startNodes[j][1] * sina;
+        nodes[i][j][1] = startNodes[j][0] * sina + startNodes[j][1] * cosa;
+        nodes[i][j][2] = startNodes[j][2];
+      }
+    }
+  }
+
+  private final void rotateFigure(double angleX, double angleY) {
     double sinX = sin(angleX);
     double cosX = cos(angleX);
 
@@ -127,7 +159,7 @@ public class RotatingFigure extends JPanel {
       }
     }
 
-    for(int i = 0; i < N; i++){
+    for(int i = 0; i < N * K; i++){
       for(int j = 0; j < nodesN; j++){
         nodesWorld[i][j][0] = nodes[i][j][0];
         nodesWorld[i][j][1] = nodes[i][j][1];
@@ -135,7 +167,7 @@ public class RotatingFigure extends JPanel {
       }
     }
 
-    for(int i = 0; i < N; i++){
+    for(int i = 0; i < N * K; i++){
       for(int j = 0; j < nodesN; j++){
         double x = nodesWorld[i][j][0];
         double y = nodesWorld[i][j][1];
@@ -153,26 +185,27 @@ public class RotatingFigure extends JPanel {
     scale(100);
   }
 
-  void drawFigure(Graphics2D g) {
+  private void drawFigure(Graphics2D g) {
     g.translate(getWidth() / 2, getHeight() / 2);
+    // g.setStroke(new BasicStroke(1));
 
     for(int[] edge : edges) {
       double[] xy1 = nodesCamera[0][edge[0]];
       double[] xy2 = nodesCamera[0][edge[1]];
       g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
-      for(int j = 0; j < nodesN; j++){
-        xy1 = nodesCamera[N - 1][j];
+      for(int j = 0; j < nodesN; j += K){
+        xy1 = nodesCamera[N * K - 1][j];
         xy2 = nodesCamera[0][j];
         g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
       }
     }
 
     for(int[] edge : edges) {
-      for(int i = 1; i < N; i++){
+      for(int i = 1; i < N * K; i++){
         double[] xy1 = nodesCamera[i][edge[0]];
         double[] xy2 = nodesCamera[i][edge[1]];
-        g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
-        for(int j = 0; j < nodesN; j++){
+        if(i % K == 0) g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
+        for(int j = 0; j < nodesN; j += K){
           xy1 = nodesCamera[i - 1][j];
           xy2 = nodesCamera[i]    [j];
           g.drawLine((int) round(xy1[0]), (int) round(xy1[1]), (int) round(xy2[0]), (int) round(xy2[1]));
@@ -191,9 +224,8 @@ public class RotatingFigure extends JPanel {
   public void paintComponent(Graphics gg) {
     super.paintComponent(gg);
     Graphics2D g = (Graphics2D) gg;
-    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-    drawFigure(g);
+    if(startNodes != null) drawFigure(g);
   }
 
 }
