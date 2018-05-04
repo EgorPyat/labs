@@ -69,14 +69,26 @@ public class GUI extends JFrame{
       JButton buttonWireframeBSettings = new JButton(new ImageIcon(ImageIO.read(getClass().getResource("./resourses/spline.png"))));
       ActionListener wbs = (e) -> {
         JDialog dialog = new JDialog(this, "B-Spline settings", true);
-        JButton submit = new JButton("submit");
+        JButton submit = new JButton("Apply");
         JPanel settings = new JPanel();
+        settings.setLayout(new GridLayout(1, 7));
+
+        TextField N = new TextField("5", 5);
+        TextField M = new TextField("8", 5);
+        TextField K = new TextField("5", 5);
+        settings.add(new JLabel("N", SwingConstants.RIGHT));
+        settings.add(N);
+        settings.add(new JLabel("M", SwingConstants.RIGHT));
+        settings.add(M);
+        settings.add(new JLabel("K", SwingConstants.RIGHT));
+        settings.add(K);
+
         bsplinePanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("B - Spline"), BorderFactory.createEmptyBorder(1,1,1,1)));
         settings.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Settings"), BorderFactory.createEmptyBorder(1,1,1,1)));
         submit.addActionListener((ex) -> {
-          int n = 5;
-          int m = 8;
-          int k = 5;
+          int n = Integer.valueOf(N.getText());
+          int m = Integer.valueOf(M.getText());;
+          int k = Integer.valueOf(K.getText());;
           Point2D.Double[] ps = bsplinePanel.getFigurePoints(n, k);
           rotatePane.setFigureParams(ps, m, k);
           // for(int i = 0; i < ps.length; i++){
